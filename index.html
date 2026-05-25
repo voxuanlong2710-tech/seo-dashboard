@@ -138,6 +138,15 @@ tr:hover td{background:var(--bg2)}
 .r-kpi-label{font-size:10px;color:var(--text2)}
 .r-sec{margin-bottom:18px}
 .r-sec h3{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+#task-tooltip{position:fixed;z-index:999;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rl);padding:12px;min-width:220px;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.15);display:none;pointer-events:auto}
+#task-tooltip .tt-date{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+#task-tooltip .tt-item{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .1s}
+#task-tooltip .tt-item:last-child{border-bottom:none}
+#task-tooltip .tt-item:hover{background:var(--bg2);border-radius:4px;padding-left:4px}
+#task-tooltip .tt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+#task-tooltip .tt-body{flex:1;min-width:0}
+#task-tooltip .tt-title{font-size:12px;line-height:1.3}
+#task-tooltip .tt-meta{font-size:10px;color:var(--text3);margin-top:1px}
 @media print{
   body{background:#fff}
   .app>.hdr,.app>.tabs,.panel:not(#panel-report){display:none!important}
@@ -529,7 +538,61 @@ function showModal(id){document.getElementById(id).style.display='flex';}
 function closeModal(id){document.getElementById(id).style.display='none';}
 function deleteDoc(col,id){if(!confirm('Xóa mục này?'))return;db.collection(col).doc(id).delete().then(()=>toast('Đã xóa'));}
 function logActivity(action,detail){db.collection('activity').add({action,detail,ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov').forEach(m=>m.style.display='none');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-ov').forEach(m=>m.style.display='none');hideTaskTooltip();}});
+
+// ── TASK TOOLTIP ──
+let _ttTimeout=null;
+function showTaskTooltip(e,el){
+  clearTimeout(_ttTimeout);
+  const ids=JSON.parse(decodeURIComponent(el.dataset.tasks||'[]'));
+  const date=el.dataset.date||'';
+  if(!ids.length)return;
+  const tasks=(window._tasks||[]).filter(t=>ids.includes(t.id));
+  if(!tasks.length)return;
+  const tt=document.getElementById('task-tooltip');
+  const d=new Date(date);
+  const dayNames=['CN','T2','T3','T4','T5','T6','T7'];
+  document.getElementById('tt-date').textContent=dayNames[d.getDay()]+' '+d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})+' — '+tasks.length+' task';
+  const today=new Date();today.setHours(0,0,0,0);
+  document.getElementById('tt-items').innerHTML=tasks.map(t=>{
+    const done=t.done||t.status==='done';
+    const late=!done&&t.deadline&&new Date(t.deadline)<today;
+    const doing=t.status==='inprogress';
+    const dot=done?'#1D9E75':late?'#A32D2D':doing?'#BA7517':'#888780';
+    const priLabel={high:'Cao',mid:'Vừa',low:'Thấp'};
+    return`<div class="tt-item" onclick="editTask('${t.id}');hideTaskTooltip()">
+      <div class="tt-dot" style="background:${dot};margin-top:4px"></div>
+      <div class="tt-body">
+        <div class="tt-title" style="${done?'text-decoration:line-through;color:var(--text3)':late?'color:var(--red)':''}">${t.title}</div>
+        <div class="tt-meta">${t.owner?'👤 '+t.owner+' · ':''}${priLabel[t.priority||'mid']}${t.deadline?' · 🏁 '+t.deadline:''}</div>
+      </div>
+      <span style="font-size:10px;padding:1px 6px;border-radius:4px;background:${done?'var(--green-bg)':late?'var(--red-bg)':doing?'var(--amber-bg)':'var(--bg2)'};color:${done?'var(--green-text)':late?'var(--red-text)':doing?'var(--amber-text)':'var(--text2)'};flex-shrink:0;align-self:flex-start;margin-top:2px">${done?'Xong':late?'Trễ':doing?'Đang làm':'Chưa'}</span>
+    </div>`;
+  }).join('');
+  // Position tooltip
+  const rect=el.getBoundingClientRect();
+  tt.style.display='block';
+  const tw=tt.offsetWidth||280;
+  const th=tt.offsetHeight||200;
+  const vw=window.innerWidth;const vh=window.innerHeight;
+  let left=rect.left;let top=rect.bottom+6;
+  if(left+tw>vw-10)left=vw-tw-10;
+  if(left<10)left=10;
+  if(top+th>vh-10)top=rect.top-th-6;
+  tt.style.left=left+'px';tt.style.top=top+'px';
+}
+function hideTaskTooltip(e){
+  if(e){
+    const tt=document.getElementById('task-tooltip');
+    if(e.relatedTarget&&(tt.contains(e.relatedTarget)||e.relatedTarget===tt))return;
+  }
+  _ttTimeout=setTimeout(()=>{
+    const tt=document.getElementById('task-tooltip');
+    if(tt)tt.style.display='none';
+  },200);
+}
+document.getElementById('task-tooltip').addEventListener('mouseenter',()=>clearTimeout(_ttTimeout));
+document.getElementById('task-tooltip').addEventListener('mouseleave',hideTaskTooltip);
 
 // ── TABS ──
 function switchTab(id,el){
@@ -971,10 +1034,11 @@ function renderWeekTasks(){
     const isToday=new Date(ds).getTime()===today.getTime();
     const dayTasks=byDate[ds]||[];
     const MAX=3;
-    calHTML+=`<div style="min-height:80px;background:${isToday?'#E1F5EE':'var(--color-background-primary)'};border:0.5px solid ${isToday?'#5DCAA5':'var(--color-border-tertiary)'};border-radius:5px;padding:4px;cursor:${dayTasks.length?'pointer':'default'}">
+    const taskDataAttr=dayTasks.length>0?` data-tasks="${encodeURIComponent(JSON.stringify(dayTasks.map(t=>t.id)))}" data-date="${ds}" onmouseenter="showTaskTooltip(event,this)" onmouseleave="hideTaskTooltip(event)"`:'' ;
+    calHTML+=`<div style="min-height:80px;background:${isToday?'#E1F5EE':'var(--color-background-primary)'};border:0.5px solid ${isToday?'#5DCAA5':'var(--color-border-tertiary)'};border-radius:5px;padding:4px;position:relative"${taskDataAttr}>
       <div style="font-size:10px;${isToday?'font-weight:600;color:#085041':'color:var(--color-text-secondary)'};margin-bottom:3px">${d}${isToday?' •':''}</div>
-      ${dayTasks.slice(0,MAX).map(t=>{const st=getStatus(t);return`<div onclick="editTask('${t.id}')" title="${t.owner?t.owner+': ':''  }${t.title}" style="font-size:9px;padding:2px 5px;border-radius:3px;background:${st.bg};color:${st.tc};margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:2px solid ${st.dot}">${t.title}</div>`;}).join('')}
-      ${dayTasks.length>MAX?`<div style="font-size:9px;color:var(--color-text-secondary);padding:1px 4px">+${dayTasks.length-MAX} khác</div>`:''}
+      ${dayTasks.slice(0,MAX).map(t=>{const st=getStatus(t);return`<div onclick="editTask('${t.id}')" title="${t.title}" style="font-size:9px;padding:2px 5px;border-radius:3px;background:${st.bg};color:${st.tc};margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:2px solid ${st.dot}">${t.title}</div>`;}).join('')}
+      ${dayTasks.length>MAX?`<div style="font-size:9px;color:var(--color-text-secondary);padding:1px 4px;cursor:default">+${dayTasks.length-MAX} khác — trỏ chuột để xem</div>`:''}
     </div>`;
   }
 
@@ -1255,5 +1319,9 @@ async function manualSync(){
   finally{btn.textContent='🔄 Sync GSC/GA4';btn.disabled=false;}
 }
 </script>
+<div id="task-tooltip">
+  <div class="tt-date" id="tt-date"></div>
+  <div id="tt-items"></div>
+</div>
 </body>
 </html>
