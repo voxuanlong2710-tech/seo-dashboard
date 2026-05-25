@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>SEO Command Center</title>
+<title>SEO Report VietnamBooking</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -192,7 +192,7 @@ const db=firebase.firestore();
 
 <div class="app">
 <div class="hdr">
-  <div class="hdr-l"><div class="dot"></div><h1>SEO Command Center</h1><span class="badge-live">LIVE</span></div>
+  <div class="hdr-l"><div class="dot"></div><h1>SEO Report VietnamBooking</h1><span class="badge-live">LIVE</span></div>
   <div class="hdr-r">
     <span id="cur-date" style="color:var(--text2)"></span>
     <span id="sync-st" style="font-size:10px;color:var(--text3)"></span>
@@ -978,7 +978,7 @@ function buildReport(){
   document.getElementById('report-content').innerHTML=`
     <div class="report-hdr">
       <div><div class="report-agency">${agency}</div><div class="report-period">Báo cáo SEO · ${period}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Client: <strong>${client}</strong></div></div>
-      <div style="text-align:right;font-size:11px;color:var(--text2)"><div>Ngày tạo: ${now.toLocaleDateString('vi-VN')}</div><div style="margin-top:4px;color:var(--green);font-weight:500">SEO Command Center</div></div>
+      <div style="text-align:right;font-size:11px;color:var(--text2)"><div>Ngày tạo: ${now.toLocaleDateString('vi-VN')}</div><div style="margin-top:4px;color:var(--green);font-weight:500">SEO Report VietnamBooking</div></div>
     </div>
     <div class="report-kpi">
       <div class="r-kpi"><div class="r-kpi-val" style="color:var(--green)">${(kpi.traffic||0).toLocaleString('vi')}</div><div class="r-kpi-label">Organic Traffic</div><div style="font-size:10px;color:${tDelta>=0?'var(--green)':'var(--red)'};margin-top:2px">${tDelta>=0?'↑':'↓'} ${Math.abs(tDelta)}%</div></div>
@@ -998,7 +998,7 @@ function buildReport(){
         ${arts.filter(a=>a.status==='published').slice(0,8).map(a=>`<tr><td>${a.title}</td><td style="color:var(--text2)">${a.keyword||'—'}</td><td>${a.traffic||'—'}</td><td>${a.position||'—'}</td></tr>`).join('')}
       </tbody></table></div>`:''}
     <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);text-align:center">
-      Báo cáo được tạo tự động bởi SEO Command Center · ${now.toLocaleDateString('vi-VN')}
+      Báo cáo được tạo tự động bởi SEO Report VietnamBooking · ${now.toLocaleDateString('vi-VN')}
     </div>`;
   toast('📋 Báo cáo đã tạo — nhấn 🖨️ để lưu PDF');
 }
