@@ -811,16 +811,11 @@ function renderQuickWins(){
 
 // ── GROUPS ──
 function listenGroups(){
-  db.collection('kwgroups').orderBy('order','asc').onSnapshot(snap=>{
-    window._groups=snap.docs.map(d=>({id:d.id,...d.data()}));
+  db.collection('kwgroups').onSnapshot(snap=>{
+    window._groups=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
     updateGroupSelects();
     if(kwTabView==='groups')renderClusters();
     renderKeywords();
-  },()=>{
-    db.collection('kwgroups').onSnapshot(snap=>{
-      window._groups=snap.docs.map(d=>({id:d.id,...d.data()}));
-      updateGroupSelects();if(kwTabView==='groups')renderClusters();renderKeywords();
-    });
   });
 }
 
@@ -1423,6 +1418,35 @@ async function manualSync(){
   try{const res=await fetch('/api/sync');const d=await res.json();if(d.success){st.textContent='✓ Synced';st.style.color='var(--green)';toast('✅ Đồng bộ xong!');}else throw new Error(d.error);}
   catch(e){st.textContent='❌ Chưa setup API';st.style.color='var(--red)';}
   finally{btn.textContent='🔄 Sync GSC/GA4';btn.disabled=false;}
+}
+
+function editGroup(id){openGroupModal(id);}
+function pickColor(el){document.querySelectorAll('.color-opt').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');document.getElementById('f-grp-color').value=el.dataset.color;}
+function drillGroup(gid){kwTabView='list';document.getElementById('kw-list-view').style.display='block';document.getElementById('kw-groups-view').style.display='none';document.getElementById('kw-tab-list').classList.add('active');document.getElementById('kw-tab-groups').classList.remove('active');document.getElementById('kw-group-filter').value=gid;renderKeywords();}
+let _kwIssues=[];
+function openKwModal(id){
+  _kwIssues=[];
+  document.getElementById('kw-modal-title').textContent=id?'Sửa từ khóa':'Thêm từ khóa';
+  document.getElementById('f-kw-id').value=id||'';
+  if(id){
+    const k=(window._kws||[]).find(x=>x.id===id);
+    if(k){document.getElementById('f-kw').value=k.keyword||'';document.getElementById('f-pos').value=k.position||'';document.getElementById('f-change').value=k.change||'';document.getElementById('f-kw-group').value=k.groupId||'';document.getElementById('f-intent').value=k.intent||'';document.getElementById('f-url').value=k.url||'';document.getElementById('f-kw-st').value=k.status||'stable';try{_kwIssues=JSON.parse(k.issues||'[]');}catch(e){_kwIssues=[];}}
+  } else {
+    ['f-kw','f-pos','f-change','f-url'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('f-kw-group').value='';document.getElementById('f-intent').value='';document.getElementById('f-kw-st').value='stable';_kwIssues=[];
+  }
+  document.getElementById('f-kw-issues').value=JSON.stringify(_kwIssues);renderIssueTags();showModal('kw-modal');
+}
+function editKw(id){openKwModal(id);}
+function addIssueTag(e){if(e.key!=='Enter')return;const val=document.getElementById('f-kw-issue-input').value.trim();if(!val)return;_kwIssues.push(val);document.getElementById('f-kw-issue-input').value='';document.getElementById('f-kw-issues').value=JSON.stringify(_kwIssues);renderIssueTags();}
+function removeIssueTag(i){_kwIssues.splice(i,1);document.getElementById('f-kw-issues').value=JSON.stringify(_kwIssues);renderIssueTags();}
+function renderIssueTags(){document.getElementById('f-kw-issues-tags').innerHTML=_kwIssues.map((t,i)=>`<span class="issue-chip">${t}<span onclick="removeIssueTag(${i})" style="opacity:.5;cursor:pointer;margin-left:3px">&#10005;</span></span>`).join('');}
+function saveKw(){
+  const kw=document.getElementById('f-kw').value.trim();if(!kw){alert('Nhập từ khóa');return;}
+  const id=document.getElementById('f-kw-id').value;
+  const data={keyword:kw,position:+document.getElementById('f-pos').value||0,change:+document.getElementById('f-change').value||0,groupId:document.getElementById('f-kw-group').value||'',intent:document.getElementById('f-intent').value,url:document.getElementById('f-url').value.trim(),status:document.getElementById('f-kw-st').value,issues:document.getElementById('f-kw-issues').value||'[]',createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+  const ref=id?db.collection('keywords').doc(id):db.collection('keywords').doc();
+  ref.set(data,{merge:true}).then(()=>{closeModal('kw-modal');toast('Đã lưu từ khóa ✓');if(!id)logActivity('kw_added','Thêm từ khóa: '+kw);});
 }
 </script>
 </div><!-- /main-app -->
