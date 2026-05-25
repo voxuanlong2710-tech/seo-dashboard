@@ -527,10 +527,21 @@ let trafficChart,posChart,reportChart;
 
 // ══ INIT ══
 document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('cur-date').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
-  listenKpi(); listenKeywords(); listenTasks(); listenArticles();
-  listenBacklinks(); listenAudit(); listenActivity(); listenCompetitors();
-  setTimeout(initCharts,200);
+  try{
+    document.getElementById('cur-date').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+    listenKpi(); listenKeywords(); listenTasks(); listenArticles();
+    listenBacklinks(); listenAudit(); listenActivity(); listenCompetitors(); listenGroups();
+    setTimeout(initCharts,200);
+    setTimeout(()=>{
+      const grid=document.getElementById('kpi-grid');
+      if(grid&&grid.innerHTML.includes('Đang tải')){
+        grid.innerHTML+='<div style="grid-column:1/-1;font-size:11px;color:var(--amber);padding:8px">⚠️ Firebase chưa kết nối. Vào <a href="https://console.firebase.google.com" target="_blank" style="color:var(--blue)">Firebase Console</a> → Firestore → Rules → đảm bảo test mode còn hiệu lực.</div>';
+      }
+    },5000);
+  }catch(err){
+    console.error('Init error:',err);
+    document.getElementById('kpi-grid').innerHTML='<div style="grid-column:1/-1;padding:16px;color:var(--red);font-size:12px">⚠️ Lỗi khởi động: '+err.message+'<br>Kiểm tra Firebase config và Firestore Rules.</div>';
+  }
 });
 
 function switchTab(id,el){
@@ -566,8 +577,10 @@ function renderActivity(items){
 
 // ══ KPI ══
 function listenKpi(){
+  // Test Firestore connection
   db.collection('kpi').doc('current').onSnapshot(snap=>{
     const d=snap.exists?snap.data():getDefaultKpi();
+    window._kpiData=snap.exists?snap.data():{};
     renderKpi(d); updateCharts(d);
   });
 }
@@ -649,6 +662,13 @@ function listenKeywords(){
   db.collection('keywords').orderBy('createdAt','desc').onSnapshot(snap=>{
     window._kws=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderKeywords();renderQuickWins();
+    // Refresh rank modal if open
+    const openId=(document.getElementById('rank-kw-id')||{}).value||'';
+    const modal=document.getElementById('rank-modal');
+    if(openId&&modal&&modal.style.display!=='none'){
+      const kw=window._kws.find(k=>k.id===openId);
+      if(kw) renderRankHistory(kw.rankHistory||[]);
+    }
   });
 }
 function filterKw(f,el){kwFilter=f;document.querySelectorAll('#kw-flt .fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderKeywords();}
@@ -1054,8 +1074,6 @@ function buildReport(){
   toast('📋 Báo cáo đã tạo — nhấn 🖨️ để lưu PDF');
 }
 
-// Store kpi for report
-db.collection('kpi').doc('current').onSnapshot(snap=>{window._kpiData=snap.exists?snap.data():{};});
 
 // ══ SYNC ══
 async function manualSync(){
@@ -1167,16 +1185,15 @@ function deleteRankEntry(date) {
 }
 // Re-render chart when Firebase updates keyword
 
-// Patch: re-render rank modal if open
-db.collection('keywords').onSnapshot(snap=>{
-  const openId = document.getElementById('rank-kw-id').value;
-  if(openId && document.getElementById('rank-modal').style.display!=='none'){
-    const kw = snap.docs.map(d=>({id:d.id,...d.data()})).find(k=>k.id===openId);
-    if(kw) renderRankHistory(kw.rankHistory||[]);
-  }
-});
+// Rank modal auto-refresh via _kws watcher is handled in listenKeywords
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov').forEach(m=>m.style.display='none');});
+window.onerror=function(msg,src,line,col,err){
+  console.error('JS Error:',msg,'at',src,line+':'+col);
+  if(document.getElementById('kpi-grid')){
+    document.getElementById('kpi-grid').innerHTML='<div style="grid-column:1/-1;padding:12px;background:var(--red-bg);color:var(--red);border-radius:8px;font-size:11px">⚠️ JS Error: '+msg+'<br>Line: '+line+'. Xem Console để debug.</div>';
+  }
+};
 
 // ══ KEYWORD SUBTABS ══
 function switchKwTab(tab, el) {
@@ -1196,22 +1213,15 @@ function listenGroups() {
     renderKeywords();
   });
 }
-listenGroups();
 
 function updateGroupSelects() {
   const groups = window._groups || [];
   // Update filter select
   const sel = document.getElementById('kw-group-filter');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Tất cả nhóm</option>' + groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
-  sel.value = cur;
+  if(sel){ const cur=sel.value; sel.innerHTML='<option value="">Tất cả nhóm</option>'+groups.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join(''); sel.value=cur; }
   // Update modal select
   const msel = document.getElementById('f-kw-group');
-  if(msel) {
-    const mcur = msel.value;
-    msel.innerHTML = '<option value="">Chưa phân nhóm</option>' + groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
-    msel.value = mcur;
-  }
+  if(msel){ const mcur=msel.value; msel.innerHTML='<option value="">Chưa phân nhóm</option>'+groups.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join(''); msel.value=mcur; }
 }
 
 function renderClusters() {
