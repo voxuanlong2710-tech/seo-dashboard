@@ -656,31 +656,42 @@ const stLabel={stable:'Ổn định',good:'Tốt',new:'Mới',watch:'Theo dõi',
 const intentLabel={info:'Info',trans:'Trans',nav:'Nav',comm:'Comm'};
 const intentPill={info:'pill-b',trans:'pill-g',nav:'pill-p',comm:'pill-y'};
 function renderKeywords(){
+  const groupFilter=(document.getElementById('kw-group-filter')||{}).value||'';
+  const groups=window._groups||[];
   const kws=(window._kws||[]).filter(k=>{
-    if(kwFilter==='all')return true;
-    if(kwFilter==='top3')return(k.position||99)<=3;
-    if(kwFilter==='top10')return(k.position||99)>=4&&(k.position||99)<=10;
-    if(kwFilter==='drop')return k.status==='drop';return true;
+    if(kwFilter==='top3'&&(k.position||99)>3)return false;
+    if(kwFilter==='top10'&&((k.position||99)<4||(k.position||99)>10))return false;
+    if(kwFilter==='drop'&&k.status!=='drop')return false;
+    if(groupFilter&&k.groupId!==groupFilter)return false;
+    return true;
   });
-  if(!kws.length){document.getElementById('kw-tbody').innerHTML='<tr><td colspan="11"><div class="empty">Chưa có từ khóa.</div></td></tr>';return;}
+  if(!kws.length){
+    document.getElementById('kw-tbody').innerHTML='<tr><td colspan="11"><div class="empty">Chưa có từ khóa nào. Nhấn "+ Thêm từ khóa" để bắt đầu.</div></td></tr>';
+    return;
+  }
   document.getElementById('kw-tbody').innerHTML=kws.map(k=>{
-    const d=k.difficulty||0;const dc=d<40?'var(--green)':d<60?'var(--amber)':'var(--red)';
+    const d=k.difficulty||0;
+    const dc=d<40?'var(--green)':d<60?'var(--amber)':'var(--red)';
     const ch=k.change||0;
+    const grp=groups.find(g=>g.id===k.groupId)||null;
+    let issues=[];
+    try{issues=JSON.parse(k.issues||'[]');}catch(e){issues=[];}
     return`<tr>
-      <td>${grp?`<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${grp.color};flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis">${grp.name}</span></div>`:'<span style="color:var(--text3);font-size:10px">—</span>'}</td>
+      <td>${grp?`<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${grp.color||'#888'};flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis">${grp.name}</span></div>`:'<span style="color:var(--text3);font-size:10px">—</span>'}</td>
       <td><strong>${k.keyword}</strong></td>
       <td><span class="rank">${k.position||'—'}</span></td>
       <td style="color:${ch>0?'var(--green)':ch<0?'var(--red)':'var(--text2)'}">${ch>0?'↑'+ch:ch<0?'↓'+Math.abs(ch):'—'}</td>
       <td>${(k.volume||0).toLocaleString('vi')}</td>
       <td><div style="display:flex;align-items:center;gap:4px"><div class="diff-bar"><div class="diff-fill" style="width:${d}%;background:${dc}"></div></div><span style="font-size:10px;color:${dc}">${d}</span></div></td>
       <td>${k.intent?`<span class="pill ${intentPill[k.intent]||''}">${intentLabel[k.intent]||k.intent}</span>`:'—'}</td>
-      <td style="font-size:11px;max-width:200px;word-break:break-all">${k.url?`<a href="${k.url}" target="_blank" style="color:var(--blue);text-decoration:none;font-size:10px">${k.url}</a>`:'—'}</td>
-      <td style="max-width:200px">${issues.length?issues.map(i=>`<span class="kw-issue-tag" style="display:inline-block;margin:1px">${i}</span>`).join(''):'<span style="font-size:10px;color:var(--text3)">—</span>'}</td>
+      <td style="font-size:10px;max-width:180px;word-break:break-all">${k.url?`<a href="${k.url}" target="_blank" style="color:var(--blue);text-decoration:none">${k.url}</a>`:'—'}</td>
+      <td style="max-width:180px">${issues.length?issues.map(i=>`<span class="kw-issue-tag" style="display:inline-block;margin:1px 2px">${i}</span>`).join(''):'<span style="font-size:10px;color:var(--text3)">—</span>'}</td>
       <td><span class="pill ${stPill[k.status]||'pill-g'}">${stLabel[k.status]||k.status||'—'}</span></td>
       <td style="white-space:nowrap"><button class="btn btn-xs" onclick="editKw('${k.id}')" style="margin-right:2px">✏️</button><button class="btn btn-xs" onclick="deleteDoc('keywords','${k.id}')">🗑</button></td>
     </tr>`;
   }).join('');
 }
+
 function renderQuickWins(){
   const wins=(window._kws||[]).filter(k=>(k.position||99)>=4&&(k.position||99)<=10&&(k.volume||0)>0).sort((a,b)=>(b.volume||0)-(a.volume||0)).slice(0,6);
   if(!wins.length){document.getElementById('quick-wins').innerHTML='<div class="empty">Thêm từ khóa để xem Quick Wins</div>';return;}
