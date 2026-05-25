@@ -270,7 +270,7 @@ const db=firebase.firestore();
     <div class="card">
       <div class="tw">
         <table>
-          <thead><tr><th>Nhóm</th><th>Từ khóa</th><th>Vị trí</th><th>±</th><th>Clicks</th><th>CTR</th><th>Volume</th><th>Khó</th><th>Intent</th><th>Vấn đề</th><th>Trạng thái</th><th></th></tr></thead>
+          <thead><tr><th>Nhóm</th><th>Từ khóa</th><th>Vị trí</th><th>±</th><th>Volume</th><th>Khó</th><th>Intent</th><th>URL mục tiêu</th><th>Vấn đề</th><th>Trạng thái</th><th></th></tr></thead>
           <tbody id="kw-tbody"><tr><td colspan="12"><div class="loading">Đang tải...</div></td></tr></tbody>
         </table>
       </div>
@@ -665,19 +665,19 @@ function renderKeywords(){
   if(!kws.length){document.getElementById('kw-tbody').innerHTML='<tr><td colspan="11"><div class="empty">Chưa có từ khóa.</div></td></tr>';return;}
   document.getElementById('kw-tbody').innerHTML=kws.map(k=>{
     const d=k.difficulty||0;const dc=d<40?'var(--green)':d<60?'var(--amber)':'var(--red)';
-    const ch=k.change||0;const ctr=k.impressions&&k.clicks?(k.clicks/k.impressions*100).toFixed(1)+'%':'—';
+    const ch=k.change||0;
     return`<tr>
+      <td>${grp?`<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${grp.color};flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis">${grp.name}</span></div>`:'<span style="color:var(--text3);font-size:10px">—</span>'}</td>
       <td><strong>${k.keyword}</strong></td>
       <td><span class="rank">${k.position||'—'}</span></td>
       <td style="color:${ch>0?'var(--green)':ch<0?'var(--red)':'var(--text2)'}">${ch>0?'↑'+ch:ch<0?'↓'+Math.abs(ch):'—'}</td>
-      <td>${k.clicks?k.clicks.toLocaleString('vi'):'—'}</td>
-      <td style="color:${ctr!=='—'&&parseFloat(ctr)<2?'var(--red)':'var(--green)'}">${ctr}</td>
       <td>${(k.volume||0).toLocaleString('vi')}</td>
       <td><div style="display:flex;align-items:center;gap:4px"><div class="diff-bar"><div class="diff-fill" style="width:${d}%;background:${dc}"></div></div><span style="font-size:10px;color:${dc}">${d}</span></div></td>
       <td>${k.intent?`<span class="pill ${intentPill[k.intent]||''}">${intentLabel[k.intent]||k.intent}</span>`:'—'}</td>
-      <td style="font-size:10px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k.url||'—'}</td>
+      <td style="font-size:11px;max-width:200px;word-break:break-all">${k.url?`<a href="${k.url}" target="_blank" style="color:var(--blue);text-decoration:none;font-size:10px">${k.url}</a>`:'—'}</td>
+      <td style="max-width:200px">${issues.length?issues.map(i=>`<span class="kw-issue-tag" style="display:inline-block;margin:1px">${i}</span>`).join(''):'<span style="font-size:10px;color:var(--text3)">—</span>'}</td>
       <td><span class="pill ${stPill[k.status]||'pill-g'}">${stLabel[k.status]||k.status||'—'}</span></td>
-      <td><button class="btn btn-xs" onclick="editKw('${k.id}')" style="margin-right:2px">✏️</button><button class="btn btn-xs" onclick="deleteDoc('keywords','${k.id}')">🗑</button></td>
+      <td style="white-space:nowrap"><button class="btn btn-xs" onclick="editKw('${k.id}')" style="margin-right:2px">✏️</button><button class="btn btn-xs" onclick="deleteDoc('keywords','${k.id}')">🗑</button></td>
     </tr>`;
   }).join('');
 }
