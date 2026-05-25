@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>SEO Report VietnamBooking</title>
+<title>SEO DASBOARD VIETNAMBOOKING</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -245,8 +245,11 @@ const db=firebase.firestore();
       <button class="fb" onclick="filterTask('content',this)">Content</button>
       <button class="fb" onclick="filterTask('link',this)">Link building</button>
     </div>
-    <div style="display:flex;gap:6px;align-items:center">
-      <input id="task-search" type="text" placeholder="🔍 Tìm task..." oninput="renderTasks();renderKanban()" style="padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);width:160px"/>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <input id="task-search" type="text" placeholder="🔍 Tìm task..." oninput="renderTasks();renderKanban()" style="padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);width:140px"/>
+      <select id="task-owner-filter" onchange="renderTasks();renderKanban()" style="padding:5px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)">
+        <option value="">👤 Tất cả</option>
+      </select>
       <button class="btn btn-sm" id="view-list-btn" onclick="setTaskView('list')" style="border-color:var(--green);color:var(--green)">☰ List</button>
       <button class="btn btn-sm" id="view-kanban-btn" onclick="setTaskView('kanban')">⬜ Kanban</button>
       <button class="btn btn-p btn-sm" onclick="openTaskModal()">+ Thêm task</button>
@@ -427,7 +430,9 @@ const db=firebase.firestore();
     <div class="fg"><label>Danh mục</label><select id="f-task-cat"><option value="technical">Technical SEO</option><option value="content">Content</option><option value="link">Link building</option><option value="other">Khác</option></select></div>
     <div class="fg"><label>Ưu tiên</label><select id="f-task-pri"><option value="high">Cao</option><option value="mid">Vừa</option><option value="low">Thấp</option></select></div>
     <div class="fg"><label>Trạng thái</label><select id="f-task-status"><option value="todo">Cần làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option></select></div>
+    <div class="fg"><label>Ngày bắt đầu</label><input type="date" id="f-task-start"/></div>
     <div class="fg"><label>Hạn chót</label><input type="date" id="f-task-due"/></div>
+    <div class="fg"></div>
   </div>
   <div class="fg"><label>Người phụ trách</label><input id="f-task-owner"/></div>
   <div class="mf"><button class="btn" onclick="closeModal('task-modal')">Hủy</button><button class="btn btn-p" onclick="saveTask()">Lưu</button></div>
@@ -632,7 +637,7 @@ function renderKeywords(){
     const ch=k.change||0;
     const histLen=(k.rankHistory||[]).length;
     return `<tr>
-      <td>${grp?`<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${grp.color};flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${grp.name}</span></div>`:'<span style="color:var(--text3);font-size:10px">—</span>'}</td>
+      <td>${grp?`<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${grp.color};flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${grp.name}</span></div>`:'<span style="color:var(--text3);font-size:10px">—</span>'}</td>
       <td><span class="kw-link" onclick="openRankHistory('${k.id}')">${k.keyword}</span>${histLen?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--blue-bg);color:var(--blue-text);margin-left:4px">${histLen}w</span>`:''}</td>
       <td><span class="rank">${k.position||'—'}</span></td>
       <td style="color:${ch>0?'var(--green)':ch<0?'var(--red)':'var(--text2)'}">${ch>0?'↑'+ch:ch<0?'↓'+Math.abs(ch):'—'}</td>
@@ -825,7 +830,8 @@ function deleteRankEntry(date){
 // ── TASKS ──
 function listenTasks(){
   db.collection('tasks').orderBy('createdAt','desc').onSnapshot(snap=>{
-    window._tasks=snap.docs.map(d=>({id:d.id,...d.data()}));renderTasks();renderKanban();
+    window._tasks=snap.docs.map(d=>({id:d.id,...d.data()}));
+    updateOwnerFilter();renderTasks();renderKanban();
   });
 }
 function filterTask(f,el){taskFilter=f;document.querySelectorAll('#task-flt .fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderTasks();renderKanban();}
@@ -838,7 +844,21 @@ function setTaskView(v){
 }
 function getTasks(){
   const q=(document.getElementById('task-search')||{value:''}).value.toLowerCase();
-  return(window._tasks||[]).filter(t=>(taskFilter==='all'||t.category===taskFilter)&&(!q||t.title.toLowerCase().includes(q)));
+  const ow=(document.getElementById('task-owner-filter')||{value:''}).value.toLowerCase();
+  return(window._tasks||[]).filter(t=>{
+    if(taskFilter!=='all'&&t.category!==taskFilter)return false;
+    if(q&&!t.title.toLowerCase().includes(q))return false;
+    if(ow&&(!t.owner||!t.owner.toLowerCase().includes(ow)))return false;
+    return true;
+  });
+}
+function updateOwnerFilter(){
+  const sel=document.getElementById('task-owner-filter');
+  if(!sel)return;
+  const cur=sel.value;
+  const owners=[...new Set((window._tasks||[]).map(t=>t.owner).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">👤 Tất cả</option>'+owners.map(o=>`<option value="${o}">${o}</option>`).join('');
+  if(cur)sel.value=cur;
 }
 function renderTasks(){
   const tasks=getTasks();
@@ -852,7 +872,8 @@ function renderTasks(){
         <div class="task-meta">
           <span class="${priClass[t.priority||'mid']}">${priLabel[t.priority||'mid']}</span>
           <span>${catLabel[t.category||'other']}</span>
-          ${t.deadline?`<span>📅 ${t.deadline}</span>`:''}
+          ${t.startDate?`<span>▶ ${t.startDate}</span>`:''}
+          ${t.deadline?`<span>🏁 ${t.deadline}</span>`:''}
           ${t.owner?`<span>👤 ${t.owner}</span>`:''}
           ${t.status==='inprogress'?'<span class="pill pill-y" style="font-size:9px">Đang làm</span>':''}
         </div>
@@ -871,10 +892,10 @@ function renderKanban(){
 }
 function quickStatus(id,status){db.collection('tasks').doc(id).update({status,done:status==='done'});}
 function toggleTask(id,cur){const d=!cur;db.collection('tasks').doc(id).update({done:d,status:d?'done':'todo'}).then(()=>{if(d)logActivity('task_done','Hoàn thành task');toast(d?'✓ Xong!':'Đã bỏ');});}
-function openTaskModal(){['f-task','f-task-note','f-task-due','f-task-owner'].forEach(i=>document.getElementById(i).value='');document.getElementById('f-task-cat').value='technical';document.getElementById('f-task-pri').value='high';document.getElementById('f-task-status').value='todo';showModal('task-modal');}
+function openTaskModal(){['f-task','f-task-note','f-task-start','f-task-due','f-task-owner'].forEach(i=>document.getElementById(i).value='');document.getElementById('f-task-cat').value='technical';document.getElementById('f-task-pri').value='high';document.getElementById('f-task-status').value='todo';showModal('task-modal');}
 function saveTask(){
   const title=document.getElementById('f-task').value.trim();if(!title){alert('Nhập tên task');return;}
-  db.collection('tasks').add({title,done:false,note:document.getElementById('f-task-note').value.trim(),category:document.getElementById('f-task-cat').value,priority:document.getElementById('f-task-pri').value,status:document.getElementById('f-task-status').value,deadline:document.getElementById('f-task-due').value,owner:document.getElementById('f-task-owner').value.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{closeModal('task-modal');toast('Đã thêm task ✓');logActivity('task_added','Thêm task: '+title);});
+  db.collection('tasks').add({title,done:false,note:document.getElementById('f-task-note').value.trim(),category:document.getElementById('f-task-cat').value,priority:document.getElementById('f-task-pri').value,status:document.getElementById('f-task-status').value,startDate:document.getElementById('f-task-start').value,deadline:document.getElementById('f-task-due').value,owner:document.getElementById('f-task-owner').value.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{closeModal('task-modal');toast('Đã thêm task ✓');logActivity('task_added','Thêm task: '+title);});
 }
 
 // ── ARTICLES ──
