@@ -769,7 +769,7 @@ function renderTasks(){
     </div>`).join('');
 }
 function renderKanban(){
-  const all=(window._tasks||[]).filter(t=>taskFilter==='all'||t.category===taskFilter);
+  const q=(document.getElementById('task-search')||{}).value||'';const all=(window._tasks||[]).filter(t=>(taskFilter==='all'||t.category===taskFilter)&&(!q||t.title.toLowerCase().includes(q.toLowerCase())));
   const cols=[
     {key:'todo',label:'Cần làm',tasks:all.filter(t=>!t.done&&t.status!=='inprogress'&&t.status!=='done')},
     {key:'inprogress',label:'Đang làm',tasks:all.filter(t=>t.status==='inprogress'&&!t.done)},
@@ -1094,7 +1094,7 @@ function renderRankHistory(history) {
   const dk = matchMedia('(prefers-color-scheme:dark)').matches;
   const tc = dk?'#9c9a92':'#5f5e5a';
   const gc = dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
-  _rankChart = new Chart(document.getElementById('rank-chart'),{
+  const rankCanvas=document.getElementById('rank-chart');if(!rankCanvas)return;_rankChart = new Chart(rankCanvas,{
     type:'line',
     data:{
       labels: sorted.map(h=>h.date.slice(5)),
@@ -1166,7 +1166,6 @@ function deleteRankEntry(date) {
   db.collection('keywords').doc(kwId).update({rankHistory:history}).then(()=>toast('Đã xóa'));
 }
 // Re-render chart when Firebase updates keyword
-const _origListenKw = listenKeywords;
 
 // Patch: re-render rank modal if open
 db.collection('keywords').onSnapshot(snap=>{
@@ -1360,7 +1359,7 @@ function renderIssueTags() {
 <div id="rank-modal" style="display:none" class="modal-ov" onclick="closeModal('rank-modal')">
   <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <h3 id="rank-modal-kw" style="font-size:15px"></h3>
+      <h3 id="rank-modal-kw" style="font-size:14px;word-break:break-word;max-width:420px"></h3>
       <button class="btn btn-xs" onclick="closeModal('rank-modal')">✕</button>
     </div>
     <div style="font-size:11px;color:var(--text2);margin-bottom:14px">Lịch sử vị trí · cập nhật mỗi tuần</div>
