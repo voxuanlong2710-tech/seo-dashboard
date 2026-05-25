@@ -138,6 +138,17 @@ tr:hover td{background:var(--bg2)}
 .r-kpi-label{font-size:10px;color:var(--text2)}
 .r-sec{margin-bottom:18px}
 .r-sec h3{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+#lock-screen{position:fixed;inset:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:var(--font)}
+.lock-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:32px 28px;width:100%;max-width:360px;text-align:center}
+.lock-logo{width:44px;height:44px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:20px}
+.lock-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.lock-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+.lock-input{width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:14px;font-family:var(--font);text-align:center;letter-spacing:2px;margin-bottom:10px}
+.lock-input:focus{outline:2px solid var(--green);outline-offset:-1px}
+.lock-btn{width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);transition:opacity .15s}
+.lock-btn:hover{opacity:.9}
+.lock-err{font-size:11px;color:var(--red);margin-top:8px;min-height:16px}
+.lock-hint{font-size:10px;color:var(--text3);margin-top:12px}
 #task-tooltip{position:fixed;z-index:999;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rl);padding:12px;min-width:220px;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.15);display:none;pointer-events:auto}
 #task-tooltip .tt-date{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 #task-tooltip .tt-item{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .1s}
@@ -170,10 +181,22 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 </script>
 
-<div class="app">
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo">🔒</div>
+    <div class="lock-title">SEO Report VietnamBooking</div>
+    <div class="lock-sub">Nhập mật khẩu để truy cập dashboard</div>
+    <input class="lock-input" type="password" id="lock-input" placeholder="Mật khẩu..." onkeydown="if(event.key==='Enter')checkPass()"/>
+    <button class="lock-btn" onclick="checkPass()">Đăng nhập</button>
+    <div class="lock-err" id="lock-err"></div>
+    <div class="lock-hint">Liên hệ quản trị viên nếu quên mật khẩu</div>
+  </div>
+</div>
+<div class="app" id="main-app" style="display:none">
 <div class="hdr">
   <div class="hdr-l"><div class="dot"></div><h1>SEO Report VietnamBooking</h1><span class="live">LIVE</span></div>
   <div class="hdr-r">
+    <span id="user-badge" style="font-size:10px;padding:2px 8px;border-radius:6px;background:var(--blue-bg);color:var(--blue-text)"></span>
     <span id="cur-date" style="font-size:12px;color:var(--text2)"></span>
     <span id="sync-st" style="font-size:10px;color:var(--text3)"></span>
     <button class="btn btn-sm" id="sync-btn" onclick="manualSync()">🔄 Sync GSC/GA4</button>
@@ -503,6 +526,45 @@ const db=firebase.firestore();
 </div></div>
 
 <script>
+// ── PASSWORD CONFIG — ĐỔI Ở ĐÂY ──
+const PASSWORDS = {
+  'xuanlong':    'admin',      // Tài khoản quản trị
+  'vietnambooking':  'member',     // Thành viên SEO
+  'client':   'viewer',     // Client xem báo cáo
+};
+// Quyền: admin = full, member = full, viewer = chỉ xem báo cáo
+
+function checkPass(){
+  const input=document.getElementById('lock-input').value.trim();
+  const err=document.getElementById('lock-err');
+  if(!input){err.textContent='Vui lòng nhập mật khẩu';return;}
+  if(PASSWORDS[input]){
+    sessionStorage.setItem('seo_auth',input);
+    sessionStorage.setItem('seo_role',PASSWORDS[input]);
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('main-app').style.display='block';
+    err.textContent='';
+    initDashboard();
+  } else {
+    err.textContent='❌ Mật khẩu không đúng';
+    document.getElementById('lock-input').value='';
+    document.getElementById('lock-input').focus();
+    document.getElementById('lock-input').style.borderColor='var(--red)';
+    setTimeout(()=>document.getElementById('lock-input').style.borderColor='',1500);
+  }
+}
+
+function checkSession(){
+  const auth=sessionStorage.getItem('seo_auth');
+  if(auth&&PASSWORDS[auth]){
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('main-app').style.display='block';
+    initDashboard();
+  } else {
+    document.getElementById('lock-input').focus();
+  }
+}
+
 // ── STATE ──
 let kwFilter='all',taskFilter='all',artFilter='all',blFilter='all';let taskCalYear=new Date().getFullYear(),taskCalMonth=new Date().getMonth();
 let taskView='list',artView='table',kwTabView='list';
@@ -525,12 +587,17 @@ const blLabel={new:'Mới',active:'Active',lost:'Đã mất'};
 const actIcons={task_added:{bg:'#E6F1FB',c:'#185FA5',i:'✅'},task_done:{bg:'#E1F5EE',c:'#085041',i:'✓'},kw_added:{bg:'#EEEDFE',c:'#3C3489',i:'🔍'},art_added:{bg:'#FAEEDA',c:'#854F0B',i:'📝'},audit_fixed:{bg:'#E1F5EE',c:'#085041',i:'🛡'},bl_added:{bg:'#FCEBEB',c:'#791F1F',i:'🔗'},kpi_updated:{bg:'#E6F1FB',c:'#185FA5',i:'📊'},default:{bg:'#F1EFE8',c:'#5F5E5A',i:'•'}};
 
 // ── INIT ──
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',()=>{checkSession();});
+
+function initDashboard(){
   document.getElementById('cur-date').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+  const _user=sessionStorage.getItem('seo_auth')||'';
+  const _badge=document.getElementById('user-badge');
+  if(_badge&&_user)_badge.textContent='👤 '+_user;
   listenKpi();listenKeywords();listenGroups();listenTasks();
   listenArticles();listenBacklinks();listenAudit();listenActivity();listenCompetitors();
   setTimeout(initCharts,200);
-});
+}
 
 // ── UTILS ──
 function toast(msg){const e=document.createElement('div');e.className='toast';e.textContent=msg;document.body.appendChild(e);setTimeout(()=>e.remove(),2500);}
@@ -1319,6 +1386,7 @@ async function manualSync(){
   finally{btn.textContent='🔄 Sync GSC/GA4';btn.disabled=false;}
 }
 </script>
+</div><!-- /main-app -->
 <div id="task-tooltip">
   <div class="tt-date" id="tt-date"></div>
   <div id="tt-items"></div>
