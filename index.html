@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>SEO DASBOARD VIETNAMBOOKING</title>
+<title>SEO Report VietnamBooking</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -80,7 +80,7 @@ tr:hover td{background:var(--bg2)}
 .task-cb{width:15px;height:15px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s}
 .task-cb.done{background:var(--green);border-color:var(--green);color:#fff}
 .task-body{flex:1;min-width:0}
-.task-title{font-size:12px;line-height:1.4}.task-title.done{text-decoration:line-through;color:var(--text3)}
+.task-title{font-size:12px;line-height:1.4}
 .task-meta{font-size:10px;color:var(--text3);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
 .task-act{display:flex;gap:3px;opacity:0;transition:opacity .15s}.task-item:hover .task-act{opacity:1}
 .ph{color:var(--red)}.pm{color:var(--amber)}.pl{color:var(--green)}
@@ -423,7 +423,7 @@ const db=firebase.firestore();
 </div></div>
 
 <div id="task-modal" style="display:none" class="modal-ov" onclick="closeModal('task-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3>Thêm task SEO</h3>
+  <h3 id="task-modal-title">Thêm task SEO</h3>
   <div class="fg"><label>Tên task *</label><input id="f-task"/></div>
   <div class="fg"><label>Ghi chú</label><input id="f-task-note"/></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -435,6 +435,7 @@ const db=firebase.firestore();
     <div class="fg"></div>
   </div>
   <div class="fg"><label>Người phụ trách</label><input id="f-task-owner"/></div>
+  <input type="hidden" id="f-task-edit-id"/>
   <div class="mf"><button class="btn" onclick="closeModal('task-modal')">Hủy</button><button class="btn btn-p" onclick="saveTask()">Lưu</button></div>
 </div></div>
 
@@ -866,8 +867,8 @@ function renderTasks(){
   document.getElementById('task-list').innerHTML=tasks.map(t=>`
     <div class="task-item">
       <div class="task-cb ${t.done||t.status==='done'?'done':''}" onclick="toggleTask('${t.id}',${!!(t.done||t.status==='done')})">${t.done||t.status==='done'?'✓':''}</div>
-      <div class="task-body">
-        <div class="task-title ${t.done||t.status==='done'?'done':''}">${t.title}</div>
+      <div class="task-body" style="cursor:pointer" onclick="editTask('${t.id}')">
+        <div class="task-title" style="${t.done||t.status==='done'?'color:var(--text3)':''}">${t.title}</div>
         ${t.note?`<div style="font-size:11px;color:var(--text2);margin-top:1px">${t.note}</div>`:''}
         <div class="task-meta">
           <span class="${priClass[t.priority||'mid']}">${priLabel[t.priority||'mid']}</span>
@@ -878,7 +879,10 @@ function renderTasks(){
           ${t.status==='inprogress'?'<span class="pill pill-y" style="font-size:9px">Đang làm</span>':''}
         </div>
       </div>
-      <div class="task-act"><button class="btn btn-xs" onclick="deleteDoc('tasks','${t.id}')">🗑</button></div>
+      <div class="task-act" style="opacity:1">
+        <button class="btn btn-xs" onclick="editTask('${t.id}')" style="margin-right:2px">✏️</button>
+        <button class="btn btn-xs" onclick="deleteDoc('tasks','${t.id}')">🗑</button>
+      </div>
     </div>`).join('');
 }
 function renderKanban(){
@@ -892,10 +896,30 @@ function renderKanban(){
 }
 function quickStatus(id,status){db.collection('tasks').doc(id).update({status,done:status==='done'});}
 function toggleTask(id,cur){const d=!cur;db.collection('tasks').doc(id).update({done:d,status:d?'done':'todo'}).then(()=>{if(d)logActivity('task_done','Hoàn thành task');toast(d?'✓ Xong!':'Đã bỏ');});}
-function openTaskModal(){['f-task','f-task-note','f-task-start','f-task-due','f-task-owner'].forEach(i=>document.getElementById(i).value='');document.getElementById('f-task-cat').value='technical';document.getElementById('f-task-pri').value='high';document.getElementById('f-task-status').value='todo';showModal('task-modal');}
+function openTaskModal(){['f-task','f-task-note','f-task-start','f-task-due','f-task-owner'].forEach(i=>document.getElementById(i).value='');document.getElementById('f-task-edit-id').value='';document.getElementById('task-modal-title').textContent='Thêm task SEO';document.getElementById('f-task-cat').value='technical';document.getElementById('f-task-pri').value='high';document.getElementById('f-task-status').value='todo';showModal('task-modal');}
 function saveTask(){
   const title=document.getElementById('f-task').value.trim();if(!title){alert('Nhập tên task');return;}
-  db.collection('tasks').add({title,done:false,note:document.getElementById('f-task-note').value.trim(),category:document.getElementById('f-task-cat').value,priority:document.getElementById('f-task-pri').value,status:document.getElementById('f-task-status').value,startDate:document.getElementById('f-task-start').value,deadline:document.getElementById('f-task-due').value,owner:document.getElementById('f-task-owner').value.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{closeModal('task-modal');toast('Đã thêm task ✓');logActivity('task_added','Thêm task: '+title);});
+  const id=document.getElementById('f-task-edit-id').value;
+  const data={title,note:document.getElementById('f-task-note').value.trim(),category:document.getElementById('f-task-cat').value,priority:document.getElementById('f-task-pri').value,status:document.getElementById('f-task-status').value,startDate:document.getElementById('f-task-start').value,deadline:document.getElementById('f-task-due').value,owner:document.getElementById('f-task-owner').value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(id){
+    db.collection('tasks').doc(id).update(data).then(()=>{closeModal('task-modal');toast('Đã cập nhật task ✓');});
+  } else {
+    db.collection('tasks').add({...data,done:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{closeModal('task-modal');toast('Đã thêm task ✓');logActivity('task_added','Thêm task: '+title);});
+  }
+}
+function editTask(id){
+  const t=(window._tasks||[]).find(x=>x.id===id);if(!t)return;
+  document.getElementById('f-task-edit-id').value=id;
+  document.getElementById('f-task').value=t.title||'';
+  document.getElementById('f-task-note').value=t.note||'';
+  document.getElementById('f-task-cat').value=t.category||'technical';
+  document.getElementById('f-task-pri').value=t.priority||'high';
+  document.getElementById('f-task-status').value=t.status||'todo';
+  document.getElementById('f-task-start').value=t.startDate||'';
+  document.getElementById('f-task-due').value=t.deadline||'';
+  document.getElementById('f-task-owner').value=t.owner||'';
+  document.getElementById('task-modal-title').textContent='Sửa task';
+  showModal('task-modal');
 }
 
 // ── ARTICLES ──
