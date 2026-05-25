@@ -244,6 +244,9 @@ const db=firebase.firestore();
       <button class="fb" onclick="filterTask('technical',this)">Technical</button>
       <button class="fb" onclick="filterTask('content',this)">Content</button>
       <button class="fb" onclick="filterTask('link',this)">Link building</button>
+      <span style="color:var(--border2);font-size:14px;margin:0 2px">|</span>
+      <button class="fb" onclick="filterTask('thisweek',this)">📅 Tuần này</button>
+      <button class="fb" onclick="filterTask('nextweek',this)">📅 Tuần tới</button>
     </div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
       <input id="task-search" type="text" placeholder="🔍 Tìm task..." oninput="renderTasks();renderKanban()" style="padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);width:140px"/>
@@ -835,7 +838,16 @@ function listenTasks(){
     updateOwnerFilter();renderTasks();renderKanban();
   });
 }
-function filterTask(f,el){taskFilter=f;document.querySelectorAll('#task-flt .fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderTasks();renderKanban();}
+function filterTask(f,el){
+  taskFilter=f;
+  document.querySelectorAll('#task-flt .fb').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  if(f==='thisweek'||f==='nextweek'){
+    setTaskView('list');
+  }
+  renderTasks();
+  if(f!=='thisweek'&&f!=='nextweek')renderKanban();
+}
 function setTaskView(v){
   taskView=v;
   document.getElementById('task-list-view').style.display=v==='list'?'block':'none';
@@ -843,11 +855,31 @@ function setTaskView(v){
   document.getElementById('view-list-btn').style.cssText=v==='list'?'border-color:var(--green);color:var(--green)':'';
   document.getElementById('view-kanban-btn').style.cssText=v==='kanban'?'border-color:var(--green);color:var(--green)':'';
 }
+function getWeekRange(offset){
+  const now=new Date();
+  const mon=new Date(now);
+  mon.setDate(now.getDate()-((now.getDay()+6)%7)+offset*7);
+  mon.setHours(0,0,0,0);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+  return{start:mon,end:sun};
+}
+function inWeek(dateStr,offset){
+  if(!dateStr)return false;
+  const d=new Date(dateStr);const r=getWeekRange(offset);
+  return d>=r.start&&d<=r.end;
+}
 function getTasks(){
   const q=(document.getElementById('task-search')||{value:''}).value.toLowerCase();
   const ow=(document.getElementById('task-owner-filter')||{value:''}).value.toLowerCase();
   return(window._tasks||[]).filter(t=>{
+    if(taskFilter==='thisweek')return inWeek(t.deadline,0)||inWeek(t.startDate,0);
+    if(taskFilter==='nextweek')return inWeek(t.deadline,1)||inWeek(t.startDate,1);
     if(taskFilter!=='all'&&t.category!==taskFilter)return false;
+    if(q&&!t.title.toLowerCase().includes(q))return false;
+    if(ow&&(!t.owner||!t.owner.toLowerCase().includes(ow)))return false;
+    return true;
+  }).filter(t=>{
+    if(taskFilter==='thisweek'||taskFilter==='nextweek')return true;
     if(q&&!t.title.toLowerCase().includes(q))return false;
     if(ow&&(!t.owner||!t.owner.toLowerCase().includes(ow)))return false;
     return true;
@@ -862,6 +894,7 @@ function updateOwnerFilter(){
   if(cur)sel.value=cur;
 }
 function renderTasks(){
+  if(taskFilter==='thisweek'||taskFilter==='nextweek'){renderWeekTasks();return;}
   const tasks=getTasks();
   if(!tasks.length){document.getElementById('task-list').innerHTML='<div class="empty">Chưa có task.</div>';return;}
   document.getElementById('task-list').innerHTML=tasks.map(t=>`
@@ -885,6 +918,65 @@ function renderTasks(){
       </div>
     </div>`).join('');
 }
+function renderWeekTasks(){
+  const offset=taskFilter==='nextweek'?1:0;
+  const range=getWeekRange(offset);
+  const allTasks=window._tasks||[];
+  const days=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ nhật'];
+  const today=new Date();today.setHours(0,0,0,0);
+  let html='';
+  for(let i=0;i<7;i++){
+    const day=new Date(range.start);day.setDate(range.start.getDate()+i);
+    const dayStr=day.toISOString().split('T')[0];
+    const isToday=day.getTime()===today.getTime();
+    const dayTasks=allTasks.filter(t=>t.deadline===dayStr||t.startDate===dayStr);
+    const q=(document.getElementById('task-search')||{value:''}).value.toLowerCase();
+    const ow=(document.getElementById('task-owner-filter')||{value:''}).value.toLowerCase();
+    const filtered=dayTasks.filter(t=>(!q||t.title.toLowerCase().includes(q))&&(!ow||!t.owner||t.owner.toLowerCase().includes(ow)));
+    const doneC=filtered.filter(t=>t.done||t.status==='done').length;
+    html+=`<div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:${isToday?'var(--green-bg, #E1F5EE)':'var(--color-background-secondary)'};border-radius:var(--border-radius-md);margin-bottom:6px;cursor:default">
+        <span style="font-size:12px;font-weight:500;color:${isToday?'#085041':'var(--color-text-primary)'}">${days[i]} · ${day.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}</span>
+        ${isToday?'<span style="font-size:10px;padding:1px 7px;border-radius:6px;background:#1D9E75;color:#fff">Hôm nay</span>':''}
+        <span style="margin-left:auto;font-size:11px;color:var(--color-text-secondary)">${filtered.length} task${doneC?` · <span style="color:#1D9E75">${doneC} xong</span>`:''}</span>
+      </div>
+      ${filtered.length?filtered.map(t=>{
+        const isDone=t.done||t.status==='done';
+        const isLate=!isDone&&t.deadline&&new Date(t.deadline)<today;
+        return `<div class="task-item">
+          <div class="task-cb ${isDone?'done':''}" onclick="toggleTask('${t.id}',${isDone})">${isDone?'✓':''}</div>
+          <div class="task-body" style="cursor:pointer" onclick="editTask('${t.id}')">
+            <div class="task-title" style="${isDone?'color:var(--color-text-tertiary)':isLate?'color:var(--red,#A32D2D)':''}">${t.title}${isLate?' ⚠️':''}</div>
+            ${t.note?`<div style="font-size:11px;color:var(--color-text-secondary);margin-top:1px">${t.note}</div>`:''}
+            <div class="task-meta">
+              <span class="${priClass[t.priority||'mid']}">${priLabel[t.priority||'mid']}</span>
+              <span>${catLabel[t.category||'other']}</span>
+              ${t.owner?`<span>👤 ${t.owner}</span>`:''}
+              ${t.startDate?`<span>▶ ${t.startDate}</span>`:''}
+              ${t.deadline?`<span>🏁 ${t.deadline}</span>`:''}
+            </div>
+          </div>
+          <div style="display:flex;gap:3px">
+            <button class="btn btn-xs" onclick="editTask('${t.id}')" style="margin-right:2px">✏️</button>
+            <button class="btn btn-xs" onclick="deleteDoc('tasks','${t.id}')">🗑</button>
+          </div>
+        </div>`;
+      }).join(''):`<div style="padding:8px 12px;font-size:11px;color:var(--color-text-secondary);font-style:italic">Không có task</div>`}
+    </div>`;
+  }
+  const total=allTasks.filter(t=>inWeek(t.deadline,offset)||inWeek(t.startDate,offset)).length;
+  const done=allTasks.filter(t=>(inWeek(t.deadline,offset)||inWeek(t.startDate,offset))&&(t.done||t.status==='done')).length;
+  const late=allTasks.filter(t=>inWeek(t.deadline,offset)&&!t.done&&t.status!=='done'&&new Date(t.deadline)<today).length;
+  document.getElementById('task-list').innerHTML=`
+    <div style="display:flex;gap:10px;margin-bottom:12px;padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)">
+      <div style="text-align:center;flex:1"><div style="font-size:18px;font-weight:500">${total}</div><div style="font-size:10px;color:var(--color-text-secondary)">Tổng task</div></div>
+      <div style="text-align:center;flex:1"><div style="font-size:18px;font-weight:500;color:#1D9E75">${done}</div><div style="font-size:10px;color:var(--color-text-secondary)">Hoàn thành</div></div>
+      <div style="text-align:center;flex:1"><div style="font-size:18px;font-weight:500;color:${late?'#A32D2D':'var(--color-text-primary)'}">${late}</div><div style="font-size:10px;color:var(--color-text-secondary)">Quá hạn</div></div>
+      <div style="flex:2;display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--color-background-primary);border-radius:3px"><div style="height:100%;border-radius:3px;background:#1D9E75;width:${total?Math.round(done/total*100):0}%"></div></div><span style="font-size:12px;font-weight:500;color:#1D9E75">${total?Math.round(done/total*100):0}%</span></div>
+    </div>
+    ${html}`;
+}
+
 function renderKanban(){
   const all=getTasks();
   const cols=[{key:'todo',label:'Cần làm',items:all.filter(t=>!t.done&&t.status!=='inprogress'&&t.status!=='done')},{key:'inprogress',label:'Đang làm',items:all.filter(t=>t.status==='inprogress'&&!t.done)},{key:'done',label:'Hoàn thành',items:all.filter(t=>t.done||t.status==='done')}];
