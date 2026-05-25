@@ -245,8 +245,7 @@ const db=firebase.firestore();
       <button class="fb" onclick="filterTask('content',this)">Content</button>
       <button class="fb" onclick="filterTask('link',this)">Link building</button>
       <span style="color:var(--border2);font-size:14px;margin:0 2px">|</span>
-      <button class="fb" onclick="filterTask('thisweek',this)">📅 Tuần này</button>
-      <button class="fb" onclick="filterTask('nextweek',this)">📅 Tuần tới</button>
+      <button class="fb" onclick="filterTask('calendar',this)">📅 Lịch công việc</button>
     </div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
       <input id="task-search" type="text" placeholder="🔍 Tìm task..." oninput="renderTasks();renderKanban()" style="padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);width:140px"/>
@@ -496,7 +495,7 @@ const db=firebase.firestore();
 
 <script>
 // ── STATE ──
-let kwFilter='all',taskFilter='all',artFilter='all',blFilter='all';
+let kwFilter='all',taskFilter='all',artFilter='all',blFilter='all';let taskCalYear=new Date().getFullYear(),taskCalMonth=new Date().getMonth();
 let taskView='list',artView='table',kwTabView='list';
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 let chartsInited=false,_trafficChart,_posChart,_rankChart;
@@ -842,11 +841,13 @@ function filterTask(f,el){
   taskFilter=f;
   document.querySelectorAll('#task-flt .fb').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  if(f==='thisweek'||f==='nextweek'){
+  if(f==='calendar'){
     setTaskView('list');
+    renderTasks();
+  } else {
+    renderTasks();
+    renderKanban();
   }
-  renderTasks();
-  if(f!=='thisweek'&&f!=='nextweek')renderKanban();
 }
 function setTaskView(v){
   taskView=v;
@@ -894,7 +895,7 @@ function updateOwnerFilter(){
   if(cur)sel.value=cur;
 }
 function renderTasks(){
-  if(taskFilter==='thisweek'||taskFilter==='nextweek'){renderWeekTasks();return;}
+  if(taskFilter==='calendar'){renderWeekTasks();return;}
   const tasks=getTasks();
   if(!tasks.length){document.getElementById('task-list').innerHTML='<div class="empty">Chưa có task.</div>';return;}
   document.getElementById('task-list').innerHTML=tasks.map(t=>`
@@ -919,105 +920,91 @@ function renderTasks(){
     </div>`).join('');
 }
 function renderWeekTasks(){
-  const offset=taskFilter==='nextweek'?1:0;
-  const range=getWeekRange(offset);
   const allTasks=window._tasks||[];
   const today=new Date();today.setHours(0,0,0,0);
-
-  // Lấy tasks trong tuần
-  const weekTasks=allTasks.filter(t=>inWeek(t.deadline,offset)||inWeek(t.startDate,offset));
   const q=(document.getElementById('task-search')||{value:''}).value.toLowerCase();
   const ow=(document.getElementById('task-owner-filter')||{value:''}).value.toLowerCase();
-  const filtered=weekTasks.filter(t=>(!q||t.title.toLowerCase().includes(q))&&(!ow||!t.owner||t.owner.toLowerCase().includes(ow)));
 
-  // KPI
-  const doneC=filtered.filter(t=>t.done||t.status==='done').length;
-  const doingC=filtered.filter(t=>t.status==='inprogress'&&!(t.done||t.status==='done')).length;
-  const lateC=filtered.filter(t=>!(t.done||t.status==='done')&&t.deadline&&new Date(t.deadline)<today).length;
-  const owners=[...new Set(filtered.map(t=>t.owner||'Chưa phân công'))].filter(Boolean).sort();
-  const avatarColors=['#534AB7','#1D9E75','#D85A30','#D4537E','#185FA5','#BA7517','#639922'];
-
-  // Ngày trong tuần
+  const months=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
   const dayNames=['T2','T3','T4','T5','T6','T7','CN'];
-  const days=[];
-  for(let i=0;i<7;i++){const d=new Date(range.start);d.setDate(range.start.getDate()+i);days.push(d);}
 
-  // Status config
-  const statusColor={done:'#E1F5EE',doing:'#FAEEDA',todo:'#F1EFE8',inprogress:'#FAEEDA',late:'#FCEBEB'};
-  const statusText={done:'#085041',doing:'#633806',todo:'#5F5E5A',inprogress:'#633806',late:'#791F1F'};
+  const first=new Date(taskCalYear,taskCalMonth,1);
+  let dow=first.getDay();dow=dow===0?6:dow-1;
+  const dim=new Date(taskCalYear,taskCalMonth+1,0).getDate();
 
-  function getTaskDay(t){return t.deadline||(t.startDate?t.startDate:null);}
-  function getStatus(t){
-    if(t.done||t.status==='done')return 'done';
-    if(t.deadline&&new Date(t.deadline)<today&&t.status!=='inprogress')return 'late';
-    if(t.status==='inprogress')return 'doing';
-    return 'todo';
-  }
-
-  // Build grid HTML
-  const colW=`${Math.floor(86/7)}%`;
-  let gridHTML=`<div style="overflow-x:auto">
-  <table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:600px">
-  <colgroup><col style="width:110px">${days.map(()=>`<col style="width:${colW}">`).join('')}</colgroup>
-  <thead><tr>
-    <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)">Thành viên</th>
-    ${days.map((d,i)=>{
-      const isToday=d.getTime()===today.getTime();
-      return`<th style="padding:8px 6px;text-align:center;font-size:10px;font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary);border-left:0.5px solid var(--color-border-tertiary);background:${isToday?'#E1F5EE':'var(--color-background-secondary)'};color:${isToday?'#085041':'var(--color-text-secondary)'}">${dayNames[i]}<br><span style="font-size:9px;opacity:.8">${d.getDate()}/${d.getMonth()+1}</span>${isToday?'<br><span style="font-size:8px;background:#1D9E75;color:#fff;padding:0 4px;border-radius:3px">Hôm nay</span>':''}</th>`;
-    }).join('')}
-  </tr></thead>
-  <tbody>`;
-
-  if(!owners.length){
-    gridHTML+=`<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--color-text-secondary);font-size:12px">Không có task trong ${taskFilter==='nextweek'?'tuần tới':'tuần này'}</td></tr>`;
-  } else {
-    owners.forEach((owner,oi)=>{
-      const color=avatarColors[oi%avatarColors.length];
-      const initials=owner.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-      const ownerTasks=filtered.filter(t=>(t.owner||'Chưa phân công')===owner);
-      gridHTML+=`<tr>
-        <td style="padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);vertical-align:middle">
-          <div style="display:flex;align-items:center;gap:6px">
-            <div style="width:26px;height:26px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#fff;flex-shrink:0">${initials}</div>
-            <span style="font-size:11px;font-weight:500;word-break:break-word">${owner}</span>
-          </div>
-        </td>
-        ${days.map((d,di)=>{
-          const isToday=d.getTime()===today.getTime();
-          const dayStr=d.toISOString().split('T')[0];
-          const dayTasks=ownerTasks.filter(t=>getTaskDay(t)===dayStr);
-          return`<td style="padding:5px 4px;border-bottom:0.5px solid var(--color-border-tertiary);border-left:0.5px solid var(--color-border-tertiary);background:${isToday?'#E1F5EE18':'var(--color-background-primary)'};vertical-align:top">
-            ${dayTasks.map(t=>{
-              const st=getStatus(t);
-              const bg=statusColor[st]||statusColor.todo;
-              const tc=statusText[st]||statusText.todo;
-              return`<div onclick="editTask('${t.id}')" title="${t.title}" style="font-size:9px;padding:2px 5px;border-radius:4px;background:${bg};color:${tc};margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${t.title}</div>`;
-            }).join('')}
-          </td>`;
-        }).join('')}
-      </tr>`;
+  // Build task map by date
+  const byDate={};
+  allTasks.filter(t=>{
+    if(q&&!t.title.toLowerCase().includes(q))return false;
+    if(ow&&(!t.owner||!t.owner.toLowerCase().includes(ow)))return false;
+    return true;
+  }).forEach(t=>{
+    const dates=new Set();
+    if(t.deadline)dates.add(t.deadline);
+    if(t.startDate)dates.add(t.startDate);
+    dates.forEach(ds=>{
+      if(!byDate[ds])byDate[ds]=[];
+      byDate[ds].push(t);
     });
-  }
-  gridHTML+=`</tbody></table></div>`;
+  });
 
-  // Legend
-  const legend=`<div style="display:flex;gap:12px;margin-bottom:10px;font-size:10px;color:var(--color-text-secondary)">
-    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#E1F5EE;border:0.5px solid #5DCAA5"></div>Hoàn thành</div>
-    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#FAEEDA;border:0.5px solid #EF9F27"></div>Đang làm</div>
-    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#F1EFE8;border:0.5px solid #B4B2A9"></div>Chưa bắt đầu</div>
-    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#FCEBEB;border:0.5px solid #F09595"></div>Quá hạn</div>
-  </div>`;
+  // Status color
+  function getStatus(t){
+    if(t.done||t.status==='done')return{bg:'#E1F5EE',tc:'#085041',dot:'#1D9E75'};
+    if(t.deadline&&new Date(t.deadline)<today)return{bg:'#FCEBEB',tc:'#791F1F',dot:'#A32D2D'};
+    if(t.status==='inprogress')return{bg:'#FAEEDA',tc:'#633806',dot:'#BA7517'};
+    return{bg:'var(--color-background-secondary)',tc:'var(--color-text-secondary)',dot:'#888780'};
+  }
+
+  // KPIs for this month
+  const monthStr=`${taskCalYear}-${String(taskCalMonth+1).padStart(2,'0')}`;
+  const monthTasks=allTasks.filter(t=>(t.deadline||'').startsWith(monthStr)||(t.startDate||'').startsWith(monthStr));
+  const mDone=monthTasks.filter(t=>t.done||t.status==='done').length;
+  const mDoing=monthTasks.filter(t=>t.status==='inprogress'&&!(t.done||t.status==='done')).length;
+  const mLate=monthTasks.filter(t=>!(t.done||t.status==='done')&&t.deadline&&new Date(t.deadline)<today&&(t.deadline||'').startsWith(monthStr)).length;
+
+  // Calendar grid
+  let calHTML='';
+  for(let i=0;i<dow;i++)calHTML+=`<div style="min-height:80px;background:var(--color-background-secondary);opacity:.4;border-radius:5px;padding:4px"></div>`;
+  for(let d=1;d<=dim;d++){
+    const ds=`${taskCalYear}-${String(taskCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=new Date(ds).getTime()===today.getTime();
+    const dayTasks=byDate[ds]||[];
+    const MAX=3;
+    calHTML+=`<div style="min-height:80px;background:${isToday?'#E1F5EE':'var(--color-background-primary)'};border:0.5px solid ${isToday?'#5DCAA5':'var(--color-border-tertiary)'};border-radius:5px;padding:4px;cursor:${dayTasks.length?'pointer':'default'}">
+      <div style="font-size:10px;${isToday?'font-weight:600;color:#085041':'color:var(--color-text-secondary)'};margin-bottom:3px">${d}${isToday?' •':''}</div>
+      ${dayTasks.slice(0,MAX).map(t=>{const st=getStatus(t);return`<div onclick="editTask('${t.id}')" title="${t.owner?t.owner+': ':''  }${t.title}" style="font-size:9px;padding:2px 5px;border-radius:3px;background:${st.bg};color:${st.tc};margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:2px solid ${st.dot}">${t.title}</div>`;}).join('')}
+      ${dayTasks.length>MAX?`<div style="font-size:9px;color:var(--color-text-secondary);padding:1px 4px">+${dayTasks.length-MAX} khác</div>`:''}
+    </div>`;
+  }
 
   document.getElementById('task-list').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
-      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500">${filtered.length}</div><div style="font-size:10px;color:var(--color-text-secondary)">Tổng task</div></div>
-      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:#1D9E75">${doneC}</div><div style="font-size:10px;color:var(--color-text-secondary)">Hoàn thành</div></div>
-      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:#BA7517">${doingC}</div><div style="font-size:10px;color:var(--color-text-secondary)">Đang làm</div></div>
-      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:${lateC?'#A32D2D':'var(--color-text-primary)'}">${lateC}</div><div style="font-size:10px;color:var(--color-text-secondary)">Quá hạn</div></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500">${monthTasks.length}</div><div style="font-size:10px;color:var(--color-text-secondary)">Task tháng này</div></div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:#1D9E75">${mDone}</div><div style="font-size:10px;color:var(--color-text-secondary)">Hoàn thành</div></div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:#BA7517">${mDoing}</div><div style="font-size:10px;color:var(--color-text-secondary)">Đang làm</div></div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:${mLate?'#A32D2D':'var(--color-text-primary)'}">${mLate}</div><div style="font-size:10px;color:var(--color-text-secondary)">Quá hạn</div></div>
     </div>
-    ${legend}
-    <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden">${gridHTML}</div>
-    <div style="font-size:10px;color:var(--color-text-secondary);margin-top:8px;text-align:center">Click vào chip task để xem chi tiết và chỉnh sửa</div>`;
+    <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <button onclick="taskCalPrev()" style="padding:5px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;background:none;cursor:pointer;font-family:var(--font-sans);font-size:12px;color:var(--color-text-primary)">← Trước</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:14px;font-weight:500">${months[taskCalMonth]} ${taskCalYear}</span>
+          <button onclick="taskCalToday()" style="padding:3px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;background:none;cursor:pointer;font-family:var(--font-sans);font-size:11px;color:var(--color-text-secondary)">Hôm nay</button>
+        </div>
+        <button onclick="taskCalNext()" style="padding:5px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;background:none;cursor:pointer;font-family:var(--font-sans);font-size:12px;color:var(--color-text-primary)">Tiếp →</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;font-size:10px;color:var(--color-text-secondary)">
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#E1F5EE;border-left:2px solid #1D9E75"></div>Hoàn thành</div>
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#FAEEDA;border-left:2px solid #BA7517"></div>Đang làm</div>
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--color-background-secondary);border-left:2px solid #888780"></div>Chưa bắt đầu</div>
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#FCEBEB;border-left:2px solid #A32D2D"></div>Quá hạn</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px">
+        ${dayNames.map(d=>`<div style="text-align:center;font-size:10px;font-weight:500;color:var(--color-text-secondary);padding:4px 0">${d}</div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">${calHTML}</div>
+    </div>`;
 }
 
 
@@ -1089,6 +1076,9 @@ function renderArticles(){
   </tr>`).join('');
 }
 function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function taskCalPrev(){taskCalMonth--;if(taskCalMonth<0){taskCalMonth=11;taskCalYear--;}renderWeekTasks();}
+function taskCalNext(){taskCalMonth++;if(taskCalMonth>11){taskCalMonth=0;taskCalYear++;}renderWeekTasks();}
+function taskCalToday(){taskCalYear=new Date().getFullYear();taskCalMonth=new Date().getMonth();renderWeekTasks();}
 function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 function renderCalendar(){
   const months=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
