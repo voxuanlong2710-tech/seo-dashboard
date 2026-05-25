@@ -1116,36 +1116,58 @@ function updateGroupSelects() {
 function renderClusters() {
   const groups = window._groups || [];
   const kws = window._kws || [];
+  const el = document.getElementById('clusters-grid');
   if(!groups.length) {
-    document.getElementById('clusters-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text3);font-size:13px">Chưa có nhóm nào. Nhấn "+ Tạo nhóm mới" để bắt đầu phân loại từ khóa.</div>`;
+    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--text3);font-size:13px">Chưa có nhóm nào. Nhấn <strong style="color:var(--text)">+ Tạo nhóm mới</strong> để phân loại từ khóa.</div>';
     return;
   }
-  document.getElementById('clusters-grid').innerHTML = groups.map(g => {
-    const gKws = kws.filter(k=>k.groupId===g.id);
+  el.innerHTML = groups.map(g => {
+    const gKws = kws.filter(k => k.groupId === g.id);
     const avgPos = gKws.length ? Math.round(gKws.reduce((s,k)=>s+(k.position||0),0)/gKws.length) : 0;
     const totalClicks = gKws.reduce((s,k)=>s+(k.clicks||0),0);
     const totalVol = gKws.reduce((s,k)=>s+(k.volume||0),0);
-    const allIssues = gKws.flatMap(k=>JSON.parse(k.issues||'[]'));
-    const uniqueIssues = [...new Set(allIssues)].slice(0,3);
-    const posColor = avgPos<=3?'var(--green)':avgPos<=10?'var(--amber)':'var(--red)';
-    return `<div class="cl-card" onclick="drillGroup('${g.id}')">
-      <div class="cl-accent" style="background:${g.color||'#1D9E75'}"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
-        <div style="font-size:13px;font-weight:500">${g.name}</div>
-        <div style="display:flex;gap:3px">
-          <button class="btn btn-xs" onclick="event.stopPropagation();editGroup('${g.id}')" style="opacity:.6">✏️</button>
-          <button class="btn btn-xs" onclick="event.stopPropagation();deleteDoc('kwgroups','${g.id}')" style="opacity:.6">🗑</button>
-        </div>
-      </div>
-      ${g.desc?`<div style="font-size:10px;color:var(--text2);margin-top:2px">${g.desc}</div>`:''}
-      <div class="cl-stats">
-        <div class="cl-stat"><div class="cl-stat-val">${gKws.length}</div><div class="cl-stat-label">Từ khóa</div></div>
-        <div class="cl-stat"><div class="cl-stat-val" style="color:${posColor}">${avgPos||'—'}</div><div class="cl-stat-label">TB vị trí</div></div>
-        <div class="cl-stat"><div class="cl-stat-val">${totalClicks.toLocaleString('vi')}</div><div class="cl-stat-label">Clicks/T</div></div>
-        <div class="cl-stat"><div class="cl-stat-val">${totalVol>=1000?Math.round(totalVol/1000)+'k':totalVol}</div><div class="cl-stat-label">Volume</div></div>
-      </div>
-      ${uniqueIssues.length?`<div style="display:flex;gap:4px;flex-wrap:wrap">${uniqueIssues.map(i=>`<span style="font-size:9px;padding:2px 6px;border-radius:5px;background:var(--amber-bg);color:var(--amber-text)">${i}</span>`).join('')}${allIssues.length>3?`<span style="font-size:9px;color:var(--text3)">+${allIssues.length-3}</span>`:''}</div>`:'<div style="font-size:10px;color:var(--green)">✓ Không có vấn đề ghi nhận</div>'}
-    </div>`;
+    const allIssues = gKws.flatMap(k=>{try{return JSON.parse(k.issues||'[]');}catch(e){return [];}});
+    const uniqueIssues = [...new Set(allIssues)];
+    const posColor = avgPos===0?'var(--text2)':avgPos<=3?'var(--green)':avgPos<=10?'var(--amber)':'var(--red)';
+    const volStr = totalVol>=1000?Math.round(totalVol/1000)+'k':totalVol||'0';
+    const color = g.color||'#1D9E75';
+    return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:box-shadow .15s;cursor:pointer" onclick="drillGroup(\''+g.id+'\')">'+
+      '<div style="height:4px;background:'+color+'"></div>'+
+      '<div style="padding:14px">'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">'+
+          '<div style="font-size:13px;font-weight:600;color:var(--text);line-height:1.3">'+g.name+'</div>'+
+          '<div style="display:flex;gap:3px;flex-shrink:0;margin-left:8px" onclick="event.stopPropagation()">'+
+            '<button class="btn btn-xs" onclick="editGroup(\''+g.id+'\')" style="padding:3px 7px;font-size:11px">✏️</button>'+
+            '<button class="btn btn-xs" onclick="deleteDoc(\'kwgroups\',\''+g.id+'\')" style="padding:3px 7px;font-size:11px">🗑</button>'+
+          '</div>'+
+        '</div>'+
+        (g.desc?'<div style="font-size:10px;color:var(--text2);margin-bottom:10px;line-height:1.4">'+g.desc+'</div>':'')+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">'+
+          '<div style="background:var(--bg2);border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:16px;font-weight:600;color:var(--text)">'+gKws.length+'</div>'+
+            '<div style="font-size:9px;color:var(--text2);margin-top:1px">Từ khóa</div>'+
+          '</div>'+
+          '<div style="background:var(--bg2);border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:16px;font-weight:600;color:'+posColor+'">'+( avgPos||'—')+'</div>'+
+            '<div style="font-size:9px;color:var(--text2);margin-top:1px">TB vị trí</div>'+
+          '</div>'+
+          '<div style="background:var(--bg2);border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:16px;font-weight:600;color:var(--text)">'+volStr+'</div>'+
+            '<div style="font-size:9px;color:var(--text2);margin-top:1px">Volume</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="border-top:1px solid var(--border);padding-top:10px">'+
+          (uniqueIssues.length?
+            '<div style="font-size:9px;color:var(--text2);margin-bottom:5px;font-weight:500">'+uniqueIssues.length+' VẤN ĐỀ CẦN XỬ LÝ</div>'+
+            '<div style="display:flex;gap:3px;flex-wrap:wrap">'+
+              uniqueIssues.slice(0,4).map(i=>'<span style="font-size:9px;padding:2px 7px;border-radius:5px;background:var(--amber-bg);color:var(--amber-text);white-space:nowrap">'+i+'</span>').join('')+
+              (uniqueIssues.length>4?'<span style="font-size:9px;color:var(--text3)">+'+( uniqueIssues.length-4)+'</span>':'')+
+            '</div>'
+          :'<div style="font-size:10px;color:var(--green)">✓ Không có vấn đề ghi nhận</div>')+
+        '</div>'+
+        '<div style="margin-top:10px;font-size:10px;color:'+color+';font-weight:500">Xem từ khóa →</div>'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 
