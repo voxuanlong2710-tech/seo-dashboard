@@ -202,6 +202,13 @@ const db=firebase.firestore();
     <button class="lock-btn" onclick="checkPass()">Đăng nhập</button>
     <div class="lock-err" id="lock-err"></div>
     <div class="lock-hint">Liên hệ quản trị viên nếu quên mật khẩu</div>
+    <div style="margin-top:14px;padding:10px;background:#f5f5f3;border-radius:8px;font-size:11px;color:#5f5e5a;text-align:left">
+      <div style="font-weight:500;margin-bottom:5px">Tài khoản mặc định:</div>
+      <div>👤 admin / 🔑 admin123</div>
+      <div>👤 seo / 🔑 seo123</div>
+      <div>👤 client / 🔑 client123</div>
+      <div style="margin-top:5px;color:#9c9a92;font-size:10px">Đổi mật khẩu trong file index.html → PASSWORDS</div>
+    </div>
   </div>
 </div>
 <div class="app" id="main-app" style="display:none">
@@ -542,23 +549,21 @@ const db=firebase.firestore();
 <script>
 // ── PASSWORD CONFIG — ĐỔI Ở ĐÂY ──
 const PASSWORDS = {
-  // username: {pass: 'mật khẩu', role: 'admin/member/viewer'}
-  'admin':       {pass: 'Admin@2026',  role: 'admin'},    // Quản trị viên
-  'phuongUyen':  {pass: 'Seo@2026',    role: 'member'},   // Thành viên SEO
-  'bichPham':    {pass: 'Seo@2026',    role: 'member'},   // Thành viên SEO
-  'client':      {pass: 'View@2026',   role: 'viewer'},   // Client xem báo cáo
+  // 'tên đăng nhập': { pass: 'mật khẩu', role: 'admin/member/viewer' }
+  'admin':      { pass: 'admin123',   role: 'admin'  },
+  'seo':        { pass: 'seo123',     role: 'member' },
+  'client':     { pass: 'client123',  role: 'viewer' },
 };
-// Đổi pass và thêm/xóa tài khoản tại đây
+// ← Đổi pass tại đây rồi upload lên GitHub
 
 function checkPass(){
-  const user=document.getElementById('lock-user').value.trim();
-  const pass=document.getElementById('lock-input').value.trim();
+  const user=(document.getElementById('lock-user').value||'').trim();
+  const pass=(document.getElementById('lock-input').value||'').trim();
   const err=document.getElementById('lock-err');
   if(!user||!pass){err.textContent='Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu';return;}
-  const match=Object.entries(PASSWORDS).find(([u,cfg])=>u===user&&cfg.pass===pass);
-  if(match){
-    const [uname,cfg]=match;
-    sessionStorage.setItem('seo_auth',uname);
+  const cfg=PASSWORDS[user];
+  if(cfg&&cfg.pass===pass){
+    sessionStorage.setItem('seo_auth',user);
     sessionStorage.setItem('seo_role',cfg.role);
     document.getElementById('lock-screen').style.display='none';
     document.getElementById('main-app').style.display='block';
@@ -567,7 +572,8 @@ function checkPass(){
   } else {
     err.textContent='❌ Tên đăng nhập hoặc mật khẩu không đúng';
     document.getElementById('lock-input').value='';
-    document.getElementById('lock-input').style.borderColor='var(--red)';
+    document.getElementById('lock-input').style.borderColor='#A32D2D';
+    document.getElementById('lock-input').focus();
     setTimeout(()=>document.getElementById('lock-input').style.borderColor='',1500);
   }
 }
@@ -579,7 +585,9 @@ function checkSession(){
     document.getElementById('main-app').style.display='block';
     initDashboard();
   } else {
-    setTimeout(()=>document.getElementById('lock-user').focus(),100);
+    sessionStorage.removeItem('seo_auth');
+    sessionStorage.removeItem('seo_role');
+    setTimeout(()=>{const el=document.getElementById('lock-user');if(el)el.focus();},100);
   }
 }
 
