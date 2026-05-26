@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>SEO Report VietnamBooking</title>
+<title>DASHBOARD SEO VIETNAMBOOKING</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -143,7 +143,7 @@ tr:hover td{background:var(--bg2)}
 <div id="lock-screen">
   <div class="lc">
     <div class="ll">🔒</div>
-    <div style="font-size:16px;font-weight:600;margin-bottom:4px">SEO Report VietnamBooking</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px">DASHBOARD SEO VIETNAMBOOKING</div>
     <div style="font-size:12px;color:var(--text2);margin-bottom:18px">Nhập thông tin để truy cập</div>
     <input class="li" type="text" id="lu" placeholder="Tên đăng nhập..." autocomplete="username"
       onkeydown="if(event.key==='Enter')document.getElementById('lp').focus()"/>
@@ -174,7 +174,7 @@ const db=firebase.firestore();
 <div class="app">
 
 <div class="hdr">
-  <div class="hdr-l"><div class="dot"></div><h1>SEO Report VietnamBooking</h1><span class="live">LIVE</span></div>
+  <div class="hdr-l"><div class="dot"></div><h1>DASHBOARD SEO VIETNAMBOOKING</h1><span class="live">LIVE</span></div>
   <div class="hdr-r">
     <span id="ubadge" style="font-size:10px;padding:2px 8px;border-radius:6px;background:var(--blue-bg);color:var(--blue-text)"></span>
     <span id="cur-date" style="font-size:12px;color:var(--text2)"></span>
@@ -190,25 +190,90 @@ const db=firebase.firestore();
   <button class="tab" onclick="switchTab('tasks',this)">✅ Công việc</button>
   <button class="tab" onclick="switchTab('content',this)">📝 Bài viết</button>
   <button class="tab" onclick="switchTab('backlinks',this)">🔗 Backlinks</button>
-  <button class="tab" onclick="switchTab('audit',this)">🛡️ Audit</button>
   <button class="tab" onclick="switchTab('report',this)">📋 Báo cáo</button>
 </div>
 
 <!-- OVERVIEW -->
 <div id="panel-overview" class="panel active">
-  <div class="kpi-grid" id="kpi-grid"><div class="loading">Đang tải...</div></div>
-  <div class="two-col">
-    <div class="card"><div class="card-hdr"><span class="card-title">Traffic organic (6 tháng)</span></div><div class="chart-wrap"><canvas id="trafficChart"></canvas></div></div>
-    <div class="card"><div class="card-hdr"><span class="card-title">Phân bố vị trí</span></div><div class="chart-wrap"><canvas id="posChart"></canvas></div></div>
+  <!-- KPI row -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px" id="ov-kpi-row">
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Task tuần này</div><div class="kpi-val" id="ov-total">—</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-done-sub">đang tải...</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Ưu tiên cao</div><div class="kpi-val dn" id="ov-high">—</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-high-sub">chưa bắt đầu</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Đang thực hiện</div><div class="kpi-val" style="color:var(--amber)" id="ov-doing">—</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-doing-sub">trong tuần</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Quá hạn</div><div class="kpi-val dn" id="ov-late">—</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-late-sub">cần xử lý ngay</div></div>
   </div>
-  <div class="two-col">
+
+  <!-- Member workload + Weekly table -->
+  <div style="display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:start">
+
+    <!-- Left: member workload -->
     <div>
-      <div class="card"><div class="card-hdr"><span class="card-title">⚡ Quick Wins</span><span class="pill pill-y" style="font-size:9px">vị trí 4–10</span></div><div id="quick-wins"><div class="loading">Đang tính...</div></div></div>
-      <div class="card"><div class="card-hdr"><span class="card-title">Tiến độ mục tiêu</span><button class="btn btn-xs" onclick="openKpiModal()">Sửa</button></div><div id="goals-list"><div class="loading">Đang tải...</div></div></div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-hdr"><span class="card-title">Khối lượng thành viên</span><span id="ov-week-range" style="font-size:10px;color:var(--text2)"></span></div>
+        <div id="ov-members"><div class="loading">Đang tải...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Phân bổ ưu tiên</span></div>
+        <div id="ov-priority"></div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:5px">Tiến độ hoàn thành</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:7px;background:var(--bg2);border-radius:4px"><div id="ov-prog-fill" style="height:100%;border-radius:4px;background:var(--green);width:0%;transition:width .4s"></div></div>
+            <span id="ov-prog-pct" style="font-size:13px;font-weight:500;color:var(--green)">0%</span>
+          </div>
+          <div id="ov-prog-label" style="font-size:10px;color:var(--text2);margin-top:3px">0 / 0 task hoàn thành</div>
+        </div>
+      </div>
     </div>
-    <div>
-      <div class="card"><div class="card-hdr"><span class="card-title">🏆 Đối thủ cạnh tranh</span><button class="btn btn-xs" onclick="openCompModal()">+ Thêm</button></div><div id="comp-list"><div class="loading">Đang tải...</div></div></div>
-      <div class="card"><div class="card-hdr"><span class="card-title">🕐 Activity Log</span></div><div id="activity-list"><div class="loading">Đang tải...</div></div></div>
+
+    <!-- Right: weekly task table -->
+    <div class="card">
+      <div class="card-hdr" style="flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-title">Bảng công việc tuần</span>
+          <span id="ov-today-badge" style="font-size:9px;padding:1px 6px;border-radius:4px;background:var(--green-bg);color:var(--green-text)">Tuần hiện tại</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn btn-sm" onclick="ovWeekPrev()">← Trước</button>
+          <span id="ov-wlabel" style="font-size:12px;font-weight:500;min-width:120px;text-align:center"></span>
+          <button class="btn btn-sm" onclick="ovWeekNext()">Tiếp →</button>
+          <button class="btn btn-sm" onclick="ovWeekToday()">Hôm nay</button>
+        </div>
+      </div>
+      <!-- Filter row -->
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <select id="ov-filter-pri" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)">
+          <option value="">Tất cả ưu tiên</option>
+          <option value="high">● Cao</option>
+          <option value="mid">● Vừa</option>
+          <option value="low">● Thấp</option>
+        </select>
+        <select id="ov-filter-owner" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)">
+          <option value="">Tất cả thành viên</option>
+        </select>
+        <select id="ov-filter-status" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)">
+          <option value="">Tất cả trạng thái</option>
+          <option value="todo">Chưa bắt đầu</option>
+          <option value="inprogress">Đang làm</option>
+          <option value="done">Hoàn thành</option>
+          <option value="late">Quá hạn</option>
+        </select>
+      </div>
+      <div class="tw">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr>
+            <th style="width:24px"></th>
+            <th>Công việc</th>
+            <th style="width:70px">Mức độ</th>
+            <th style="width:120px">Người đảm nhận</th>
+            <th style="width:90px">Danh mục</th>
+            <th style="width:80px">Hạn chót</th>
+            <th style="width:90px">Trạng thái</th>
+          </tr></thead>
+          <tbody id="ov-task-tbody"><tr><td colspan="7"><div class="loading">Đang tải...</div></td></tr></tbody>
+        </table>
+      </div>
+      <div id="ov-empty" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:12px">Không có task nào trong tuần này</div>
     </div>
   </div>
 </div>
@@ -631,7 +696,7 @@ function startApp(){
   if(b&&u)b.textContent='👤 '+u+(sessionStorage.getItem('_r')==='admin'?' ★':'');
   listenKpi();listenKeywords();listenGroups();listenTasks();
   listenArticles();listenBacklinks();listenAudit();listenActivity();listenCompetitors();
-  setTimeout(initCharts,200);
+  setTimeout(initCharts,200);setTimeout(renderOverview,300);
 }
 
 // ══ UTILS ══
@@ -918,6 +983,148 @@ async function seedGeo(){
   }
   if(cnt>0)await b2.commit();
   toast('✅ Đã tạo xong '+order+' nhóm!');
+}
+
+// ══ OVERVIEW ══
+let _ovWeekOffset=0;
+function getWeekRange(offset){
+  const now=new Date(),mon=new Date(now);
+  mon.setDate(now.getDate()-((now.getDay()+6)%7)+offset*7);mon.setHours(0,0,0,0);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+  return{start:mon,end:sun};
+}
+function inWeek(dateStr,offset){
+  if(!dateStr)return false;
+  const d=new Date(dateStr),r=getWeekRange(offset);
+  return d>=r.start&&d<=r.end;
+}
+function ovWeekPrev(){_ovWeekOffset--;renderOverview();}
+function ovWeekNext(){_ovWeekOffset++;renderOverview();}
+function ovWeekToday(){_ovWeekOffset=0;renderOverview();}
+function renderOverview(){
+  const tasks=window._tasks||[];
+  const range=getWeekRange(_ovWeekOffset);
+  const today=new Date();today.setHours(0,0,0,0);
+  const weekTasks=tasks.filter(t=>inWeek(t.deadline,_ovWeekOffset)||inWeek(t.startDate,_ovWeekOffset));
+
+  // Label
+  const fmt=d=>d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'});
+  const lb=document.getElementById('ov-wlabel');if(lb)lb.textContent=fmt(range.start)+' – '+fmt(range.end);
+  const isToday=_ovWeekOffset===0;
+  const tb=document.getElementById('ov-today-badge');if(tb){tb.textContent=isToday?'Tuần hiện tại':_ovWeekOffset<0?'Tuần cũ':'Tuần tới';tb.style.background=isToday?'var(--green-bg)':'var(--bg2)';tb.style.color=isToday?'var(--green-text)':'var(--text2)';}
+  const rng=document.getElementById('ov-week-range');if(rng)rng.textContent=fmt(range.start)+' – '+fmt(range.end);
+
+  // KPI
+  const doneT=weekTasks.filter(t=>t.done||t.status==='done').length;
+  const highT=weekTasks.filter(t=>t.priority==='high');
+  const highNotStarted=highT.filter(t=>!t.done&&t.status!=='done'&&t.status!=='inprogress').length;
+  const doingT=weekTasks.filter(t=>t.status==='inprogress'&&!(t.done||t.status==='done')).length;
+  const lateT=weekTasks.filter(t=>!(t.done||t.status==='done')&&t.deadline&&new Date(t.deadline)<today).length;
+  const el=id=>document.getElementById(id);
+  if(el('ov-total'))el('ov-total').textContent=weekTasks.length;
+  if(el('ov-done-sub'))el('ov-done-sub').textContent=doneT+' hoàn thành · '+(weekTasks.length-doneT)+' còn lại';
+  if(el('ov-high'))el('ov-high').textContent=highT.length;
+  if(el('ov-high-sub'))el('ov-high-sub').textContent=highNotStarted+' chưa bắt đầu';
+  if(el('ov-doing'))el('ov-doing').textContent=doingT;
+  if(el('ov-late'))el('ov-late').textContent=lateT;
+  if(el('ov-late-sub'))el('ov-late-sub').textContent=lateT?'cần xử lý ngay':'không có';
+
+  // Progress
+  const pct=weekTasks.length?Math.round(doneT/weekTasks.length*100):0;
+  if(el('ov-prog-fill'))el('ov-prog-fill').style.width=pct+'%';
+  if(el('ov-prog-pct'))el('ov-prog-pct').textContent=pct+'%';
+  if(el('ov-prog-label'))el('ov-prog-label').textContent=doneT+' / '+weekTasks.length+' task hoàn thành';
+
+  // Priority breakdown
+  const priData=[{key:'high',label:'Ưu tiên cao',color:'var(--red)'},{key:'mid',label:'Ưu tiên vừa',color:'var(--amber)'},{key:'low',label:'Ưu tiên thấp',color:'var(--green)'}];
+  const priHTML=priData.map(p=>{
+    const cnt=weekTasks.filter(t=>t.priority===p.key).length;
+    const pct2=weekTasks.length?Math.round(cnt/weekTasks.length*100):0;
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 9px;background:var(--bg2);border-radius:var(--r)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+      <div style="flex:1;font-size:12px;font-weight:500">${p.label}</div>
+      <div style="width:60px;height:4px;background:var(--bg3);border-radius:2px"><div style="height:100%;border-radius:2px;background:${p.color};width:${pct2}%"></div></div>
+      <span style="font-size:11px;font-weight:500;min-width:16px;text-align:right">${cnt}</span>
+    </div>`;
+  }).join('');
+  if(el('ov-priority'))el('ov-priority').innerHTML=priHTML;
+
+  // Member workload
+  const owners=[...new Set(weekTasks.map(t=>t.owner).filter(Boolean))].sort();
+  const avatarColors=['#534AB7','#1D9E75','#D85A30','#D4537E','#185FA5'];
+  const memberHTML=owners.length?owners.map((owner,i)=>{
+    const oTasks=weekTasks.filter(t=>t.owner===owner);
+    const oDone=oTasks.filter(t=>t.done||t.status==='done').length;
+    const color=avatarColors[i%avatarColors.length];
+    const initials=owner.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const pct3=oTasks.length?Math.round(oDone/oTasks.length*100):0;
+    return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${owner}</span>
+          <span style="font-size:10px;color:var(--text2);flex-shrink:0">${oDone}/${oTasks.length}</span>
+        </div>
+        <div style="height:4px;background:var(--bg2);border-radius:2px"><div style="height:100%;border-radius:2px;background:${color};width:${pct3}%"></div></div>
+      </div>
+    </div>`;
+  }).join('')+'<div style="font-size:10px;color:var(--text3);margin-top:4px">'+owners.length+' thành viên active</div>'
+  :'<div style="font-size:11px;color:var(--text3);text-align:center;padding:12px">Chưa có task nào được phân công</div>';
+  if(el('ov-members'))el('ov-members').innerHTML=memberHTML;
+
+  // Update owner filter
+  const oSel=el('ov-filter-owner');
+  if(oSel){const cur=oSel.value;oSel.innerHTML='<option value="">Tất cả thành viên</option>'+owners.map(o=>`<option value="${o}">${o}</option>`).join('');oSel.value=cur;}
+
+  renderOvTable();
+}
+function renderOvTable(){
+  const tasks=window._tasks||[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const priFilter=(document.getElementById('ov-filter-pri')||{value:''}).value;
+  const ownerFilter=(document.getElementById('ov-filter-owner')||{value:''}).value;
+  const statusFilter=(document.getElementById('ov-filter-status')||{value:''}).value;
+  const weekTasks=tasks.filter(t=>inWeek(t.deadline,_ovWeekOffset)||inWeek(t.startDate,_ovWeekOffset));
+  const filtered=weekTasks.filter(t=>{
+    if(priFilter&&t.priority!==priFilter)return false;
+    if(ownerFilter&&t.owner!==ownerFilter)return false;
+    if(statusFilter==='late'){return!(t.done||t.status==='done')&&t.deadline&&new Date(t.deadline)<today;}
+    if(statusFilter&&t.status!==statusFilter&&!(statusFilter==='done'&&t.done))return false;
+    return true;
+  }).sort((a,b)=>{
+    const po={high:0,mid:1,low:2};
+    return (po[a.priority]||1)-(po[b.priority]||1);
+  });
+  const tbody=document.getElementById('ov-task-tbody');
+  const empty=document.getElementById('ov-empty');
+  if(!filtered.length){if(tbody)tbody.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty)empty.style.display='none';
+  const priColor={high:'var(--red)',mid:'var(--amber)',low:'var(--green)'};
+  const priBg={high:'var(--red-bg)',mid:'var(--amber-bg)',low:'var(--green-bg)'};
+  const priLabel={high:'Cao',mid:'Vừa',low:'Thấp'};
+  const catLabel={technical:'Technical',content:'Content',link:'Link building',other:'Khác'};
+  const avatarColors=['#534AB7','#1D9E75','#D85A30','#D4537E','#185FA5'];
+  const owners=[...new Set((window._tasks||[]).map(t=>t.owner).filter(Boolean))].sort();
+  if(tbody)tbody.innerHTML=filtered.map(t=>{
+    const isDone=t.done||t.status==='done';
+    const isLate=!isDone&&t.deadline&&new Date(t.deadline)<today;
+    const isDoing=t.status==='inprogress';
+    const stDot=isDone?'var(--green)':isLate?'var(--red)':isDoing?'var(--amber)':'var(--text3)';
+    const stLabel=isDone?'Hoàn thành':isLate?'Quá hạn':isDoing?'Đang làm':'Chưa bắt đầu';
+    const stPill=isDone?'pill-g':isLate?'pill-r':isDoing?'pill-y':'';
+    const oi=owners.indexOf(t.owner);const oc=avatarColors[oi>=0?oi%avatarColors.length:0];
+    const initials=(t.owner||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const pri=t.priority||'mid';
+    return`<tr onclick="editTask('${t.id}')" style="cursor:pointer">
+      <td><div style="width:7px;height:7px;border-radius:50%;background:${stDot};margin:0 auto"></div></td>
+      <td style="font-weight:${isDone?'400':'500'};color:${isDone?'var(--text3)':'var(--text)'}">${t.title}${t.note?`<div style="font-size:10px;color:var(--text2);font-weight:400;margin-top:1px">${t.note}</div>`:''}</td>
+      <td><span style="font-size:10px;padding:2px 7px;border-radius:6px;font-weight:500;background:${priBg[pri]};color:${priColor[pri]}">${priLabel[pri]||pri}</span></td>
+      <td>${t.owner?`<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${oc}18;color:${oc};display:inline-flex;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:50%;background:${oc};display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:#fff">${initials}</span>${t.owner}</span>`:'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+      <td style="font-size:11px;color:var(--text2)">${catLabel[t.category]||t.category||'—'}</td>
+      <td style="font-size:11px;${isLate?'color:var(--red);font-weight:500':isDone?'color:var(--text3)':'color:var(--text2)'}">${t.deadline||'—'}</td>
+      <td>${stPill?`<span class="pill ${stPill}" style="font-size:9px">${stLabel}</span>`:`<span style="font-size:10px;color:var(--text3)">${stLabel}</span>`}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ══ KEYWORDS ══
