@@ -118,6 +118,14 @@ tr:hover td{background:var(--bg2)}
 .kb-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:9px;margin-bottom:6px}
 .kb-card-title{font-size:12px;line-height:1.4;margin-bottom:4px}
 .kb-meta{font-size:10px;color:var(--text3);display:flex;gap:6px;flex-wrap:wrap}
+.mem-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:border-color .15s}
+.mem-card:hover{border-color:var(--border2)}
+.mem-card.sel{border-color:var(--blue);border-width:1.5px}
+.mem-card-top{padding:16px 14px;text-align:center;border-bottom:1px solid var(--border)}
+.mem-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;margin:0 auto 10px}
+.mem-stats{display:grid;grid-template-columns:1fr 1fr}
+.mem-stat{padding:8px 10px;text-align:center;border-right:1px solid var(--border)}
+.mem-stat:last-child{border-right:none}
 .kw-link{cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:2px}
 .issue-chip{font-size:10px;padding:2px 7px;border-radius:12px;background:var(--amber-bg);color:var(--amber-text);display:inline-flex;align-items:center;gap:4px;margin:1px}
 .color-opt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s}
@@ -190,6 +198,8 @@ const db=firebase.firestore();
   <button class="tab" onclick="switchTab('tasks',this)">✅ Công việc</button>
   <button class="tab" onclick="switchTab('content',this)">📝 Bài viết</button>
   <button class="tab" onclick="switchTab('backlinks',this)">🔗 Backlinks</button>
+  <button class="tab" onclick="switchTab('members',this)">👥 Thành viên</button>
+  <button class="tab" onclick="switchTab('members',this)">👥 Thành viên</button>
   <button class="tab" onclick="switchTab('report',this)">📋 Báo cáo</button>
 </div>
 
@@ -409,6 +419,28 @@ const db=firebase.firestore();
   <div class="card"><div id="audit-list"><div class="loading">Đang tải...</div></div></div>
 </div>
 
+<!-- MEMBERS -->
+<div id="panel-members" class="panel">
+  <div class="sec-hdr">
+    <span style="font-size:12px;color:var(--text2)" id="mem-count-label">Đang tải...</span>
+    <button class="btn btn-p btn-sm" onclick="openMemberModal()">+ Thêm thành viên</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px" id="mem-grid"></div>
+  <div id="mem-detail"></div>
+</div>
+
+<!-- MEMBERS -->
+<div id="panel-members" class="panel">
+  <div class="sec-hdr">
+    <span style="font-size:13px;font-weight:500">Team SEO VietnamBooking</span>
+    <button class="btn btn-p btn-sm" onclick="openMemberModal()">+ Thêm thành viên</button>
+  </div>
+  <div id="members-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px">
+    <div class="loading">Đang tải...</div>
+  </div>
+  <div id="member-detail"></div>
+</div>
+
 <!-- REPORT -->
 <div id="panel-report" class="panel">
   <div class="report-controls" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
@@ -432,6 +464,33 @@ const db=firebase.firestore();
 </div>
 
 <!-- MODALS -->
+<div id="member-modal" style="display:none" class="modal-ov" onclick="closeModal('member-modal')"><div class="modal" onclick="event.stopPropagation()">
+  <h3 id="member-modal-title">Thêm thành viên</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="fg" style="grid-column:1/-1"><label>Họ và tên *</label><input id="f-mem-name" placeholder="VD: Nguyễn Phương Uyên"/></div>
+    <div class="fg"><label>Vai trò</label><input id="f-mem-role" placeholder="VD: Content SEO"/></div>
+    <div class="fg"><label>Email</label><input id="f-mem-email" placeholder="email@vietnambooking.com"/></div>
+    <div class="fg"><label>Số điện thoại</label><input id="f-mem-phone" placeholder="0912 345 678"/></div>
+    <div class="fg"><label>Ngày tham gia</label><input type="date" id="f-mem-joined"/></div>
+  </div>
+  <div class="fg"><label>Ghi chú / Phụ trách</label><input id="f-mem-note" placeholder="VD: Phụ trách content strategy và viết bài SEO"/></div>
+  <div class="fg"><label>Màu đại diện</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <div class="color-opt selected" data-color="#534AB7" onclick="pickMemColor(this)" style="background:#534AB7"></div>
+      <div class="color-opt" data-color="#1D9E75" onclick="pickMemColor(this)" style="background:#1D9E75"></div>
+      <div class="color-opt" data-color="#D85A30" onclick="pickMemColor(this)" style="background:#D85A30"></div>
+      <div class="color-opt" data-color="#D4537E" onclick="pickMemColor(this)" style="background:#D4537E"></div>
+      <div class="color-opt" data-color="#185FA5" onclick="pickMemColor(this)" style="background:#185FA5"></div>
+      <div class="color-opt" data-color="#BA7517" onclick="pickMemColor(this)" style="background:#BA7517"></div>
+      <div class="color-opt" data-color="#639922" onclick="pickMemColor(this)" style="background:#639922"></div>
+      <div class="color-opt" data-color="#888780" onclick="pickMemColor(this)" style="background:#888780"></div>
+    </div>
+    <input type="hidden" id="f-mem-color" value="#534AB7"/>
+  </div>
+  <input type="hidden" id="f-mem-id"/>
+  <div class="mf"><button class="btn" onclick="closeModal('member-modal')">Hủy</button><button class="btn btn-p" onclick="saveMember()">Lưu</button></div>
+</div></div>
+
 <div id="kpi-modal" style="display:none" class="modal-ov" onclick="closeModal('kpi-modal')"><div class="modal" onclick="event.stopPropagation()">
   <h3>Cập nhật KPI tháng này</h3>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -534,11 +593,16 @@ const db=firebase.firestore();
     <div class="fg"><label>Trạng thái</label><select id="f-task-status"><option value="todo">Cần làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option></select></div>
     <div class="fg"><label>Ngày bắt đầu</label><input type="date" id="f-task-start"/></div>
     <div class="fg"><label>Hạn chót</label><input type="date" id="f-task-due"/></div>
-    <div class="fg"><label>Người phụ trách</label><input id="f-task-owner"/></div>
+    <div class="fg"><label>Người phụ trách</label><input id="f-task-owner" list="mem-datalist" autocomplete="off"/><datalist id="mem-datalist"></datalist></div>
   </div>
   <div style="border-top:1px solid var(--border);margin:10px 0 10px;padding-top:10px">
     <div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Nội dung bài viết</div>
-    <div class="fg"><label>URL trang đích</label><input id="f-task-url" placeholder="https://vietnambooking.com/..."/></div>
+    <div class="fg"><label>URL trang đích</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="f-task-url" placeholder="https://vietnambooking.com/..." style="flex:1" oninput="const l=document.getElementById('f-task-url-link');if(l){if(this.value){l.href=this.value;l.style.display='inline';}else l.style.display='none';}"/>
+          <a id="f-task-url-link" href="#" target="_blank" style="display:none;color:var(--blue);font-size:11px;white-space:nowrap">Mở →</a>
+        </div>
+      </div>
     <div class="fg"><label>Từ khóa chính</label><input id="f-task-kw-main" placeholder="VD: vé máy bay đi Mỹ"/></div>
     <div class="fg"><label>Từ khóa phụ</label><input id="f-task-kw-sub" placeholder="VD: vé máy bay Hà Nội New York, giá vé đi Mỹ..."/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -714,7 +778,7 @@ function startApp(){
   document.getElementById('cur-date').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
   const u=sessionStorage.getItem('_u'),b=document.getElementById('ubadge');
   if(b&&u)b.textContent='👤 '+u+(sessionStorage.getItem('_r')==='admin'?' ★':'');
-  listenKpi();listenKeywords();listenGroups();listenTasks();
+  listenKpi();listenKeywords();listenGroups();listenTasks();listenMembers();listenMembers();
   listenArticles();listenBacklinks();listenAudit();listenActivity();listenCompetitors();
   setTimeout(initCharts,200);setTimeout(renderOverview,300);
 }
@@ -1147,6 +1211,186 @@ function renderOvTable(){
   }).join('');
 }
 
+
+// ══ MEMBERS ══
+let _selMember=null;
+
+function listenMembers(){
+  db.collection('members').orderBy('createdAt','asc').onSnapshot(snap=>{
+    window._members=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderMembers();
+    if(_selMember)renderMemberDetail(_selMember);
+  },()=>{
+    db.collection('members').onSnapshot(snap=>{
+      window._members=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderMembers();
+    });
+  });
+}
+
+function renderMembers(){
+  const members=window._members||[];
+  const tasks=window._tasks||[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const lbl=document.getElementById('mem-count-label');
+  if(lbl)lbl.textContent=members.length+' thành viên';
+  const grid=document.getElementById('mem-grid');
+  if(!grid)return;
+  if(!members.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);font-size:13px">Chưa có thành viên. Nhấn "+ Thêm thành viên" để bắt đầu.</div>`;
+    return;
+  }
+  grid.innerHTML=members.map(m=>{
+    const mTasks=tasks.filter(t=>t.owner===m.name);
+    const done=mTasks.filter(t=>t.done||t.status==='done').length;
+    const pct=mTasks.length?Math.round(done/mTasks.length*100):0;
+    const initials=(m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color=m.color||'#534AB7';
+    const isSelected=_selMember===m.id;
+    return`<div onclick="selectMember('${m.id}')" style="background:var(--bg);border:${isSelected?'1.5px solid '+color:'1px solid var(--border)'};border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:border-color .15s">
+      <div style="padding:16px 14px;text-align:center;border-bottom:1px solid var(--border)">
+        <div style="width:52px;height:52px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;color:#fff;margin:0 auto 10px">${initials}</div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:2px">${m.name}</div>
+        <div style="font-size:11px;color:var(--text2)">${m.role||'—'}</div>
+        ${m.dept?`<div style="font-size:10px;color:var(--text3);margin-top:1px">${m.dept}</div>`:''}
+        <div style="margin-top:8px;height:4px;background:var(--bg2);border-radius:2px">
+          <div style="height:100%;border-radius:2px;background:${color};width:${pct}%;transition:width .4s"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px">${done}/${mTasks.length} task xong</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:8px 10px;text-align:center;border-right:1px solid var(--border)">
+          <div style="font-size:16px;font-weight:500">${mTasks.length}</div>
+          <div style="font-size:9px;color:var(--text2)">Task</div>
+        </div>
+        <div style="padding:8px 10px;text-align:center">
+          <div style="font-size:16px;font-weight:500;color:${color}">${pct}%</div>
+          <div style="font-size:9px;color:var(--text2)">Hoàn thành</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectMember(id){
+  _selMember=_selMember===id?null:id;
+  renderMembers();
+  if(!_selMember){document.getElementById('mem-detail').innerHTML='';return;}
+  renderMemberDetail(_selMember);
+}
+
+function renderMemberDetail(id){
+  const m=(window._members||[]).find(x=>x.id===id);if(!m)return;
+  const tasks=window._tasks||[];
+  const mTasks=tasks.filter(t=>t.owner===m.name);
+  const today=new Date();today.setHours(0,0,0,0);
+  const done=mTasks.filter(t=>t.done||t.status==='done').length;
+  const doing=mTasks.filter(t=>t.status==='inprogress'&&!(t.done||t.status==='done')).length;
+  const late=mTasks.filter(t=>!(t.done||t.status==='done')&&t.deadline&&new Date(t.deadline)<today).length;
+  const color=m.color||'#534AB7';
+  const initials=(m.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const priColor={high:'var(--red)',mid:'var(--amber)',low:'var(--green)'};
+  const priBg={high:'var(--red-bg)',mid:'var(--amber-bg)',low:'var(--green-bg)'};
+  const priLabel={high:'Cao',mid:'Vừa',low:'Thấp'};
+  const stDot=t=>t.done||t.status==='done'?'var(--green)':t.deadline&&new Date(t.deadline)<today&&!(t.done||t.status==='done')?'var(--red)':t.status==='inprogress'?'var(--amber)':'var(--text3)';
+  const stLabel=t=>t.done||t.status==='done'?'Xong':t.status==='inprogress'?'Đang làm':t.deadline&&new Date(t.deadline)<today?'Trễ':'Chưa';
+  const stPill=t=>t.done||t.status==='done'?'pill-g':t.status==='inprogress'?'pill-y':t.deadline&&new Date(t.deadline)<today?'pill-r':'';
+  const el=document.getElementById('mem-detail');
+  el.innerHTML=`<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:16px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+      <div style="width:56px;height:56px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500;color:#fff;flex-shrink:0">${initials}</div>
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:16px;font-weight:500;margin-bottom:2px">${m.name}</div>
+        <div style="font-size:12px;color:var(--text2)">${m.role||''}${m.dept?' · '+m.dept:''}</div>
+        ${m.note?`<div style="font-size:11px;color:var(--text2);margin-top:4px">${m.note}</div>`:''}
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button class="btn btn-xs" onclick="openMemberModal('${id}')">✏️ Sửa</button>
+        <button class="btn btn-xs" style="color:var(--red)" onclick="deleteMember('${id}')">🗑 Xóa</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">${done}</div><div style="font-size:10px;color:var(--text2)">Đã hoàn thành</div></div>
+      <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">${doing}</div><div style="font-size:10px;color:var(--text2)">Đang thực hiện</div></div>
+      <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:${late?'var(--red)':'var(--text)'}">${late}</div><div style="font-size:10px;color:var(--text2)">Quá hạn</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px">
+      ${[['Email',m.email?`<a href="mailto:${m.email}" style="color:var(--blue);text-decoration:none">${m.email}</a>`:m.email||'—'],['Điện thoại',m.phone||'—'],['Ngày tham gia',m.joined||'—'],['Slack / Zalo',m.contact||'—']].map(([l,v],i)=>`<div style="padding:9px 12px;border-bottom:${i<2?'1px solid var(--border)':'none'};border-right:${i%2===0?'1px solid var(--border)':'none'}"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">${l}</div><div style="font-size:12px;font-weight:500">${v}</div></div>`).join('')}
+    </div>
+    <div style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tất cả task (${mTasks.length})</div>
+    ${mTasks.length?`<div>${mTasks.slice(0,10).map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;cursor:pointer" onclick="editTask('${t.id}')">
+      <div style="width:7px;height:7px;border-radius:50%;background:${stDot(t)};flex-shrink:0"></div>
+      <span style="flex:1;${t.done||t.status==='done'?'color:var(--text3)':''}">${t.title}</span>
+      <span style="font-size:9px;padding:1px 6px;border-radius:4px;background:${priBg[t.priority||'mid']};color:${priColor[t.priority||'mid']}">${priLabel[t.priority||'mid']||'—'}</span>
+      <span class="pill ${stPill(t)}" style="font-size:9px">${stLabel(t)}</span>
+      ${t.deadline?`<span style="font-size:10px;color:var(--text2)">${t.deadline}</span>`:''}
+    </div>`).join('')}${mTasks.length>10?`<div style="text-align:center;padding:8px;font-size:11px;color:var(--text2)">+${mTasks.length-10} task khác</div>`:''}</div>`
+    :`<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Chưa có task nào được giao</div>`}
+  </div>`;
+}
+
+function openMemberModal(id){
+  document.getElementById('mem-modal-title').textContent=id?'Sửa thành viên':'Thêm thành viên';
+  document.getElementById('f-mem-id').value=id||'';
+  if(id){
+    const m=(window._members||[]).find(x=>x.id===id);
+    if(m){
+      document.getElementById('f-mem-name').value=m.name||'';
+      document.getElementById('f-mem-role').value=m.role||'';
+      document.getElementById('f-mem-dept').value=m.dept||'';
+      document.getElementById('f-mem-email').value=m.email||'';
+      document.getElementById('f-mem-phone').value=m.phone||'';
+      document.getElementById('f-mem-joined').value=m.joined||'';
+      document.getElementById('f-mem-contact').value=m.contact||'';
+      document.getElementById('f-mem-note').value=m.note||'';
+      document.getElementById('f-mem-color').value=m.color||'#534AB7';
+      document.querySelectorAll('#member-modal .color-opt').forEach(o=>o.classList.toggle('selected',o.dataset.color===(m.color||'#534AB7')));
+    }
+  } else {
+    ['f-mem-name','f-mem-role','f-mem-dept','f-mem-email','f-mem-phone','f-mem-joined','f-mem-contact','f-mem-note'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('f-mem-color').value='#534AB7';
+    document.querySelectorAll('#member-modal .color-opt').forEach((o,i)=>o.classList.toggle('selected',i===0));
+  }
+  showModal('member-modal');
+}
+function pickMemColor(el){
+  document.querySelectorAll('#member-modal .color-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('f-mem-color').value=el.dataset.color;
+}
+function saveMember(){
+  const name=document.getElementById('f-mem-name').value.trim();
+  if(!name){alert('Nhập tên thành viên');return;}
+  const id=document.getElementById('f-mem-id').value;
+  const data={
+    name,
+    role:document.getElementById('f-mem-role').value.trim(),
+    dept:document.getElementById('f-mem-dept').value.trim(),
+    email:document.getElementById('f-mem-email').value.trim(),
+    phone:document.getElementById('f-mem-phone').value.trim(),
+    joined:document.getElementById('f-mem-joined').value,
+    contact:document.getElementById('f-mem-contact').value.trim(),
+    note:document.getElementById('f-mem-note').value.trim(),
+    color:document.getElementById('f-mem-color').value,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref=id?db.collection('members').doc(id):db.collection('members').doc();
+  if(!id)data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+  ref.set(data,{merge:true}).then(()=>{
+    closeModal('member-modal');
+    toast((id?'Đã cập nhật':'Đã thêm')+' thành viên: '+name+' ✓');
+  });
+}
+function deleteMember(id){
+  const m=(window._members||[]).find(x=>x.id===id);
+  if(!confirm('Xóa thành viên "'+m?.name+'"? Task của họ vẫn giữ nguyên.'))return;
+  db.collection('members').doc(id).delete().then(()=>{
+    _selMember=null;
+    document.getElementById('mem-detail').innerHTML='';
+    toast('Đã xóa thành viên');
+  });
+}
+
 // ══ KEYWORDS ══
 function listenKeywords(){
   db.collection('keywords').orderBy('createdAt','desc').onSnapshot(snap=>{
@@ -1275,8 +1519,11 @@ function listenTasks(){
 function updateOwnerFilter(){
   const sel=document.getElementById('task-owner-filter');if(!sel)return;
   const cur=sel.value;
-  const owners=[...new Set((window._tasks||[]).map(t=>t.owner).filter(Boolean))].sort();
+  const owners=[...new Set([...(window._tasks||[]).map(t=>t.owner).filter(Boolean),...(window._members||[]).map(m=>m.name)])].sort();
   sel.innerHTML='<option value="">👤 Tất cả</option>'+owners.map(o=>`<option value="${o}">${o}</option>`).join('');
+  // Update datalist
+  const dl=document.getElementById('mem-datalist');
+  if(dl)dl.innerHTML=(window._members||[]).map(m=>`<option value="${m.name}">`).join('');
   if(cur)sel.value=cur;
 }
 function filterTask(f,el){
@@ -1338,7 +1585,7 @@ function renderKanban(){
 function quickStatus(id,status){db.collection('tasks').doc(id).update({status,done:status==='done'});}
 function toggleTask(id,cur){const d=!cur;db.collection('tasks').doc(id).update({done:d,status:d?'done':'todo'}).then(()=>{if(d)logActivity('task_done','Hoàn thành task');toast(d?'✓ Xong!':'Đã bỏ');});}
 function openTaskModal(){
-  ['f-task','f-task-note','f-task-start','f-task-due','f-task-owner','f-task-url','f-task-kw-main','f-task-kw-sub','f-task-doc','f-task-canva'].forEach(i=>document.getElementById(i).value='');['f-task-doc-link','f-task-canva-link'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none';});
+  ['f-task','f-task-note','f-task-start','f-task-due','f-task-owner','f-task-url','f-task-kw-main','f-task-kw-sub','f-task-doc','f-task-canva'].forEach(i=>document.getElementById(i).value='');['f-task-doc-link','f-task-canva-link','f-task-url-link'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none';});
   document.getElementById('f-task-edit-id').value='';
   document.getElementById('task-modal-title').textContent='Thêm task SEO';
   document.getElementById('f-task-cat').value='technical';
@@ -1359,7 +1606,7 @@ function editTask(id){
   document.getElementById('f-task-owner').value=t.owner||'';
   document.getElementById('task-modal-title').textContent='Sửa task';
   // New fields
-  document.getElementById('f-task-url').value=t.url||'';
+  document.getElementById('f-task-url').value=t.url||'';const ul=document.getElementById('f-task-url-link');if(ul){if(t.url){ul.href=t.url;ul.style.display='inline';}else ul.style.display='none';}document.getElementById('f-task-url').oninput=function(){const l=document.getElementById('f-task-url-link');if(l){if(this.value){l.href=this.value;l.style.display='inline';}else l.style.display='none';}};
   document.getElementById('f-task-kw-main').value=t.kwMain||'';
   document.getElementById('f-task-kw-sub').value=t.kwSub||'';
   document.getElementById('f-task-doc').value=t.docLink||'';
@@ -1607,6 +1854,179 @@ function renderActivity(items){
   }).join('');
 }
 
+// ══ MEMBERS ══
+let _selMemberId=null;
+function listenMembers(){
+  db.collection('members').orderBy('createdAt','asc').onSnapshot(snap=>{
+    window._members=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderMembers();
+  });
+}
+function renderMembers(){
+  const members=window._members||[];
+  const tasks=window._tasks||[];
+  const grid=document.getElementById('members-grid');if(!grid)return;
+  if(!members.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">Chưa có thành viên nào. Nhấn "+ Thêm thành viên" để bắt đầu.</div>`;
+    return;
+  }
+  // Get this week's tasks per member
+  const today=new Date();today.setHours(0,0,0,0);
+  function getWeekTasks(ownerName){
+    const now=new Date(),mon=new Date(now);
+    mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+    return tasks.filter(t=>(t.owner===ownerName)&&(
+      (t.deadline&&new Date(t.deadline)>=mon&&new Date(t.deadline)<=sun)||
+      (t.startDate&&new Date(t.startDate)>=mon&&new Date(t.startDate)<=sun)
+    ));
+  }
+  grid.innerHTML=members.map(m=>{
+    const mTasks=getWeekTasks(m.name);
+    const done=mTasks.filter(t=>t.done||t.status==='done').length;
+    const pct=mTasks.length?Math.round(done/mTasks.length*100):0;
+    const initials=m.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color=m.color||'#534AB7';
+    return `<div class="mem-card ${_selMemberId===m.id?'sel':''}" onclick="selectMember('${m.id}')">
+      <div class="mem-card-top">
+        <div class="mem-avatar" style="background:${color}">${initials}</div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:3px">${m.name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${m.role||'—'}</div>
+        <div style="height:4px;background:var(--bg2);border-radius:2px;margin-bottom:4px">
+          <div style="height:100%;border-radius:2px;background:${color};width:${pct}%"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text2)">${done}/${mTasks.length} task tuần này</div>
+      </div>
+      <div class="mem-stats">
+        <div class="mem-stat"><div style="font-size:16px;font-weight:500">${mTasks.length}</div><div style="font-size:9px;color:var(--text2);margin-top:1px">Task tuần</div></div>
+        <div class="mem-stat"><div style="font-size:16px;font-weight:500;color:${color}">${pct}%</div><div style="font-size:9px;color:var(--text2);margin-top:1px">Hoàn thành</div></div>
+      </div>
+    </div>`;
+  }).join('');
+  // Re-render detail if a member is selected
+  if(_selMemberId)renderMemberDetail(_selMemberId);
+}
+function selectMember(id){
+  _selMemberId=_selMemberId===id?null:id;
+  renderMembers();
+  if(!_selMemberId){document.getElementById('member-detail').innerHTML='';return;}
+  renderMemberDetail(_selMemberId);
+}
+function renderMemberDetail(id){
+  const m=(window._members||[]).find(x=>x.id===id);if(!m)return;
+  const tasks=window._tasks||[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const now=new Date(),mon=new Date(now);
+  mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+  const mTasks=tasks.filter(t=>(t.owner===m.name)&&(
+    (t.deadline&&new Date(t.deadline)>=mon&&new Date(t.deadline)<=sun)||
+    (t.startDate&&new Date(t.startDate)>=mon&&new Date(t.startDate)<=sun)
+  ));
+  const allTasks=tasks.filter(t=>t.owner===m.name);
+  const done=mTasks.filter(t=>t.done||t.status==='done').length;
+  const doing=mTasks.filter(t=>t.status==='inprogress').length;
+  const late=mTasks.filter(t=>!(t.done||t.status==='done')&&t.deadline&&new Date(t.deadline)<today).length;
+  const color=m.color||'#534AB7';
+  const initials=m.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const priColor={high:'var(--red)',mid:'var(--amber)',low:'var(--green)'};
+  const priBg={high:'var(--red-bg)',mid:'var(--amber-bg)',low:'var(--green-bg)'};
+  const priLabel={high:'Cao',mid:'Vừa',low:'Thấp'};
+  const priText={high:'var(--red-text)',mid:'var(--amber-text)',low:'var(--green-text)'};
+  document.getElementById('member-detail').innerHTML=`
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+        <div style="width:56px;height:56px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:#fff;flex-shrink:0">${initials}</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:500;margin-bottom:3px">${m.name}</div>
+          <div style="font-size:12px;color:var(--text2)">${m.role||'—'} ${m.joined?'· Từ '+m.joined:''}</div>
+          ${m.note?`<div style="font-size:11px;color:var(--text2);margin-top:5px;padding:6px 9px;background:var(--bg2);border-radius:var(--r)">${m.note}</div>`:''}
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button class="btn btn-xs" onclick="openMemberModal('${id}')">✏️ Sửa</button>
+          <button class="btn btn-xs" onclick="deleteMember('${id}')" style="color:var(--red)">🗑 Xóa</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">${done}</div><div style="font-size:10px;color:var(--text2)">Hoàn thành tuần</div></div>
+        <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">${doing}</div><div style="font-size:10px;color:var(--text2)">Đang thực hiện</div></div>
+        <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:${late?'var(--red)':'var(--text)'}">${late}</div><div style="font-size:10px;color:var(--text2)">Quá hạn</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px">
+        ${[['Email',m.email?`<a href="mailto:${m.email}" style="color:var(--blue)">${m.email}</a>`:'—'],['Điện thoại',m.phone||'—'],['Vai trò',m.role||'—'],['Ngày tham gia',m.joined||'—']].map(([l,v],i)=>
+          `<div style="padding:9px 12px;border-bottom:${i<2?'1px solid var(--border)':'none'};border-right:${i%2===0?'1px solid var(--border)':'none'}">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:3px">${l}</div>
+            <div style="font-size:12px;font-weight:500">${v}</div>
+          </div>`
+        ).join('')}
+      </div>
+
+      <div style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Task tuần này (${mTasks.length})</div>
+      ${mTasks.length?mTasks.map(t=>{
+        const isDone=t.done||t.status==='done';
+        const isLate=!isDone&&t.deadline&&new Date(t.deadline)<today;
+        const isDoing=t.status==='inprogress';
+        const dot=isDone?'var(--green)':isLate?'var(--red)':isDoing?'var(--amber)':'var(--text3)';
+        const pri=t.priority||'mid';
+        return`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;cursor:pointer" onclick="editTask('${t.id}')">
+          <div style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0"></div>
+          <span style="flex:1;${isDone?'text-decoration:line-through;color:var(--text2)':''}">${t.title}</span>
+          <span style="font-size:10px;padding:1px 6px;border-radius:5px;background:${priBg[pri]};color:${priText[pri]}">${priLabel[pri]}</span>
+          <span style="font-size:10px;padding:1px 6px;border-radius:5px;background:${isDone?'var(--green-bg)':isLate?'var(--red-bg)':isDoing?'var(--amber-bg)':'var(--bg2)'};color:${isDone?'var(--green-text)':isLate?'var(--red-text)':isDoing?'var(--amber-text)':'var(--text2)'}">${isDone?'Xong':isLate?'Trễ':isDoing?'Đang làm':'Chưa'}</span>
+        </div>`;
+      }).join('')
+      :`<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Không có task nào tuần này</div>`}
+      ${allTasks.length>0?`<div style="margin-top:8px;font-size:11px;color:var(--text2)">Tổng tất cả task đã có: ${allTasks.length} • ${allTasks.filter(t=>t.done||t.status==='done').length} đã hoàn thành</div>`:''}
+    </div>`;
+}
+function openMemberModal(id){
+  document.getElementById('member-modal-title').textContent=id?'Sửa thành viên':'Thêm thành viên';
+  document.getElementById('f-mem-id').value=id||'';
+  if(id){
+    const m=(window._members||[]).find(x=>x.id===id);
+    if(m){
+      document.getElementById('f-mem-name').value=m.name||'';
+      document.getElementById('f-mem-role').value=m.role||'';
+      document.getElementById('f-mem-email').value=m.email||'';
+      document.getElementById('f-mem-phone').value=m.phone||'';
+      document.getElementById('f-mem-joined').value=m.joined||'';
+      document.getElementById('f-mem-note').value=m.note||'';
+      document.getElementById('f-mem-color').value=m.color||'#534AB7';
+      document.querySelectorAll('#member-modal .color-opt').forEach(o=>o.classList.toggle('selected',o.dataset.color===(m.color||'#534AB7')));
+    }
+  } else {
+    ['f-mem-name','f-mem-role','f-mem-email','f-mem-phone','f-mem-note'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('f-mem-joined').value=new Date().toISOString().split('T')[0];
+    document.getElementById('f-mem-color').value='#534AB7';
+    document.querySelectorAll('#member-modal .color-opt').forEach((o,i)=>o.classList.toggle('selected',i===0));
+  }
+  showModal('member-modal');
+}
+function pickMemColor(el){
+  document.querySelectorAll('#member-modal .color-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('f-mem-color').value=el.dataset.color;
+}
+function saveMember(){
+  const name=document.getElementById('f-mem-name').value.trim();if(!name){alert('Nhập họ và tên');return;}
+  const id=document.getElementById('f-mem-id').value;
+  const data={name,role:document.getElementById('f-mem-role').value.trim(),email:document.getElementById('f-mem-email').value.trim(),phone:document.getElementById('f-mem-phone').value.trim(),joined:document.getElementById('f-mem-joined').value,note:document.getElementById('f-mem-note').value.trim(),color:document.getElementById('f-mem-color').value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  const ref=id?db.collection('members').doc(id):db.collection('members').doc();
+  ref.set({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).then(()=>{
+    closeModal('member-modal');toast(id?'Đã cập nhật thành viên ✓':'Đã thêm thành viên ✓');
+  });
+}
+function deleteMember(id){
+  if(!confirm('Xóa thành viên này? Task của họ sẽ không bị xóa.'))return;
+  db.collection('members').doc(id).delete().then(()=>{
+    _selMemberId=null;
+    document.getElementById('member-detail').innerHTML='';
+    toast('Đã xóa thành viên');
+  });
+}
+
 // ══ REPORT ══
 function buildReport(){
   const agency=document.getElementById('r-agency').value||'Agency SEO';
@@ -1643,5 +2063,35 @@ async function manualSync(){
   finally{btn.textContent='🔄 Sync GSC/GA4';btn.disabled=false;}
 }
 </script>
+
+<div id="member-modal" style="display:none" class="modal-ov" onclick="closeModal('member-modal')"><div class="modal" onclick="event.stopPropagation()">
+  <h3 id="mem-modal-title">Thêm thành viên</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="fg" style="grid-column:1/-1"><label>Tên *</label><input id="f-mem-name" placeholder="Nguyễn Văn A"/></div>
+    <div class="fg"><label>Vai trò</label><input id="f-mem-role" placeholder="Content SEO"/></div>
+    <div class="fg"><label>Phòng ban</label><input id="f-mem-dept" placeholder="SEO Team"/></div>
+    <div class="fg"><label>Email</label><input id="f-mem-email" type="email" placeholder="email@vietnambooking.com"/></div>
+    <div class="fg"><label>Số điện thoại</label><input id="f-mem-phone" placeholder="09xx xxx xxx"/></div>
+    <div class="fg"><label>Ngày tham gia</label><input type="date" id="f-mem-joined"/></div>
+    <div class="fg"><label>Link Slack / Zalo</label><input id="f-mem-contact" placeholder="@username hoặc số Zalo"/></div>
+  </div>
+  <div class="fg"><label>Ghi chú / Mô tả công việc</label><textarea id="f-mem-note" rows="2" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);resize:vertical"></textarea></div>
+  <div class="fg"><label>Màu nhận diện</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <div class="color-opt selected" data-color="#534AB7" onclick="pickMemColor(this)" style="background:#534AB7"></div>
+      <div class="color-opt" data-color="#1D9E75" onclick="pickMemColor(this)" style="background:#1D9E75"></div>
+      <div class="color-opt" data-color="#D85A30" onclick="pickMemColor(this)" style="background:#D85A30"></div>
+      <div class="color-opt" data-color="#D4537E" onclick="pickMemColor(this)" style="background:#D4537E"></div>
+      <div class="color-opt" data-color="#185FA5" onclick="pickMemColor(this)" style="background:#185FA5"></div>
+      <div class="color-opt" data-color="#BA7517" onclick="pickMemColor(this)" style="background:#BA7517"></div>
+      <div class="color-opt" data-color="#639922" onclick="pickMemColor(this)" style="background:#639922"></div>
+      <div class="color-opt" data-color="#888780" onclick="pickMemColor(this)" style="background:#888780"></div>
+    </div>
+    <input type="hidden" id="f-mem-color" value="#534AB7"/>
+  </div>
+  <input type="hidden" id="f-mem-id"/>
+  <div class="mf"><button class="btn" onclick="closeModal('member-modal')">Hủy</button><button class="btn btn-p" onclick="saveMember()">Lưu</button></div>
+</div></div>
+
 </body>
 </html>
