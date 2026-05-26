@@ -611,6 +611,154 @@ let _ttT=null;
 function showTip(e,el){clearTimeout(_ttT);const ids=JSON.parse(decodeURIComponent(el.dataset.tasks||'[]'));if(!ids.length)return;const tasks=(window._tasks||[]).filter(t=>ids.includes(t.id));const tt=document.getElementById('task-tip');if(!tt)return;const d=new Date(el.dataset.date||'');const dn=['CN','T2','T3','T4','T5','T6','T7'];document.getElementById('tt-d').textContent=dn[d.getDay()]+' '+d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})+' — '+tasks.length+' task';const today=new Date();today.setHours(0,0,0,0);document.getElementById('tt-i').innerHTML=tasks.map(t=>{const done=t.done||t.status==='done',late=!done&&t.deadline&&new Date(t.deadline)<today,doing=t.status==='inprogress';const dot=done?'#1D9E75':late?'#A32D2D':doing?'#BA7517':'#888780';return`<div style="display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:0.5px solid var(--border);cursor:pointer" onclick="editTask('${t.id}');hideTip()"><div style="width:7px;height:7px;border-radius:50%;background:${dot};margin-top:4px;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:12px">${t.title}</div><div style="font-size:10px;color:var(--text3)">${t.owner?'👤 '+t.owner+' ':''}${t.deadline?'🏁 '+t.deadline:''}</div></div><span style="font-size:10px;padding:1px 5px;border-radius:4px;background:${done?'var(--green-bg)':late?'var(--red-bg)':doing?'var(--amber-bg)':'var(--bg2)'};color:${done?'var(--green-text)':late?'var(--red-text)':doing?'var(--amber-text)':'var(--text2)'};flex-shrink:0">${done?'Xong':late?'Trễ':doing?'Đang':'Chưa'}</span></div>`;}).join('');tt.style.display='block';const r=el.getBoundingClientRect(),tw=tt.offsetWidth||280,th=tt.offsetHeight||180,vw=window.innerWidth,vh=window.innerHeight;let left=r.left,top=r.bottom+6;if(left+tw>vw-8)left=vw-tw-8;if(left<8)left=8;if(top+th>vh-8)top=r.top-th-6;tt.style.left=left+'px';tt.style.top=top+'px';}
 function hideTip(e){const tt=document.getElementById('task-tip');if(e&&tt&&e.relatedTarget&&(tt===e.relatedTarget||tt.contains(e.relatedTarget)))return;_ttT=setTimeout(()=>{if(tt)tt.style.display='none';},200);}
 
+
+// ── SVC FILTER ──
+let svcFilter='';
+function filterSvc(f,el){
+  svcFilter=f;
+  document.querySelectorAll('#svc-flt .fb').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderKeywords();
+}
+
+// ── SERVICE MANAGEMENT ──
+function openSvcModal(){
+  const groups=window._groups||[];
+  const svcs=groups.filter(g=>g.type==='service');
+  const keys=[...new Set(svcs.map(g=>g.serviceType))];
+  const defaultKeys=['flight','travel','hotel','visa','combo'];
+  const allKeys=[...new Set([...defaultKeys,...keys])];
+  const names={flight:'Vé máy bay',travel:'Du lịch',hotel:'Khách sạn',visa:'Visa',combo:'Combo'};
+  document.getElementById('svc-list').innerHTML=allKeys.map(k=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border)">
+      <span style="font-size:13px">${names[k]||k.charAt(0).toUpperCase()+k.slice(1)}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:var(--text2)">${svcs.filter(s=>s.serviceType===k).length} nhóm</span>
+        ${defaultKeys.includes(k)?'<span style="font-size:10px;color:var(--text3)">Mặc định</span>':
+          `<button class="btn btn-xs" onclick="removeSvcType('${k}')">Xóa</button>`}
+      </div>
+    </div>`).join('');
+  showModal('svc-modal');
+}
+async function addSvcType(){
+  const name=document.getElementById('f-svc-name').value.trim();
+  if(!name){alert('Nhập tên dịch vụ');return;}
+  const key=name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  const locs=(window._groups||[]).filter(g=>g.type==='location'||!g.type);
+  if(!locs.length){alert('Chưa có địa điểm nào');return;}
+  const ts=firebase.firestore.FieldValue.serverTimestamp();
+  let batch=db.batch();let cnt=0;
+  locs.forEach((loc,i)=>{
+    const ref=db.collection('kwgroups').doc();
+    batch.set(ref,{name,location:loc.name,region:loc.region,color:loc.color,type:'service',serviceType:key,parentId:loc.id,order:(loc.order||0)+0.9+i*0.001,createdAt:ts});
+    cnt++;if(cnt===499){batch.commit();batch=db.batch();cnt=0;}
+  });
+  if(cnt>0)await batch.commit();
+  document.getElementById('f-svc-name').value='';
+  toast('✅ Đã thêm dịch vụ "'+name+'" cho '+locs.length+' địa điểm!');
+  openSvcModal();
+}
+async function removeSvcType(key){
+  if(!confirm('Xóa dịch vụ này khỏi tất cả địa điểm?'))return;
+  const toDelete=(window._groups||[]).filter(g=>g.type==='service'&&g.serviceType===key);
+  let batch=db.batch();let cnt=0;
+  toDelete.forEach(g=>{batch.delete(db.collection('kwgroups').doc(g.id));cnt++;if(cnt===499){batch.commit();batch=db.batch();cnt=0;}});
+  if(cnt>0)await batch.commit();
+  toast('Đã xóa dịch vụ!');openSvcModal();
+}
+
+// ── DRAG & DROP ──
+let _dragId=null;
+function dragStart(e,id){_dragId=id;e.dataTransfer.effectAllowed='move';e.currentTarget.style.opacity='0.5';}
+function dragOver(e){e.preventDefault();e.currentTarget.style.borderTop='2px solid var(--green)';e.currentTarget.style.boxShadow='0 -2px 0 var(--green)';}
+function dragLeave(e){e.currentTarget.style.borderTop='';e.currentTarget.style.boxShadow='';e.currentTarget.style.opacity='1';}
+async function dragDrop(e,targetId){
+  e.preventDefault();dragLeave(e);
+  if(!_dragId||_dragId===targetId)return;
+  const groups=window._groups||[];
+  const src=groups.find(g=>g.id===_dragId);
+  const tgt=groups.find(g=>g.id===targetId);
+  if(!src||!tgt)return;
+  const batch=db.batch();
+  batch.update(db.collection('kwgroups').doc(_dragId),{order:tgt.order||0});
+  batch.update(db.collection('kwgroups').doc(targetId),{order:src.order||0});
+  await batch.commit();
+  _dragId=null;toast('Đã sắp xếp lại');
+}
+
+
+// ── DRAG-DROP LOCATION REORDER ──
+let _dragLocId=null;
+function dragLoc(e,locId){_dragLocId=locId;e.dataTransfer.effectAllowed='move';}
+function dropLoc(e,targetLocId){
+  if(!_dragLocId||_dragLocId===targetLocId)return;
+  const gs=window._groups||[];
+  const src=gs.find(g=>g.id===_dragLocId);
+  const tgt=gs.find(g=>g.id===targetLocId);
+  if(!src||!tgt||src.region!==tgt.region)return;
+  const so=src.order||0,to2=tgt.order||0;
+  const b=db.batch();
+  b.update(db.collection('kwgroups').doc(_dragLocId),{order:to2});
+  b.update(db.collection('kwgroups').doc(targetLocId),{order:so});
+  b.commit().then(()=>toast('✓ Đã đổi vị trí'));
+  _dragLocId=null;
+}
+async function deleteLoc(locId){
+  const gs=window._groups||[];
+  const children=gs.filter(g=>g.parentId===locId);
+  const b=db.batch();
+  b.delete(db.collection('kwgroups').doc(locId));
+  children.forEach(c=>b.delete(db.collection('kwgroups').doc(c.id)));
+  await b.commit();
+  toast('Đã xóa địa điểm và '+children.length+' nhóm dịch vụ');
+}
+function openSvcMgr(){
+  const gs=window._groups||[];
+  const svcs=gs.filter(g=>g.type==='service');
+  const types=[...new Set(svcs.map(s=>s.serviceType).filter(Boolean))];
+  const svcNames={flight:'Vé máy bay',travel:'Du lịch',hotel:'Khách sạn',visa:'Visa',combo:'Combo'};
+  const locs=gs.filter(g=>g.type==='location'||!g.type);
+  const existing_html=types.map(t=>'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:5px"><span style="font-size:13px">'+(svcNames[t]||t)+'</span><div style="display:flex;gap:5px;align-items:center"><span style="font-size:10px;color:var(--text2)">'+svcs.filter(s=>s.serviceType===t).length+' nhóm</span><button class="btn btn-xs" onclick="delSvcType(''+t+'')" style="color:var(--red)">Xóa</button></div></div>').join('');
+  const modal=document.createElement('div');
+  modal.id='svc-mgr-modal';modal.className='modal-ov';modal.style.display='flex';
+  modal.innerHTML='<div class="modal" style="max-width:420px" onclick="event.stopPropagation()"><h3 style="margin-bottom:12px">Quản lý dịch vụ</h3><div style="font-size:11px;color:var(--text2);margin-bottom:10px">'+locs.length+' địa điểm × '+types.length+' dịch vụ hiện tại</div><div id="svc-list">'+(existing_html||'<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">Chưa có dịch vụ nào</div>')+'</div><div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:11px;font-weight:500;margin-bottom:8px">Thêm dịch vụ cho tất cả địa điểm:</div><div style="display:flex;gap:6px"><input id="new-svc-name" placeholder="Tên dịch vụ (VD: Tour)" style="flex:1;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><input id="new-svc-key" placeholder="key (vd: tour)" style="width:85px;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><button class="btn btn-p btn-sm" onclick="addSvcType()">Thêm</button></div></div><div class="mf"><button class="btn" onclick="document.getElementById('svc-mgr-modal').remove()">Đóng</button></div></div>';
+  modal.onclick=()=>modal.remove();
+  document.body.appendChild(modal);
+}
+async function addSvcType(){
+  const name=document.getElementById('new-svc-name').value.trim();
+  const key=document.getElementById('new-svc-key').value.trim().toLowerCase().replace(/ /g,'_');
+  if(!name||!key){alert('Nhập tên và key cho dịch vụ');return;}
+  const gs=window._groups||[];
+  const locs=gs.filter(g=>g.type==='location'||!g.type);
+  if(!locs.length){alert('Chưa có địa điểm nào');return;}
+  if(gs.some(g=>g.serviceType===key)){alert('Key "'+key+'" đã tồn tại');return;}
+  toast('Đang thêm dịch vụ cho '+locs.length+' địa điểm...');
+  const ts=firebase.firestore.FieldValue.serverTimestamp();
+  let b=db.batch();let cnt=0;
+  for(const loc of locs){
+    const ref=db.collection('kwgroups').doc();
+    b.set(ref,{name,location:loc.name,region:loc.region,color:loc.color,type:'service',serviceType:key,parentId:loc.id,order:Date.now()+cnt,createdAt:ts});
+    cnt++;if(cnt>=480){await b.commit();b=db.batch();cnt=0;}
+  }
+  if(cnt>0)await b.commit();
+  document.getElementById('svc-mgr-modal').remove();
+  toast('Đã thêm dịch vụ "'+name+'" cho '+locs.length+' địa điểm!');
+}
+async function delSvcType(svcType){
+  if(!confirm('Xóa tất cả nhóm loại "'+svcType+'" khỏi mọi địa điểm?'))return;
+  const gs=window._groups||[];
+  const toDelete=gs.filter(g=>g.serviceType===svcType);
+  let b=db.batch();let cnt=0;
+  for(const g of toDelete){
+    b.delete(db.collection('kwgroups').doc(g.id));cnt++;
+    if(cnt>=480){await b.commit();b=db.batch();cnt=0;}
+  }
+  if(cnt>0)await b.commit();
+  document.getElementById('svc-mgr-modal').remove();
+  toast('Đã xóa '+toDelete.length+' nhóm "'+svcType+'"');
+}
+
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov').forEach(m=>m.style.display='none');});
 
 // ── TABS ──
@@ -708,11 +856,25 @@ function filterKw(f,el){kwFilter=f;document.querySelectorAll('#kw-flt .fb').forE
 function renderKeywords(){
   const gf=(document.getElementById('kw-group-filter')||{value:''}).value||'';
   const groups=window._groups||[];
+  // Build svcFilter target group ids
+  let svcTargetIds=null;
+  if(svcFilter){
+    const svcs=groups.filter(g=>g.type==='service');
+    const locs=groups.filter(g=>g.type==='location'||!g.type);
+    const locMap={};locs.forEach(l=>locMap[l.id]=l);
+    svcTargetIds=new Set();
+    svcs.forEach(g=>{
+      const loc=locMap[g.parentId];
+      const isVN=loc&&loc.region==='Việt Nam';
+      if((svcFilter==='flight-vn'&&g.serviceType==='flight'&&isVN)||(svcFilter==='flight-intl'&&g.serviceType==='flight'&&!isVN)||(svcFilter==='travel-vn'&&g.serviceType==='travel'&&isVN)||(svcFilter==='travel-intl'&&g.serviceType==='travel'&&!isVN)||(svcFilter==='hotel-vn'&&g.serviceType==='hotel'&&isVN)||(svcFilter==='hotel-intl'&&g.serviceType==='hotel'&&!isVN)||(svcFilter==='visa'&&g.serviceType==='visa')||(svcFilter==='combo'&&g.serviceType==='combo'))svcTargetIds.add(g.id);
+    });
+  }
   const kws=(window._kws||[]).filter(k=>{
     if(kwFilter==='top3'&&(k.position||99)>3)return false;
     if(kwFilter==='top10'&&((k.position||99)<4||(k.position||99)>10))return false;
     if(kwFilter==='drop'&&k.status!=='drop')return false;
     if(gf&&k.groupId!==gf)return false;
+    if(svcTargetIds&&!svcTargetIds.has(k.groupId))return false;
     return true;
   });
   if(!kws.length){document.getElementById('kw-tbody').innerHTML='<tr><td colspan="9"><div class="empty">Chưa có từ khóa. Nhấn "+ Thêm từ khóa".</div></td></tr>';return;}
@@ -783,7 +945,9 @@ function renderClusters(){
   }
   const ro=['Việt Nam','Đông Nam Á','Đông Bắc Á','Trung Đông & Nam Á','Châu Âu','Châu Mỹ','Châu Úc & TBD','Châu Phi'];
   const byR={};locs.forEach(g=>{const r=g.region||'Khác';if(!byR[r])byR[r]=[];byR[r].push(g);});
-  const svcTypes=[{key:'flight',name:'Vé máy bay'},{key:'travel',name:'Du lịch'},{key:'hotel',name:'Khách sạn'}];
+  const allSvcKeys=[...new Set(svcs.filter(g=>g.type==='service').map(g=>g.serviceType))];
+  const defaultSvcs=[{key:'flight',name:'Vé máy bay'},{key:'travel',name:'Du lịch'},{key:'hotel',name:'Khách sạn'},{key:'visa',name:'Visa'},{key:'combo',name:'Combo'}];
+  const svcTypes=allSvcKeys.length?[...new Set([...defaultSvcs.map(s=>s.key),...allSvcKeys])].map(k=>defaultSvcs.find(s=>s.key===k)||{key:k,name:k.charAt(0).toUpperCase()+k.slice(1)}):defaultSvcs;
   function kwC(id){return(window._kws||[]).filter(k=>k.groupId===id).length;}
   let out=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <div style="font-size:11px;color:var(--text2)">${locs.length} địa điểm • mỗi nơi 3 nhóm dịch vụ</div>
@@ -795,17 +959,22 @@ function renderClusters(){
     byR[region].forEach(loc=>{
       const ls=svcs.filter(s=>s.parentId===loc.id);
       const totalKw=ls.reduce((s,sv)=>s+kwC(sv.id),0)||(kwC(loc.id));
-      out+=`<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-        <div style="padding:7px 10px;font-size:12px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="drillGroup('${loc.id}')">
-          <span>${loc.name}</span>
-          <span style="font-size:10px;background:var(--bg2);padding:1px 6px;border-radius:4px;color:var(--text2)">${totalKw} KW</span>
+      const cols=Math.min(svcTypes.length,5);
+      out+=`<div draggable="true" ondragstart="dragStart(event,'${loc.id}')" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dragDrop(event,'${loc.id}')" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:opacity .15s">
+        <div style="padding:7px 10px;font-size:12px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="cursor:pointer;user-select:none" onclick="drillGroup('${loc.id}')">⠿ ${loc.name}</span>
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="font-size:10px;background:var(--bg2);padding:1px 6px;border-radius:4px;color:var(--text2)">${totalKw} KW</span>
+            <button class="btn btn-xs" onclick="deleteDoc('kwgroups','${loc.id}')" title="Xóa địa điểm" style="opacity:.5;padding:1px 5px">🗑</button>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr)">
-          ${svcTypes.map(sv=>{
+        <div style="display:grid;grid-template-columns:repeat(${cols},1fr)">
+          ${svcTypes.map((sv,idx)=>{
             const sg=ls.find(s=>s.serviceType===sv.key);
             const cnt=sg?kwC(sg.id):0;
-            return `<div onclick="${sg?`drillGroup('${sg.id}')`:'openKwModal()'}" style="padding:6px 4px;text-align:center;cursor:pointer;border-right:0.5px solid var(--border);font-size:10px;transition:background .12s" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
-              <div style="color:var(--text2);margin-bottom:2px">${sv.name}</div>
+            const isLast=idx===svcTypes.length-1;
+            return `<div onclick="${sg?`drillGroup('${sg.id}')`:'openKwModal()'}" style="padding:6px 4px;text-align:center;cursor:pointer;${isLast?'':'border-right:0.5px solid var(--border);'}font-size:10px;transition:background .12s" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+              <div style="color:var(--text2);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sv.name}</div>
               <div style="font-weight:500">${cnt}</div>
             </div>`;
           }).join('')}
@@ -836,7 +1005,7 @@ function saveGroup(){
   else{
     const locRef=db.collection('kwgroups').doc();
     locRef.set({name,region,color,type:'location',parentId:'',order:Date.now(),createdAt:ts}).then(async()=>{
-      const svcs=[['Vé máy bay','flight'],['Du lịch','travel'],['Khách sạn','hotel']];
+      const svcs=[['Vé máy bay','flight'],['Du lịch','travel'],['Khách sạn','hotel'],['Visa','visa'],['Combo','combo']];
       let i=1;for(const[sn,st]of svcs){await db.collection('kwgroups').add({name:sn,location:name,region,color,type:'service',serviceType:st,parentId:locRef.id,order:Date.now()+i,createdAt:ts});i++;}
       closeModal('group-modal');toast(`Đã thêm ${name} với 3 nhóm dịch vụ ✓`);
     });
@@ -885,7 +1054,7 @@ async function seedGeo(){
     ['Nam Phi','Châu Phi','#888780'],['Ai Cập','Châu Phi','#888780'],['Morocco','Châu Phi','#888780'],
     ['Kenya','Châu Phi','#888780'],['Tanzania','Châu Phi','#888780'],['Ethiopia','Châu Phi','#888780'],
   ];
-  const SVCS=[['Vé máy bay','flight'],['Du lịch','travel'],['Khách sạn','hotel']];
+  const SVCS=[['Vé máy bay','flight'],['Du lịch','travel'],['Khách sạn','hotel'],['Visa','visa'],['Combo','combo']];
   let batch2=db.batch();let cnt=0;let order=0;
   for(const[locName,region,color]of LOCS){
     const locRef=db.collection('kwgroups').doc();order++;
