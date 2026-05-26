@@ -1107,7 +1107,6 @@ function renderQuickWins(){
   if(!wins.length){el.innerHTML='<div class="empty">Thêm từ khóa vị trí 4–10 để xem Quick Wins</div>';return;}
   el.innerHTML=wins.map(k=>`<div class="qw-item"><div class="qw-pos">${k.position}</div><div style="flex:1;min-width:0"><div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k.keyword}</div><div style="font-size:10px;color:var(--text2);margin-top:1px">Vol: ${(k.volume||0).toLocaleString('vi')}</div></div><div style="font-size:11px;font-weight:500;color:var(--green);flex-shrink:0">+${Math.round((k.volume||0)*0.28).toLocaleString('vi')} clicks</div></div>`).join('');
 }
-let _kwIssues=[];
 function openKwModal(id){
   _kwIssues=[];
   document.getElementById('kw-modal-title').textContent=id?'Sửa từ khóa':'Thêm từ khóa';
