@@ -756,31 +756,81 @@ function getAllGids(gid){
   (window._groups||[]).filter(g=>g.parentId===gid).forEach(g=>ids.push(...getAllGids(g.id)));
   return ids;
 }
-function kwCount(gid){return(window._kws||[]).filter(k=>getAllGids(gid).includes(k.groupId)).length;}
-function avgPos(gid){
-  const kws=(window._kws||[]).filter(k=>getAllGids(gid).includes(k.groupId)&&k.position);
-  if(!kws.length)return null;
-  return(kws.reduce((s,k)=>s+k.position,0)/kws.length).toFixed(1);
-}
+function kwCount(gid){return(window._kws||[]).filter(k=>k.groupId===gid).length;}
+function avgPos(gid){const kws=(window._kws||[]).filter(k=>k.groupId===gid&&k.position);if(!kws.length)return null;return(kws.reduce((s,k)=>s+k.position,0)/kws.length).toFixed(1);}
 let _tOpen=new Set(),_tSel=null;
+function updateGroupSelects(){
+  const groups=window._groups||[];
+  const regionOrder=['🇻🇳 Việt Nam','🌏 Đông Nam Á','⛩️ Đông Bắc Á','🕌 Trung Đông & Nam Á','🏰 Châu Âu','🗽 Châu Mỹ','🦘 Châu Úc & TBD','🌍 Châu Phi'];
+  const byRegion={};
+  groups.forEach(g=>{const r=g.region||'Khác';if(!byRegion[r])byRegion[r]=[];byRegion[r].push(g);});
+  function makeOpts(ph){
+    let h=`<option value="">${ph}</option>`;
+    const regions=[...regionOrder,...Object.keys(byRegion).filter(r=>!regionOrder.includes(r))];
+    regions.forEach(r=>{if(!byRegion[r]||!byRegion[r].length)return;h+=`<optgroup label="${r}">`;byRegion[r].forEach(g=>{h+=`<option value="${g.id}">${g.icon||''} ${g.name}</option>`;});h+='</optgroup>';});
+    return h;
+  }
+  const sel=document.getElementById('kw-group-filter');if(sel){const v=sel.value;sel.innerHTML=makeOpts('Tất cả nhóm');sel.value=v;}
+  const ms=document.getElementById('f-kw-group');if(ms){const v=ms.value;ms.innerHTML=makeOpts('Chưa phân nhóm');ms.value=v;}
+  const ps=document.getElementById('f-grp-parent');if(ps)ps.innerHTML='<option value="">— Không có —</option>';
+}
+
 function renderClusters(){
   const groups=window._groups||[];
   const el=document.getElementById('clusters-grid');if(!el)return;
   if(!groups.length){
-    el.innerHTML=`<div style="text-align:center;padding:30px"><div style="color:var(--text3);font-size:13px;margin-bottom:12px">Chưa có nhóm nào.</div><button class="btn btn-p btn-sm" onclick="seedGeo()">🌏 Tạo nhóm địa lý vé máy bay</button></div>`;
+    el.innerHTML=`<div style="text-align:center;padding:30px">
+      <div style="color:var(--text3);font-size:13px;margin-bottom:14px">Chưa có nhóm địa lý nào.</div>
+      <button class="btn btn-p btn-sm" onclick="seedGeo()">🌏 Tạo nhóm địa lý</button>
+    </div>`;
     return;
   }
-  const roots=buildTree(groups);
-  el.innerHTML=`<div style="display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:start">
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:8px">
-      <div style="font-size:10px;font-weight:500;color:var(--text2);padding:3px 8px 8px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between">
-        <span>Nhóm từ khóa</span><button class="btn btn-xs" onclick="seedGeo()" title="Tạo lại">🔄</button>
+  // Check if flat or hierarchical
+  const hasHierarchy=groups.some(g=>g.parentId);
+  if(hasHierarchy){
+    // Tree view
+    const roots=buildTree(groups);
+    el.innerHTML=`<div style="display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:start">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:8px">
+        <div style="font-size:10px;font-weight:500;color:var(--text2);padding:3px 8px 8px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between">
+          <span>Nhóm từ khóa</span><button class="btn btn-xs" onclick="seedGeo()" title="Tạo lại">🔄</button>
+        </div>
+        <div id="tree-sb">${renderTN(roots,0)}</div>
       </div>
-      <div id="tree-sb">${renderTN(roots,0)}</div>
-    </div>
-    <div id="tree-dt"><div style="text-align:center;padding:40px;color:var(--text3);font-size:12px">← Chọn nhóm để xem chi tiết</div></div>
+      <div id="tree-dt"><div style="text-align:center;padding:40px;color:var(--text3);font-size:12px">← Chọn nhóm để xem chi tiết</div></div>
+    </div>`;
+    return;
+  }
+  // Flat geographic grid view
+  const regionOrder=['🇻🇳 Việt Nam','🌏 Đông Nam Á','⛩️ Đông Bắc Á','🕌 Trung Đông & Nam Á','🏰 Châu Âu','🗽 Châu Mỹ','🦘 Châu Úc & TBD','🌍 Châu Phi'];
+  const byRegion={};
+  groups.forEach(g=>{const r=g.region||'Khác';if(!byRegion[r])byRegion[r]=[];byRegion[r].push(g);});
+  const posColor=p=>!p?'var(--text2)':p<=3?'var(--green)':p<=10?'var(--amber)':'var(--red)';
+  let html2=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="font-size:11px;color:var(--text2)">${groups.length} nhóm địa lý • Click nhóm để xem từ khóa</div>
+    <button class="btn btn-xs" onclick="seedGeo()">🔄 Tạo lại</button>
   </div>`;
+  const regions=[...regionOrder,...Object.keys(byRegion).filter(r=>!regionOrder.includes(r))];
+  regions.forEach(region=>{
+    if(!byRegion[region]||!byRegion[region].length)return;
+    html2+=`<div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;padding:5px 8px;background:var(--bg2);border-radius:var(--r)">${region}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px">`;
+    byRegion[region].forEach(g=>{
+      const kc=kwCount(g.id),ap=avgPos(g.id);
+      html2+=`<div onclick="drillGroup('${g.id}')" style="background:var(--bg);border:1px solid var(--border);border-left:3px solid ${g.color||'#888'};border-radius:var(--r);padding:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='${g.color||'#888'}'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:12px;font-weight:500;display:flex;align-items:center;gap:5px;margin-bottom:4px">${g.icon||''} ${g.name}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:10px;background:var(--bg2);padding:1px 5px;border-radius:4px;color:var(--text2)">${kc} KW</span>
+          ${ap?`<span style="font-size:10px;font-weight:500;color:${posColor(ap)}">#${ap}</span>`:''}
+        </div>
+      </div>`;
+    });
+    html2+='</div></div>';
+  });
+  el.innerHTML=html2;
 }
+
 function renderTN(nodes,d){
   return nodes.map(n=>{
     const kc=kwCount(n.id),ap=avgPos(n.id);
@@ -840,213 +890,68 @@ function selTN(id){
     </div>`;
 }
 async function seedGeo(){
-  if(!confirm('Tạo cấu trúc nhóm địa lý cho vé máy bay?'))return;
-  toast('⏳ Đang tạo...');
+  if(!confirm('Xóa tất cả nhóm cũ và tạo lại danh sách địa lý?\n(Gán từ khóa vào nhóm sẽ bị mất liên kết)'))return;
+  toast('⏳ Đang xóa nhóm cũ...');
+  // Delete all existing groups
+  const existing=await db.collection('kwgroups').get();
+  const batch=db.batch();existing.docs.forEach(d=>batch.delete(d.ref));
+  if(existing.docs.length)await batch.commit();
+  toast('⏳ Đang tạo nhóm địa lý...');
   const col=db.collection('kwgroups'),ts=firebase.firestore.FieldValue.serverTimestamp();
-  const a=async(d)=>(await col.add({...d,createdAt:ts})).id;
-  const vmb=await a({name:'Vé máy bay',icon:'✈️',color:'#185FA5',parentId:'',order:1});
-  const nd=await a({name:'Vé MB Nội địa',icon:'🏠',color:'#1D9E75',parentId:vmb,order:2});
-  const mb=await a({name:'Miền Bắc',icon:'🏔️',color:'#1D9E75',parentId:nd,order:3});
-  const mt=await a({name:'Miền Trung',icon:'🌊',color:'#0F6E56',parentId:nd,order:4});
-  const mn=await a({name:'Miền Nam',icon:'🌴',color:'#085041',parentId:nd,order:5});
-  for(const[n,i,o]of[['Hà Nội','🏛️',6],['Hải Phòng','⚓',7],['Quảng Ninh','🏝️',8],['Điện Biên','⛰️',9]])
-    await a({name:n,icon:i,color:'#1D9E75',parentId:mb,order:o});
-  for(const[n,i,o]of[['Đà Nẵng','🌉',10],['Huế','🏯',11],['Quảng Bình','🏖️',12],['Nha Trang','🏄',13],['Đà Lạt','🌸',14]])
-    await a({name:n,icon:i,color:'#0F6E56',parentId:mt,order:o});
-  for(const[n,i,o]of[['TP. Hồ Chí Minh','🌆',15],['Phú Quốc','🏝️',16],['Cần Thơ','🚣',17],['Côn Đảo','🐢',18]])
-    await a({name:n,icon:i,color:'#085041',parentId:mn,order:o});
-  const qt=await a({name:'Vé MB Quốc tế',icon:'🌏',color:'#534AB7',parentId:vmb,order:20});
-  const dna=await a({name:'Đông Nam Á',icon:'🌴',color:'#534AB7',parentId:qt,order:21});
-  const dba=await a({name:'Đông Bắc Á',icon:'⛩️',color:'#7F77DD',parentId:qt,order:22});
-  const eu=await a({name:'Châu Âu',icon:'🏰',color:'#3C3489',parentId:qt,order:23});
-  const us=await a({name:'Châu Mỹ',icon:'🗽',color:'#185FA5',parentId:qt,order:24});
-  const me=await a({name:'Trung Đông',icon:'🕌',color:'#BA7517',parentId:qt,order:25});
-  const au=await a({name:'Châu Úc',icon:'🦘',color:'#639922',parentId:qt,order:26});
-  for(const[n,i,p,o]of[['Thái Lan','🇹🇭',dna,30],['Singapore','🇸🇬',dna,31],['Malaysia','🇲🇾',dna,32],['Indonesia (Bali)','🇮🇩',dna,33],['Philippines','🇵🇭',dna,34],['Campuchia','🇰🇭',dna,35],['Nhật Bản','🇯🇵',dba,40],['Hàn Quốc','🇰🇷',dba,41],['Trung Quốc','🇨🇳',dba,42],['Đài Loan','🇹🇼',dba,43],['Hồng Kông','🇭🇰',dba,44],['Pháp','🇫🇷',eu,50],['Anh','🇬🇧',eu,51],['Đức','🇩🇪',eu,52],['Ý','🇮🇹',eu,53],['Tây Ban Nha','🇪🇸',eu,54],['Mỹ','🇺🇸',us,60],['Canada','🇨🇦',us,61],['Dubai (UAE)','🇦🇪',me,70],['Qatar','🇶🇦',me,71],['Úc','🇦🇺',au,80],['New Zealand','🇳🇿',au,81]])
-    await a({name:n,icon:i,color:'#534AB7',parentId:p,order:o});
-  _tOpen.add(vmb);_tOpen.add(nd);_tOpen.add(qt);
-  toast('✅ Đã tạo xong cấu trúc nhóm địa lý!');
-}
-
-function updateGroupSelects(){
-  const groups=window._groups||[];
-  const roots=buildTree(groups);
-  function bo(nodes,d){return nodes.map(n=>`<option value="${n.id}">${'　'.repeat(d)}${n.icon||''} ${n.name}</option>${bo(n.children||[],d+1)}`).join('');}
-  const fo='<option value="">Tất cả nhóm</option>'+bo(roots,0);
-  const mo='<option value="">Chưa phân nhóm</option>'+bo(roots,0);
-  const po='<option value="">— Nhóm gốc —</option>'+bo(roots,0);
-  const sel=document.getElementById('kw-group-filter');if(sel){const v=sel.value;sel.innerHTML=fo;sel.value=v;}
-  const ms=document.getElementById('f-kw-group');if(ms){const v=ms.value;ms.innerHTML=mo;ms.value=v;}
-  const ps=document.getElementById('f-grp-parent');if(ps){const v=ps.value;ps.innerHTML=po;ps.value=v;}
-}
-
-function renderClusters(){
-  const groups=window._groups||[];
-  const el=document.getElementById('clusters-grid');if(!el)return;
-  if(!groups.length){
-    el.innerHTML=`<div style="text-align:center;padding:30px"><div style="color:var(--text3);font-size:13px;margin-bottom:12px">Chưa có nhóm nào.</div><button class="btn btn-p btn-sm" onclick="seedGeo()">🌏 Tạo nhóm địa lý vé máy bay</button></div>`;
-    return;
-  }
-  const roots=buildTree(groups);
-  el.innerHTML=`<div style="display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:start">
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:8px">
-      <div style="font-size:10px;font-weight:500;color:var(--text2);padding:3px 8px 8px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between">
-        <span>Nhóm từ khóa</span><button class="btn btn-xs" onclick="seedGeo()" title="Tạo lại">🔄</button>
-      </div>
-      <div id="tree-sb">${renderTN(roots,0)}</div>
-    </div>
-    <div id="tree-dt"><div style="text-align:center;padding:40px;color:var(--text3);font-size:12px">← Chọn nhóm để xem chi tiết</div></div>
-  </div>`;
-}
-function renderTN(nodes,d){
-  return nodes.map(n=>{
-    const kc=kwCount(n.id),ap=avgPos(n.id);
-    const pc=!ap?'var(--text3)':ap<=3?'var(--green)':ap<=10?'var(--amber)':'var(--red)';
-    const has=n.children&&n.children.length>0,isO=_tOpen.has(n.id),isS=_tSel===n.id;
-    return `<div><div class="tree-row ${isS?'sel':''}" onclick="selTN('${n.id}')">
-      <div style="width:${d*14}px;flex-shrink:0"></div>
-      ${has?`<button class="tr-toggle ${isO?'open':''}" onclick="event.stopPropagation();togTN('${n.id}')">›</button>`:'<div style="width:16px"></div>'}
-      <span class="tr-icon">${n.icon||'📁'}</span>
-      <span class="tr-name">${n.name}</span>
-      <div style="display:flex;gap:5px;align-items:center;flex-shrink:0">
-        ${kc?`<span class="tr-badge">${kc}</span>`:''}
-        ${ap?`<span style="font-size:10px;font-weight:500;color:${pc}">#${ap}</span>`:''}
-      </div>
-    </div>${has&&isO?renderTN(n.children,d+1):''}</div>`;
-  }).join('');
-}
-function togTN(id){if(_tOpen.has(id))_tOpen.delete(id);else _tOpen.add(id);const r=buildTree(window._groups||[]);document.getElementById('tree-sb').innerHTML=renderTN(r,0);}
-function selTN(id){
-  _tSel=id;const r=buildTree(window._groups||[]);document.getElementById('tree-sb').innerHTML=renderTN(r,0);
-  const g=(window._groups||[]).find(x=>x.id===id);if(!g)return;
-  const children=(window._groups||[]).filter(x=>x.parentId===id);
-  const allIds=getAllGids(id);
-  const kws=(window._kws||[]).filter(k=>allIds.includes(k.groupId));
-  const kwD=(window._kws||[]).filter(k=>k.groupId===id);
-  const top3=kws.filter(k=>(k.position||99)<=3).length;
-  const top10=kws.filter(k=>(k.position||99)<=10).length;
-  const drop=kws.filter(k=>k.status==='drop').length;
-  const color=g.color||'#1D9E75';
-  const pc=p=>p<=3?'var(--green)':p<=10?'var(--amber)':'var(--red)';
-  document.getElementById('tree-dt').innerHTML=`
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:14px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
-        <div style="width:36px;height:36px;border-radius:8px;background:${color}22;display:flex;align-items:center;justify-content:center;font-size:20px">${g.icon||'📁'}</div>
-        <div style="flex:1"><div style="font-size:14px;font-weight:500">${g.name}</div>${g.desc?`<div style="font-size:11px;color:var(--text2)">${g.desc}</div>`:''}</div>
-        <div style="display:flex;gap:5px">
-          <button class="btn btn-xs" onclick="editGroup('${id}')">✏️</button>
-          <button class="btn btn-p btn-xs" onclick="openGroupModal();setTimeout(()=>document.getElementById('f-grp-parent').value='${id}',50)">+ Nhóm con</button>
-          <button class="btn btn-xs" onclick="deleteDoc('kwgroups','${id}')">🗑</button>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-        <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500">${kws.length}</div><div style="font-size:10px;color:var(--text2)">Tổng KW</div></div>
-        <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">${top3}</div><div style="font-size:10px;color:var(--text2)">Top 3</div></div>
-        <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">${top10}</div><div style="font-size:10px;color:var(--text2)">Top 10</div></div>
-        <div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:${drop?'var(--red)':'var(--text)'}">${drop}</div><div style="font-size:10px;color:var(--text2)">Tụt hạng</div></div>
-      </div>
-      ${children.length?`<div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:8px">NHÓM CON (${children.length})</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${children.map(c=>{const cp=avgPos(c.id);const cpc=!cp?'var(--text2)':cp<=3?'var(--green)':cp<=10?'var(--amber)':'var(--red)';return`<div onclick="selTN('${c.id}')" style="padding:6px 10px;border:1px solid var(--border);border-left:3px solid ${c.color||'#888'};border-radius:var(--r);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:6px;background:var(--bg2)">${c.icon||'📁'} ${c.name}${cp?` <span style="color:${cpc};font-size:10px">#${cp}</span>`:''}</div>`;}).join('')}</div>`:''}
-      ${kwD.length?`<div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:6px">TỪ KHÓA (${kwD.length})</div>
-      <div style="max-height:220px;overflow-y:auto">${kwD.slice(0,20).map(k=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px">
-        <span class="kw-link" onclick="openRankHistory('${k.id}')" style="flex:1">${k.keyword}</span>
-        <span style="font-weight:500;color:${pc(k.position||99)}">#${k.position||'—'}</span>
-        <span class="pill ${stPill[k.status]||'pill-g'}">${stLabel[k.status]||'—'}</span>
-      </div>`).join('')}</div>`
-      :`<div style="text-align:center;padding:14px;color:var(--text3);font-size:12px"><span class="kw-link" onclick="openKwModal();setTimeout(()=>document.getElementById('f-kw-group').value='${id}',50)">+ Thêm từ khóa vào nhóm này</span></div>`}
-    </div>`;
-}
-async function seedGeo(){
-  if(!confirm('Tạo cấu trúc nhóm địa lý cho vé máy bay?'))return;
-  toast('⏳ Đang tạo...');
-  const col=db.collection('kwgroups'),ts=firebase.firestore.FieldValue.serverTimestamp();
-  const a=async(d)=>(await col.add({...d,createdAt:ts})).id;
-  const vmb=await a({name:'Vé máy bay',icon:'✈️',color:'#185FA5',parentId:'',order:1});
-  const nd=await a({name:'Vé MB Nội địa',icon:'🏠',color:'#1D9E75',parentId:vmb,order:2});
-  const mb=await a({name:'Miền Bắc',icon:'🏔️',color:'#1D9E75',parentId:nd,order:3});
-  const mt=await a({name:'Miền Trung',icon:'🌊',color:'#0F6E56',parentId:nd,order:4});
-  const mn=await a({name:'Miền Nam',icon:'🌴',color:'#085041',parentId:nd,order:5});
-  for(const[n,i,o]of[['Hà Nội','🏛️',6],['Hải Phòng','⚓',7],['Quảng Ninh','🏝️',8],['Điện Biên','⛰️',9]])
-    await a({name:n,icon:i,color:'#1D9E75',parentId:mb,order:o});
-  for(const[n,i,o]of[['Đà Nẵng','🌉',10],['Huế','🏯',11],['Quảng Bình','🏖️',12],['Nha Trang','🏄',13],['Đà Lạt','🌸',14]])
-    await a({name:n,icon:i,color:'#0F6E56',parentId:mt,order:o});
-  for(const[n,i,o]of[['TP. Hồ Chí Minh','🌆',15],['Phú Quốc','🏝️',16],['Cần Thơ','🚣',17],['Côn Đảo','🐢',18]])
-    await a({name:n,icon:i,color:'#085041',parentId:mn,order:o});
-  const qt=await a({name:'Vé MB Quốc tế',icon:'🌏',color:'#534AB7',parentId:vmb,order:20});
-  const dna=await a({name:'Đông Nam Á',icon:'🌴',color:'#534AB7',parentId:qt,order:21});
-  const dba=await a({name:'Đông Bắc Á',icon:'⛩️',color:'#7F77DD',parentId:qt,order:22});
-  const eu=await a({name:'Châu Âu',icon:'🏰',color:'#3C3489',parentId:qt,order:23});
-  const us=await a({name:'Châu Mỹ',icon:'🗽',color:'#185FA5',parentId:qt,order:24});
-  const me=await a({name:'Trung Đông',icon:'🕌',color:'#BA7517',parentId:qt,order:25});
-  const au=await a({name:'Châu Úc',icon:'🦘',color:'#639922',parentId:qt,order:26});
-  for(const[n,i,p,o]of[['Thái Lan','🇹🇭',dna,30],['Singapore','🇸🇬',dna,31],['Malaysia','🇲🇾',dna,32],['Indonesia (Bali)','🇮🇩',dna,33],['Philippines','🇵🇭',dna,34],['Campuchia','🇰🇭',dna,35],['Nhật Bản','🇯🇵',dba,40],['Hàn Quốc','🇰🇷',dba,41],['Trung Quốc','🇨🇳',dba,42],['Đài Loan','🇹🇼',dba,43],['Hồng Kông','🇭🇰',dba,44],['Pháp','🇫🇷',eu,50],['Anh','🇬🇧',eu,51],['Đức','🇩🇪',eu,52],['Ý','🇮🇹',eu,53],['Tây Ban Nha','🇪🇸',eu,54],['Mỹ','🇺🇸',us,60],['Canada','🇨🇦',us,61],['Dubai (UAE)','🇦🇪',me,70],['Qatar','🇶🇦',me,71],['Úc','🇦🇺',au,80],['New Zealand','🇳🇿',au,81]])
-    await a({name:n,icon:i,color:'#534AB7',parentId:p,order:o});
-  _tOpen.add(vmb);_tOpen.add(nd);_tOpen.add(qt);
-  toast('✅ Đã tạo xong cấu trúc nhóm địa lý!');
-}
-
-function updateGroupSelects(){
-  const groups=window._groups||[];
-  const opts='<option value="">Tất cả nhóm</option>'+groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
-  const modalOpts='<option value="">Chưa phân nhóm</option>'+groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
-  const sel=document.getElementById('kw-group-filter');
-  if(sel){const v=sel.value;sel.innerHTML=opts;sel.value=v;}
-  const msel=document.getElementById('f-kw-group');
-  if(msel){const v=msel.value;msel.innerHTML=modalOpts;msel.value=v;}
-}
-function renderClusters(){
-  const groups=window._groups||[];const kws=window._kws||[];
-  const el=document.getElementById('clusters-grid');
-  if(!el)return;
-  if(!groups.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);font-size:13px">Chưa có nhóm. Nhấn <strong style="color:var(--text)">+ Tạo nhóm mới</strong> để bắt đầu.</div>';return;}
-  el.innerHTML=groups.map(g=>{
-    const gk=kws.filter(k=>k.groupId===g.id);
-    const avgPos=gk.length?Math.round(gk.reduce((s,k)=>s+(k.position||0),0)/gk.length):0;
-    const totalVol=gk.reduce((s,k)=>s+(k.volume||0),0);
-    const totalClicks=gk.reduce((s,k)=>s+(k.clicks||0),0);
-    const allIssues=gk.flatMap(k=>{try{return JSON.parse(k.issues||'[]');}catch(e){return[];}});
-    const uniqueIssues=[...new Set(allIssues)];
-    const pc=avgPos===0?'var(--text2)':avgPos<=3?'var(--green)':avgPos<=10?'var(--amber)':'var(--red)';
-    const color=g.color||'#1D9E75';
-    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer" onclick="drillGroup('${g.id}')">
-      <div style="height:4px;background:${color}"></div>
-      <div style="padding:14px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
-          <div style="font-size:13px;font-weight:600">${g.name}</div>
-          <div style="display:flex;gap:3px" onclick="event.stopPropagation()">
-            <button class="btn btn-xs" onclick="editGroup('${g.id}')">✏️</button>
-            <button class="btn btn-xs" onclick="deleteDoc('kwgroups','${g.id}')">🗑</button>
-          </div>
-        </div>
-        ${g.desc?`<div style="font-size:10px;color:var(--text2);margin-bottom:8px">${g.desc}</div>`:''}
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px">
-          <div style="background:var(--bg2);border-radius:5px;padding:6px;text-align:center"><div style="font-size:15px;font-weight:600">${gk.length}</div><div style="font-size:9px;color:var(--text2)">Từ khóa</div></div>
-          <div style="background:var(--bg2);border-radius:5px;padding:6px;text-align:center"><div style="font-size:15px;font-weight:600;color:${pc}">${avgPos||'—'}</div><div style="font-size:9px;color:var(--text2)">TB vị trí</div></div>
-          <div style="background:var(--bg2);border-radius:5px;padding:6px;text-align:center"><div style="font-size:15px;font-weight:600">${totalVol>=1000?Math.round(totalVol/1000)+'k':totalVol||0}</div><div style="font-size:9px;color:var(--text2)">Volume</div></div>
-        </div>
-        <div style="border-top:1px solid var(--border);padding-top:8px">
-          ${uniqueIssues.length?`<div style="font-size:9px;color:var(--text2);margin-bottom:4px">${uniqueIssues.length} vấn đề</div><div>${uniqueIssues.slice(0,3).map(i=>`<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber-text);display:inline-block;margin:1px">${i}</span>`).join('')}</div>`:'<div style="font-size:10px;color:var(--green)">✓ Không có vấn đề</div>'}
-        </div>
-        <div style="margin-top:8px;font-size:10px;color:${color};font-weight:500">Xem ${gk.length} từ khóa →</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-function drillGroup(gid){
-  kwTabView='list';
-  document.getElementById('kw-list-view').style.display='block';
-  document.getElementById('kw-groups-view').style.display='none';
-  document.getElementById('kw-tab-list').classList.add('active');
-  document.getElementById('kw-tab-groups').classList.remove('active');
-  document.getElementById('kw-group-filter').value=gid;
-  renderKeywords();
-}
-function openGroupModal(id){
-  document.getElementById('group-modal-title').textContent=id?'Sửa nhóm':'Tạo nhóm';
-  document.getElementById('f-grp-id').value=id||'';
-  if(id){const g=(window._groups||[]).find(x=>x.id===id);if(g){document.getElementById('f-grp-name').value=g.name||'';document.getElementById('f-grp-desc').value=g.desc||'';document.getElementById('f-grp-icon').value=g.icon||'';document.getElementById('f-grp-color').value=g.color||'#1D9E75';document.getElementById('f-grp-parent').value=g.parentId||'';document.querySelectorAll('.color-opt').forEach(o=>o.classList.toggle('selected',o.dataset.color===g.color));}}
-  else{['f-grp-name','f-grp-desc','f-grp-icon'].forEach(i=>document.getElementById(i).value='');document.getElementById('f-grp-parent').value='';document.querySelectorAll('.color-opt').forEach((o,i)=>o.classList.toggle('selected',i===0));document.getElementById('f-grp-color').value='#1D9E75';}
-  showModal('group-modal');
+  let order=0;
+  const add=async(name,icon,region,color)=>{order++;await col.add({name,icon,region,color,parentId:'',order,createdAt:ts});};
+  // ── Việt Nam (có sân bay) ──
+  const vn='🇻🇳 Việt Nam',cv='#1D9E75';
+  await add('Hà Nội','🏛️',vn,cv);await add('Hải Phòng','⚓',vn,cv);await add('Quảng Ninh','🏝️',vn,cv);
+  await add('Điện Biên','⛰️',vn,cv);await add('Đồng Hới','🏖️',vn,cv);await add('Huế','🏯',vn,cv);
+  await add('Đà Nẵng','🌉',vn,cv);await add('Quy Nhơn','🌊',vn,cv);await add('Tuy Hòa','🐚',vn,cv);
+  await add('Nha Trang','🏄',vn,cv);await add('Đà Lạt','🌸',vn,cv);await add('Buôn Ma Thuột','☕',vn,cv);
+  await add('Pleiku','⛰️',vn,cv);await add('TP. Hồ Chí Minh','🌆',vn,cv);await add('Vũng Tàu','⛵',vn,cv);
+  await add('Cần Thơ','🚣',vn,cv);await add('Phú Quốc','🏝️',vn,cv);await add('Rạch Giá','🐟',vn,cv);
+  await add('Cà Mau','🦜',vn,cv);await add('Côn Đảo','🐢',vn,cv);
+  // ── Đông Nam Á ──
+  const dna='🌏 Đông Nam Á',cdna='#534AB7';
+  await add('Thái Lan','🇹🇭',dna,cdna);await add('Singapore','🇸🇬',dna,cdna);
+  await add('Malaysia','🇲🇾',dna,cdna);await add('Indonesia','🇮🇩',dna,cdna);
+  await add('Philippines','🇵🇭',dna,cdna);await add('Campuchia','🇰🇭',dna,cdna);
+  await add('Lào','🇱🇦',dna,cdna);await add('Myanmar','🇲🇲',dna,cdna);
+  await add('Brunei','🇧🇳',dna,cdna);
+  // ── Đông Bắc Á ──
+  const dba='⛩️ Đông Bắc Á',cdba='#7F77DD';
+  await add('Nhật Bản','🇯🇵',dba,cdba);await add('Hàn Quốc','🇰🇷',dba,cdba);
+  await add('Trung Quốc','🇨🇳',dba,cdba);await add('Đài Loan','🇹🇼',dba,cdba);
+  await add('Hồng Kông','🇭🇰',dba,cdba);await add('Ma Cao','🎰',dba,cdba);
+  // ── Trung Đông & Nam Á ──
+  const me='🕌 Trung Đông & Nam Á',cme='#BA7517';
+  await add('UAE (Dubai)','🇦🇪',me,cme);await add('Qatar','🇶🇦',me,cme);
+  await add('Ả Rập Saudi','🇸🇦',me,cme);await add('Thổ Nhĩ Kỳ','🇹🇷',me,cme);
+  await add('Israel','🇮🇱',me,cme);await add('Kuwait','🇰🇼',me,cme);
+  await add('Oman','🇴🇲',me,cme);await add('Bahrain','🇧🇭',me,cme);
+  await add('Ấn Độ','🇮🇳',me,cme);await add('Sri Lanka','🇱🇰',me,cme);
+  await add('Nepal','🇳🇵',me,cme);await add('Pakistan','🇵🇰',me,cme);
+  // ── Châu Âu ──
+  const eu='🏰 Châu Âu',ceu='#3C3489';
+  await add('Pháp','🇫🇷',eu,ceu);await add('Anh','🇬🇧',eu,ceu);await add('Đức','🇩🇪',eu,ceu);
+  await add('Ý','🇮🇹',eu,ceu);await add('Tây Ban Nha','🇪🇸',eu,ceu);await add('Hà Lan','🇳🇱',eu,ceu);
+  await add('Bồ Đào Nha','🇵🇹',eu,ceu);await add('Thụy Sĩ','🇨🇭',eu,ceu);await add('Bỉ','🇧🇪',eu,ceu);
+  await add('Nga','🇷🇺',eu,ceu);await add('Áo','🇦🇹',eu,ceu);await add('Ba Lan','🇵🇱',eu,ceu);
+  await add('Hy Lạp','🇬🇷',eu,ceu);await add('Séc','🇨🇿',eu,ceu);await add('Hungary','🇭🇺',eu,ceu);
+  await add('Thụy Điển','🇸🇪',eu,ceu);await add('Na Uy','🇳🇴',eu,ceu);await add('Đan Mạch','🇩🇰',eu,ceu);
+  await add('Phần Lan','🇫🇮',eu,ceu);await add('Ireland','🇮🇪',eu,ceu);
+  // ── Châu Mỹ ──
+  const am='🗽 Châu Mỹ',cam='#185FA5';
+  await add('Mỹ','🇺🇸',am,cam);await add('Canada','🇨🇦',am,cam);await add('Mexico','🇲🇽',am,cam);
+  await add('Brazil','🇧🇷',am,cam);await add('Argentina','🇦🇷',am,cam);await add('Peru','🇵🇪',am,cam);
+  await add('Chile','🇨🇱',am,cam);await add('Colombia','🇨🇴',am,cam);
+  // ── Châu Úc & Thái Bình Dương ──
+  const au='🦘 Châu Úc & TBD',cau='#639922';
+  await add('Úc','🇦🇺',au,cau);await add('New Zealand','🇳🇿',au,cau);
+  // ── Châu Phi ──
+  const af='🌍 Châu Phi',caf='#888780';
+  await add('Nam Phi','🇿🇦',af,caf);await add('Ai Cập','🇪🇬',af,caf);
+  await add('Morocco','🇲🇦',af,caf);await add('Kenya','🇰🇪',af,caf);
+  await add('Tanzania','🇹🇿',af,caf);await add('Ethiopia','🇪🇹',af,caf);
+  toast(`✅ Đã tạo xong ${order} nhóm địa lý!`);
 }
 
 function editGroup(id){openGroupModal(id);}
