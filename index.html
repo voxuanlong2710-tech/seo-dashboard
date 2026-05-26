@@ -536,6 +536,26 @@ const db=firebase.firestore();
     <div class="fg"><label>Hạn chót</label><input type="date" id="f-task-due"/></div>
     <div class="fg"><label>Người phụ trách</label><input id="f-task-owner"/></div>
   </div>
+  <div style="border-top:1px solid var(--border);margin:10px 0 10px;padding-top:10px">
+    <div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Nội dung bài viết</div>
+    <div class="fg"><label>URL trang đích</label><input id="f-task-url" placeholder="https://vietnambooking.com/..."/></div>
+    <div class="fg"><label>Từ khóa chính</label><input id="f-task-kw-main" placeholder="VD: vé máy bay đi Mỹ"/></div>
+    <div class="fg"><label>Từ khóa phụ</label><input id="f-task-kw-sub" placeholder="VD: vé máy bay Hà Nội New York, giá vé đi Mỹ..."/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fg"><label>Link Google Doc</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="f-task-doc" placeholder="https://docs.google.com/..." style="flex:1"/>
+          <a id="f-task-doc-link" href="#" target="_blank" style="display:none;color:var(--blue);font-size:11px;white-space:nowrap">Mở →</a>
+        </div>
+      </div>
+      <div class="fg"><label>Link Canva</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="f-task-canva" placeholder="https://www.canva.com/..." style="flex:1"/>
+          <a id="f-task-canva-link" href="#" target="_blank" style="display:none;color:var(--blue);font-size:11px;white-space:nowrap">Mở →</a>
+        </div>
+      </div>
+    </div>
+  </div>
   <input type="hidden" id="f-task-edit-id"/>
   <div class="mf"><button class="btn" onclick="closeModal('task-modal')">Hủy</button><button class="btn btn-p" onclick="saveTask()">Lưu</button></div>
 </div></div>
@@ -1298,6 +1318,10 @@ function renderTasks(){
           ${t.deadline?`<span>🏁 ${t.deadline}</span>`:''}
           ${t.owner?`<span>👤 ${t.owner}</span>`:''}
           ${t.status==='inprogress'?'<span class="pill pill-y" style="font-size:9px">Đang làm</span>':''}
+          ${t.kwMain?`<span style="color:var(--blue)">🔑 ${t.kwMain}</span>`:''}
+          ${t.url?`<a href="${t.url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);font-size:10px">🌐 URL</a>`:''}
+          ${t.docLink?`<a href="${t.docLink}" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);font-size:10px">📄 Doc</a>`:''}
+          ${t.canvaLink?`<a href="${t.canvaLink}" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);font-size:10px">🎨 Canva</a>`:''}
         </div>
       </div>
       <div class="task-act">
@@ -1314,7 +1338,7 @@ function renderKanban(){
 function quickStatus(id,status){db.collection('tasks').doc(id).update({status,done:status==='done'});}
 function toggleTask(id,cur){const d=!cur;db.collection('tasks').doc(id).update({done:d,status:d?'done':'todo'}).then(()=>{if(d)logActivity('task_done','Hoàn thành task');toast(d?'✓ Xong!':'Đã bỏ');});}
 function openTaskModal(){
-  ['f-task','f-task-note','f-task-start','f-task-due','f-task-owner'].forEach(i=>document.getElementById(i).value='');
+  ['f-task','f-task-note','f-task-start','f-task-due','f-task-owner','f-task-url','f-task-kw-main','f-task-kw-sub','f-task-doc','f-task-canva'].forEach(i=>document.getElementById(i).value='');['f-task-doc-link','f-task-canva-link'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none';});
   document.getElementById('f-task-edit-id').value='';
   document.getElementById('task-modal-title').textContent='Thêm task SEO';
   document.getElementById('f-task-cat').value='technical';
@@ -1334,12 +1358,23 @@ function editTask(id){
   document.getElementById('f-task-due').value=t.deadline||'';
   document.getElementById('f-task-owner').value=t.owner||'';
   document.getElementById('task-modal-title').textContent='Sửa task';
+  // New fields
+  document.getElementById('f-task-url').value=t.url||'';
+  document.getElementById('f-task-kw-main').value=t.kwMain||'';
+  document.getElementById('f-task-kw-sub').value=t.kwSub||'';
+  document.getElementById('f-task-doc').value=t.docLink||'';
+  document.getElementById('f-task-canva').value=t.canvaLink||'';
+  const dl=document.getElementById('f-task-doc-link');if(dl){if(t.docLink){dl.href=t.docLink;dl.style.display='inline';}else dl.style.display='none';}
+  const cl=document.getElementById('f-task-canva-link');if(cl){if(t.canvaLink){cl.href=t.canvaLink;cl.style.display='inline';}else cl.style.display='none';}
+  // Live preview links on input
+  document.getElementById('f-task-doc').oninput=function(){const l=document.getElementById('f-task-doc-link');if(l){if(this.value){l.href=this.value;l.style.display='inline';}else l.style.display='none';}};
+  document.getElementById('f-task-canva').oninput=function(){const l=document.getElementById('f-task-canva-link');if(l){if(this.value){l.href=this.value;l.style.display='inline';}else l.style.display='none';}};
   showModal('task-modal');
 }
 function saveTask(){
   const title=document.getElementById('f-task').value.trim();if(!title){alert('Nhập tên task');return;}
   const tid=document.getElementById('f-task-edit-id').value;
-  const td={title,note:document.getElementById('f-task-note').value.trim(),category:document.getElementById('f-task-cat').value,priority:document.getElementById('f-task-pri').value,status:document.getElementById('f-task-status').value,startDate:document.getElementById('f-task-start').value,deadline:document.getElementById('f-task-due').value,owner:document.getElementById('f-task-owner').value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  const td={title,note:document.getElementById('f-task-note').value.trim(),category:document.getElementById('f-task-cat').value,priority:document.getElementById('f-task-pri').value,status:document.getElementById('f-task-status').value,startDate:document.getElementById('f-task-start').value,deadline:document.getElementById('f-task-due').value,owner:document.getElementById('f-task-owner').value.trim(),url:document.getElementById('f-task-url').value.trim(),kwMain:document.getElementById('f-task-kw-main').value.trim(),kwSub:document.getElementById('f-task-kw-sub').value.trim(),docLink:document.getElementById('f-task-doc').value.trim(),canvaLink:document.getElementById('f-task-canva').value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   if(tid){db.collection('tasks').doc(tid).update(td).then(()=>{closeModal('task-modal');toast('Đã cập nhật ✓');});}
   else{db.collection('tasks').add({...td,done:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{closeModal('task-modal');toast('Đã thêm task ✓');logActivity('task_added','Thêm task: '+title);});}
 }
