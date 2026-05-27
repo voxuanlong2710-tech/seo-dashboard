@@ -1071,8 +1071,28 @@ function sortKw(field) {
   renderKws();
 }
 
-function filterKw(f,btn){kwFltr=f;document.querySelectorAll('#kw-flt .fb').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderKws();}
-function filterSvc(f,btn){kwSvcFltr=f;document.querySelectorAll('#svc-flt .fb').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderKws();}
+function filterKw(f,btn){
+  kwFltr=f;
+  document.querySelectorAll('#kw-flt .fb').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  if(f==='all'){
+    // Reset group dropdown & svc filter
+    var gsel=document.getElementById('kw-gf');if(gsel)gsel.value='';
+    var srch=document.getElementById('f-kw-grp-search');if(srch){srch.value='';filterGrpOpts('');}
+    kwSvcFltr='all';
+    document.querySelectorAll('#svc-flt .fb').forEach(function(b,i){b.classList.toggle('active',i===0);});
+  }
+  renderKws();
+}
+function filterSvc(f,btn){
+  kwSvcFltr=f;
+  document.querySelectorAll('#svc-flt .fb').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  if(f==='all'){
+    var gsel=document.getElementById('kw-gf');if(gsel)gsel.value='';
+  }
+  renderKws();
+}
 function renderKws(){
   var gf=(document.getElementById('kw-gf')||{value:''}).value||'';
   var groups=window._groups||[];
