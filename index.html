@@ -393,7 +393,7 @@ var db=firebase.firestore();
   <input type="hidden" id="rank-kw-id"/>
 </div></div><div id="grp-modal" style="display:none" class="modal-ov" onclick="closeModal('grp-modal')"><div class="modal" onclick="event.stopPropagation()">
   <h3 id="grp-modal-title">Thêm địa điểm</h3>
-  <div class="fg"><label>Ten dia diem *</label><input id="f-grp-name" placeholder="VD: Hà Nội"/></div>
+  <div class="fg"><label>Tên địa điểm *</label><input id="f-grp-name" placeholder="VD: Hà Nội"/></div>
   <div class="fg"><label>Khu vực</label><select id="f-grp-region">
     <option value="Việt Nam">Việt Nam</option>
     <option value="Đông Nam Á">Đông Nam Á</option>
@@ -750,7 +750,7 @@ function renderPlan() {
         +items.map(function(item,ii){
           return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)">'
             +'<div onclick="togglePlan(\''+wKey+'\',\''+name+'\','+ii+')" style="width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;'+(item.done?'background:var(--green);border-color:var(--green);color:#fff':'')+'">'+(item.done?'v':'')+'</div>'
-            +'<span style="flex:1;font-size:12px;'+(item.done?'text-decoration:line-through;color:var(--text3)':'')+'">'+(item.text||'')+'</span>'
+            +'<span style="flex:1;font-size:12px;'+(item.done?'opacity:.45':'')+'">'+(item.text||'')+'</span>'
             +'<button onclick="delPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:11px">x</button>'
             +'</div>';
         }).join('')
@@ -789,19 +789,19 @@ function delPlan(wKey,name,idx) {
 }
 
 // == GROUPS ==
-var SVCN={flight:'Ve may bay',travel:'Du lich',hotel:'Khach san',visa:'Visa',combo:'Combo'};
+var SVCN={flight:'Vé máy bay',travel:'Du lịch',hotel:'Khách sạn',visa:'Visa',combo:'Combo'};
 var SVCO=['flight','travel','hotel','visa','combo'];
 var LOCS=[['Hà Nội','Việt Nam','#1D9E75'],['Hải Phòng','Việt Nam','#1D9E75'],['Quảng Ninh','Việt Nam','#1D9E75'],['Điện Biên','Việt Nam','#1D9E75'],['Đồng Hới','Việt Nam','#1D9E75'],['Huế','Việt Nam','#1D9E75'],['Đà Nẵng','Việt Nam','#1D9E75'],['Quy Nhơn','Việt Nam','#1D9E75'],['Tuy Hòa','Việt Nam','#1D9E75'],['Nha Trang','Việt Nam','#1D9E75'],['Đà Lạt','Việt Nam','#1D9E75'],['Buôn Ma Thuột','Việt Nam','#1D9E75'],['Pleiku','Việt Nam','#1D9E75'],['TP. Hồ Chí Minh','Việt Nam','#1D9E75'],['Vũng Tàu','Việt Nam','#1D9E75'],['Cần Thơ','Việt Nam','#1D9E75'],['Phú Quốc','Việt Nam','#1D9E75'],['Rạch Giá','Việt Nam','#1D9E75'],['Cà Mau','Việt Nam','#1D9E75'],['Côn Đảo','Việt Nam','#1D9E75'],['Thái Lan','Đông Nam Á','#534AB7'],['Singapore','Đông Nam Á','#534AB7'],['Malaysia','Đông Nam Á','#534AB7'],['Indonesia','Đông Nam Á','#534AB7'],['Philippines','Đông Nam Á','#534AB7'],['Campuchia','Đông Nam Á','#534AB7'],['Lào','Đông Nam Á','#534AB7'],['Myanmar','Đông Nam Á','#534AB7'],['Brunei','Đông Nam Á','#534AB7'],['Đông Timor','Đông Nam Á','#534AB7'],['Nhật Bản','Đông Bắc Á','#7F77DD'],['Hàn Quốc','Đông Bắc Á','#7F77DD'],['Trung Quốc','Đông Bắc Á','#7F77DD'],['Đài Loan','Đông Bắc Á','#7F77DD'],['Hồng Kông','Đông Bắc Á','#7F77DD'],['Ma Cao','Đông Bắc Á','#7F77DD'],['UAE','Trung Đông & Nam Á','#BA7517'],['Qatar','Trung Đông & Nam Á','#BA7517'],['Ả Rập Saudi','Trung Đông & Nam Á','#BA7517'],['Thổ Nhĩ Kỳ','Trung Đông & Nam Á','#BA7517'],['Israel','Trung Đông & Nam Á','#BA7517'],['Kuwait','Trung Đông & Nam Á','#BA7517'],['Oman','Trung Đông & Nam Á','#BA7517'],['Bahrain','Trung Đông & Nam Á','#BA7517'],['Ấn Độ','Trung Đông & Nam Á','#BA7517'],['Sri Lanka','Trung Đông & Nam Á','#BA7517'],['Nepal','Trung Đông & Nam Á','#BA7517'],['Pakistan','Trung Đông & Nam Á','#BA7517'],['Pháp','Châu Âu','#3C3489'],['Anh','Châu Âu','#3C3489'],['Đức','Châu Âu','#3C3489'],['Ý','Châu Âu','#3C3489'],['Tây Ban Nha','Châu Âu','#3C3489'],['Hà Lan','Châu Âu','#3C3489'],['Bồ Đào Nha','Châu Âu','#3C3489'],['Thụy Sĩ','Châu Âu','#3C3489'],['Bỉ','Châu Âu','#3C3489'],['Nga','Châu Âu','#3C3489'],['Áo','Châu Âu','#3C3489'],['Ba Lan','Châu Âu','#3C3489'],['Hy Lạp','Châu Âu','#3C3489'],['Séc','Châu Âu','#3C3489'],['Hungary','Châu Âu','#3C3489'],['Thụy Điển','Châu Âu','#3C3489'],['Na Uy','Châu Âu','#3C3489'],['Đan Mạch','Châu Âu','#3C3489'],['Phần Lan','Châu Âu','#3C3489'],['Ireland','Châu Âu','#3C3489'],['Mỹ','Châu Mỹ','#185FA5'],['Canada','Châu Mỹ','#185FA5'],['Mexico','Châu Mỹ','#185FA5'],['Brazil','Châu Mỹ','#185FA5'],['Argentina','Châu Mỹ','#185FA5'],['Peru','Châu Mỹ','#185FA5'],['Chile','Châu Mỹ','#185FA5'],['Colombia','Châu Mỹ','#185FA5'],['Úc','Châu Úc & TBD','#639922'],['New Zealand','Châu Úc & TBD','#639922'],['Nam Phi','Châu Phi','#888780'],['Ai Cập','Châu Phi','#888780'],['Morocco','Châu Phi','#888780'],['Kenya','Châu Phi','#888780'],['Tanzania','Châu Phi','#888780'],['Ethiopia','Châu Phi','#888780']];
 
 
 var REGION_NORM = {
-  'Viet Nam':'Việt Nam','Dong Nam A':'Đông Nam Á','Dong Bac A':'Đông Bắc Á',
-  'Trung Dong':'Trung Đông & Nam Á','Chau Au':'Châu Âu','Chau My':'Châu Mỹ',
+  'Viet Nam':'Việt Nam','Đóng Nam A':'Đông Nam Á','Đóng Bac A':'Đông Bắc Á',
+  'Trung Đóng':'Trung Đông & Nam Á','Chau Au':'Châu Âu','Chau My':'Châu Mỹ',
   'Chau Uc':'Châu Úc & TBD','Chau Phi':'Châu Phi',
   'Đóng Nam A':'Đông Nam Á','Đóng Bac A':'Đông Bắc Á','Đóng Nam Á':'Đông Nam Á',
   'Trung Đông & Nam A':'Trung Đông & Nam Á',
   'Chau Uc & TBD':'Châu Úc & TBD','Châu Uc & TBD':'Châu Úc & TBD',
-  'Dong Nam Á':'Đông Nam Á','Dong Bac Á':'Đông Bắc Á'
+  'Đóng Nam Á':'Đông Nam Á','Đóng Bac Á':'Đông Bắc Á'
 };
 function normRegion(r){ return REGION_NORM[r] || r; }
 
@@ -1006,10 +1006,10 @@ function openSvcMgr(){
   var types=Array.from(new Set(svcs.map(function(s){return s.serviceType;}).filter(Boolean)));
   var locs=gs.filter(function(g){return g.type==='location'||!g.type;});
   var m=document.createElement('div');m.id='svc-mgr';m.className='modal-ov';m.style.display='flex';
-  m.innerHTML='<div class="modal" style="max-width:420px" onclick="event.stopPropagation()"><h3 style="margin-bottom:12px">Quản lý dịch vụ</h3><div style="font-size:11px;color:var(--text2);margin-bottom:10px">'+locs.length+' dia diem - '+types.length+' dịch vụ</div><div>'+types.map(function(t){return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:5px"><span>'+(SVCN[t]||t)+'</span><button class="btn btn-xs" onclick="delSvcType(\''+t+'\')" style="color:var(--red)">Xóa</button></div>';}).join('')+'</div><div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:11px;font-weight:500;margin-bottom:8px">Them dịch vụ moi cho tat ca dia diem:</div><div style="display:flex;gap:6px"><input id="new-svc-n" placeholder="Tên (VD: Tour)" style="flex:1;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><input id="new-svc-k" placeholder="key" style="width:70px;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><button class="btn btn-p btn-sm" onclick="addSvcType()">Them</button></div></div><div class="mf"><button class="btn" onclick="document.getElementById(\'svc-mgr\').remove()">Đóng</button></div></div>';
+  m.innerHTML='<div class="modal" style="max-width:420px" onclick="event.stopPropagation()"><h3 style="margin-bottom:12px">Quản lý dịch vụ</h3><div style="font-size:11px;color:var(--text2);margin-bottom:10px">'+locs.length+' địa điểm - '+types.length+' dịch vụ</div><div>'+types.map(function(t){return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:5px"><span>'+(SVCN[t]||t)+'</span><button class="btn btn-xs" onclick="delSvcType(\''+t+'\')" style="color:var(--red)">Xóa</button></div>';}).join('')+'</div><div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:11px;font-weight:500;margin-bottom:8px">Them dịch vụ moi cho tat ca địa điểm:</div><div style="display:flex;gap:6px"><input id="new-svc-n" placeholder="Tên (VD: Tour)" style="flex:1;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><input id="new-svc-k" placeholder="key" style="width:70px;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><button class="btn btn-p btn-sm" onclick="addSvcType()">Them</button></div></div><div class="mf"><button class="btn" onclick="document.getElementById(\'svc-mgr\').remove()">Đóng</button></div></div>';
   m.onclick=function(){m.remove();}; document.body.appendChild(m);
 }
-function addSvcType(){var name=(document.getElementById('new-svc-n').value||'').trim();var key=(document.getElementById('new-svc-k').value||'').trim().toLowerCase().replace(/ /g,'_');if(!name||!key){alert('Nhập tên va key');return;}var gs=window._groups||[];if(gs.some(function(g){return g.serviceType===key;})){alert('Key đã tồn tại');return;}var locs=gs.filter(function(g){return g.type==='location'||!g.type;});if(!locs.length){alert('Chưa có dia diem');return;}toast('Đang thêm...');var ts=firebase.firestore.FieldValue.serverTimestamp();var i=0;function addNext(){if(i>=locs.length){document.getElementById('svc-mgr').remove();toast('Đã thêm "'+name+'" cho '+locs.length+' dia diem!');return;}var loc=locs[i];db.collection('kwgroups').add({name:name,location:loc.name,region:loc.region,color:loc.color,type:'service',serviceType:key,parentId:loc.id,order:Date.now()+i,createdAt:ts}).then(function(){i++;addNext();});}addNext();}
+function addSvcType(){var name=(document.getElementById('new-svc-n').value||'').trim();var key=(document.getElementById('new-svc-k').value||'').trim().toLowerCase().replace(/ /g,'_');if(!name||!key){alert('Nhập tên va key');return;}var gs=window._groups||[];if(gs.some(function(g){return g.serviceType===key;})){alert('Key đã tồn tại');return;}var locs=gs.filter(function(g){return g.type==='location'||!g.type;});if(!locs.length){alert('Chưa có địa điểm');return;}toast('Đang thêm...');var ts=firebase.firestore.FieldValue.serverTimestamp();var i=0;function addNext(){if(i>=locs.length){document.getElementById('svc-mgr').remove();toast('Đã thêm "'+name+'" cho '+locs.length+' địa điểm!');return;}var loc=locs[i];db.collection('kwgroups').add({name:name,location:loc.name,region:loc.region,color:loc.color,type:'service',serviceType:key,parentId:loc.id,order:Date.now()+i,createdAt:ts}).then(function(){i++;addNext();});}addNext();}
 function delSvcType(t){if(!confirm('Xóa tat ca nhóm loai "'+t+'"?'))return;var gs=window._groups||[];var toDel=gs.filter(function(g){return g.serviceType===t;});var b=db.batch();toDel.forEach(function(g){b.delete(db.collection('kwgroups').doc(g.id));});b.commit().then(function(){if(document.getElementById('svc-mgr'))document.getElementById('svc-mgr').remove();toast('Đã xóa '+toDel.length+' nhóm');});}
 async function seedGeo(){
   if(!confirm('Xóa tat ca nhóm cu va tao '+LOCS.length+' địa điểm x 5 dịch vụ?'))return;
@@ -1059,7 +1059,7 @@ function renderKws(){
   var intPill={info:'pill-b',trans:'pill-g',nav:'pill-p',comm:'pill-y'};
   var intLb={info:'Info',trans:'Trans',nav:'Nav',comm:'Comm'};
   var tbody=document.getElementById('kw-tbody');
-  if(!kws.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chưa có tu khoa.</div></td></tr>';return;}
+  if(!kws.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chưa có từ khóa.</div></td></tr>';return;}
   tbody.innerHTML=kws.map(function(k){
     var grp=groups.find(function(g){return g.id===k.groupId;})||null;
     var loc=grp&&grp.type==='service'?(groups.find(function(g){return g.id===grp.parentId;})||null):null;
@@ -1096,7 +1096,7 @@ function saveKw(){
   var id=document.getElementById('f-kw-id').value;
   var data={keyword:kw,position:+document.getElementById('f-pos').value||0,change:+document.getElementById('f-chg').value||0,groupId:document.getElementById('f-kw-grp').value||'',intent:document.getElementById('f-intent').value,url:document.getElementById('f-kw-url').value.trim(),status:document.getElementById('f-kw-st').value,issues:document.getElementById('f-issues').value||'[]',createdAt:firebase.firestore.FieldValue.serverTimestamp()};
   var ref=id?db.collection('keywords').doc(id):db.collection('keywords').doc();
-  ref.set(data,{merge:true}).then(function(){closeModal('kw-modal');toast('Đã lưu tu khoa');});
+  ref.set(data,{merge:true}).then(function(){closeModal('kw-modal');toast('Đã lưu từ khóa');});
 }
 
 // == RANK HISTORY ==
@@ -1199,7 +1199,7 @@ function renderTasks(){
 function renderKanban(){
   var all=getFilteredTasks();
   var cols=[{k:'todo',l:'Cần làm',items:all.filter(function(t){return !t.done&&t.status!=='inprogress'&&t.status!=='done';})},{k:'inprogress',l:'Đang làm',items:all.filter(function(t){return t.status==='inprogress'&&!t.done;})},{k:'done',l:'Hoàn thành',items:all.filter(function(t){return t.done||t.status==='done';})}];
-  document.getElementById('kanban-board').innerHTML='<div class="kanban">'+cols.map(function(col){return '<div class="kb-col"><div class="kb-col-hdr">'+col.l+'<span class="kb-cnt">'+col.items.length+'</span></div>'+col.items.map(function(t){return '<div class="kb-card"><div style="font-size:12px;margin-bottom:4px">'+t.title+'</div>'+(t.owner?'<div style="font-size:10px;color:var(--text2)">'+t.owner+'</div>':'')+(t.deadline?'<div style="font-size:10px;color:var(--text2)">Hạn: '+t.deadline+'</div>':'')+'<div style="margin-top:5px;display:flex;gap:3px">'+(col.k!=='done'?'<button class="btn btn-xs" onclick="db.collection(\'tasks\').doc(\''+t.id+'\').update({status:\''+(col.k==='todo'?'inprogress':'done')+'\',done:'+(col.k!=='todo')+'})">'+(col.k==='todo'?'Làm ngay':'Xong')+'</button>':'')+'<button class="btn btn-xs" onclick="delDoc(\'tasks\',\''+t.id+'\')">Del</button></div></div>';}).join('')+'</div>';}).join('')+'</div>';
+  document.getElementById('kanban-board').innerHTML='<div class="kanban">'+cols.map(function(col){return '<div class="kb-col"><div class="kb-col-hdr">'+col.l+'<span class="kb-cnt">'+col.items.length+'</span></div>'+col.items.map(function(t){return '<div class="kb-card"><div style="font-size:12px;margin-bottom:4px">'+t.title+'</div>'+(t.owner?'<div style="font-size:10px;color:var(--text2)">'+t.owner+'</div>':'')+(t.deadline?'<div style="font-size:10px;color:var(--text2)">Hạn: '+t.deadline+'</div>':'')+'<div style="margin-top:5px;display:flex;gap:3px">'+(col.k!=='done'?'<button class="btn btn-xs" onclick="db.collection(\'tasks\').doc(\''+t.id+'\').update({status:\''+(col.k==='todo'?'inprogress':'done')+'\',done:'+(col.k!=='todo')+'})">'+(col.k==='todo'?'Bắt đầu':'Hoàn thành')+'</button>':'')+'<button class="btn btn-xs" onclick="delDoc(\'tasks\',\''+t.id+'\')">Del</button></div></div>';}).join('')+'</div>';}).join('')+'</div>';
 }
 function toggleTask(id,cur){var d=!cur;db.collection('tasks').doc(id).update({done:d,status:d?'done':'todo'}).then(function(){toast(d?'Xong!':'Đã bỏ');});}
 
@@ -1295,7 +1295,7 @@ function renderArts(){
   var stP={published:'pill-g',writing:'pill-y',update:'pill-r',planned:'pill-b'};
   var stL={published:'Đã đăng',writing:'Đang viết',update:'Cần cập nhật',planned:'Kế hoạch'};
   var tbody=document.getElementById('art-tbody');
-  if(!arts.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chưa có bai viet.</div></td></tr>';return;}
+  if(!arts.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chưa có bài viết.</div></td></tr>';return;}
   tbody.innerHTML=arts.map(function(a){return '<tr><td><strong style="font-size:12px">'+a.title+'</strong></td><td style="font-size:10px;color:var(--text2)">'+(a.keyword||'--')+'</td><td>'+(a.wordCount?a.wordCount.toLocaleString('vi'):'--')+'</td><td><span class="pill '+(stP[a.status]||'pill-b')+'">'+(stL[a.status]||a.status)+'</span></td><td>'+(a.traffic?a.traffic.toLocaleString('vi'):'--')+'</td><td>'+(a.position||'--')+'</td><td style="font-size:10px;color:var(--text2)">'+(a.publishDate||'--')+'</td><td>'+(a.url?'<a href="'+a.url+'" target="_blank" style="font-size:10px;color:var(--blue)">Link</a>':'--')+'</td><td><button class="btn btn-xs" onclick="editArt(\''+a.id+'\')" style="margin-right:2px">Edit</button><button class="btn btn-xs" onclick="delDoc(\'articles\',\''+a.id+'\')">Del</button></td></tr>';}).join('');
 }
 function calPrev(){if(calM===0){calM=11;calY--;}else calM--;renderCalendar();}
@@ -1361,7 +1361,7 @@ function renderMembers(){
       +'<div style="font-size:10px;color:var(--text2)">'+done+'/'+mt.length+' task tuần nay</div>'
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr">'
-      +'<div style="padding:8px 10px;text-align:center;border-right:1px solid var(--border)"><div style="font-size:16px;font-weight:500">'+mt.length+'</div><div style="font-size:9px;color:var(--text2);margin-top:1px">Task tuan</div></div>'
+      +'<div style="padding:8px 10px;text-align:center;border-right:1px solid var(--border)"><div style="font-size:16px;font-weight:500">'+mt.length+'</div><div style="font-size:9px;color:var(--text2);margin-top:1px">Task tuần</div></div>'
       +'<div style="padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:500;color:'+color+'">'+pct+'%</div><div style="font-size:9px;color:var(--text2);margin-top:1px">Hoàn thành</div></div>'
       +'</div></div>';
   }).join('');
@@ -1384,7 +1384,7 @@ function renderMemDetail(id){
     +'<div style="display:flex;gap:5px"><button class="btn btn-xs" onclick="openMemberModal(\''+id+'\')">Sửa</button><button class="btn btn-xs" onclick="delMember(\''+id+'\')" style="color:var(--red)">Xóa</button></div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
-    +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">'+done+'</div><div style="font-size:10px;color:var(--text2)">Hoàn thành tuan</div></div>'
+    +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">'+done+'</div><div style="font-size:10px;color:var(--text2)">Hoàn thành tuần</div></div>'
     +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">'+doing+'</div><div style="font-size:10px;color:var(--text2)">Đang thực hiện</div></div>'
     +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:'+(late?'var(--red)':'var(--text)')+'">'+late+'</div><div style="font-size:10px;color:var(--text2)">Quá hạn</div></div>'
     +'</div>'
