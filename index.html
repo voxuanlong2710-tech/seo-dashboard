@@ -860,8 +860,13 @@ Object.keys(byR).forEach(function(region){
         +'<button class="btn btn-xs" onclick="event.stopPropagation();delLoc(\''+loc.id+'\')" style="padding:0 4px">✕</button>'
         +'</div>'
         +'</div>'
-        +'<div style="display:grid;grid-template-columns:repeat('+ordSvc.length+',1fr)">'
-        +ordSvc.map(function(svcType){var sg=ls.find(function(s){return s.serviceType===svcType;});var cnt=sg?kwC(sg.id):0;return '<div onclick="'+(sg?'drillGrp(\''+sg.id+'\')':'openKwModal()')+'\" style="padding:5px 2px;text-align:center;cursor:pointer;border-right:0.5px solid var(--border);font-size:9px;transition:background .12s" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'\'"><div style="color:var(--text2);margin-bottom:1px;font-size:8px">'+(SVCN[svcType]||svcType)+'</div><div style="font-weight:500">'+cnt+'</div></div>';}).join('')
+        +(function(){
+          var locSvcs=ls.slice().sort(function(a,b){var oa=SVCO.indexOf(a.serviceType),ob=SVCO.indexOf(b.serviceType);if(oa===-1)oa=99;if(ob===-1)ob=99;return oa-ob;});
+          if(!locSvcs.length)return '<div style="font-size:10px;color:var(--text3);text-align:center;padding:8px">Chưa có dịch vụ</div>';
+          return '<div style="display:grid;grid-template-columns:repeat('+locSvcs.length+',1fr)">'
+            +locSvcs.map(function(sg){var cnt=kwC(sg.id);return '<div onclick="drillGrp(\''+sg.id+'\')" style="padding:5px 2px;text-align:center;cursor:pointer;border-right:0.5px solid var(--border);font-size:9px;transition:background .12s" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'\'">'+'<div style="color:var(--text2);margin-bottom:1px;font-size:8px">'+(SVCN[sg.serviceType]||sg.name)+'</div><div style="font-weight:500">'+cnt+'</div></div>';}).join('')
+            +'</div></div>';
+        })()
         +'</div></div>';
     });
     out+='</div></div>';
