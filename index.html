@@ -187,7 +187,7 @@ var db=firebase.firestore();
   <!-- Kế hoạch tuan -->
   <div class="card">
     <div class="card-hdr">
-      <div><span class="card-title">Kế hoạch công việc tuần</span><span style="font-size:10px;color:var(--text2);margin-left:8px">Ghi chú riêng — lưu theo từng tuần</span></div>
+      <div><span class="card-title">Kế hoạch công việc tuần</span></div>
       <div style="display:flex;gap:5px;align-items:center">
         <button class="btn btn-sm" onclick="planPrev()">Trước</button>
         <span id="plan-label" style="font-size:12px;font-weight:500;min-width:120px;text-align:center"></span>
@@ -740,21 +740,24 @@ function renderPlan() {
       var color = mem ? (mem.color||'#534AB7') : '#534AB7';
       var init = name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
       var doneC = items.filter(function(i){return i.done;}).length;
-      return '<div style="border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden">'
-        +'<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border-bottom:1px solid var(--border)">'
-        +'<div style="width:26px;height:26px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff">'+init+'</div>'
+      return '<div style="border:1px solid var(--border);border-radius:var(--rl);margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)">'
+        +'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border)">'
+          +'<div style="width:32px;height:32px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff">'+init+'</div>'
+          +'<span style="font-size:13px;font-weight:600;flex:1">'+name+'</span>'
+          +'<span style="font-size:11px;font-weight:500;color:'+(doneC>0&&doneC===items.length?'var(--green)':'var(--text2)')+'">'+doneC+'/'+items.length+' hoàn thành</span>'
+          +'</div>'
         +'<span style="font-size:12px;font-weight:500;flex:1">'+name+'</span>'
         +'<span style="font-size:10px;color:var(--text2)">'+doneC+'/'+items.length+' xong</span>'
         +'</div>'
-        +'<div style="padding:6px 12px">'
+        +'<div style="padding:8px 14px">' 
         +items.map(function(item,ii){
-          return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)">'
-            +'<div onclick="togglePlan(\''+wKey+'\',\''+name+'\','+ii+')" style="width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;'+(item.done?'background:var(--green);border-color:var(--green);color:#fff':'')+'">'+(item.done?'v':'')+'</div>'
-            +'<span style="flex:1;font-size:12px;'+(item.done?'opacity:.45':'')+'">'+(item.text||'')+'</span>'
-            +'<button onclick="delPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:11px">x</button>'
+          return '<div style="display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;margin-bottom:3px;background:'+(item.done?'var(--green-bg)':'var(--bg2)')+';transition:background .15s">'
+            +'<div onclick="togglePlan(\''+wKey+'\',\''+name+'\','+ii+')" style="width:16px;height:16px;border:2px solid '+(item.done?'var(--green)':'var(--border2)')+';border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;background:'+(item.done?'var(--green)':'transparent')+';color:#fff;font-weight:bold;transition:all .15s">'+(item.done?'✓':'')+'</div>'
+            +'<span style="flex:1;font-size:13px;font-weight:500;color:'+(item.done?'var(--green-text)':'var(--text)')+'">'+(item.text||'')+'</span>'
+            +'<button onclick="delPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:13px;opacity:0;transition:opacity .1s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">✕</button>'
             +'</div>';
         }).join('')
-        +'<div style="padding-top:4px"><input placeholder="Nhập công việc rồi Enter..." data-wkey="'+wKey+'" data-name="'+name+'" onkeydown="addPlan(event,this)" style="width:100%;padding:5px 8px;border:0.5px dashed var(--border2);border-radius:5px;background:none;font-size:11px;color:var(--text);font-family:var(--font)"/></div>'
+        +'<div style="padding:6px 2px 2px"><input placeholder="+ Thêm công việc (Enter để lưu)" data-wkey="'+wKey+'" data-name="'+name+'" onkeydown="addPlan(event,this)" style="width:100%;padding:7px 10px;border:1.5px dashed var(--border2);border-radius:6px;background:none;font-size:12px;color:var(--text);font-family:var(--font);transition:border-color .15s" onfocus="this.style.borderColor=\'var(--green)\';this.style.borderStyle=\'solid\'" onblur="this.style.borderColor=\'var(--border2)\';this.style.borderStyle=\'dashed\'"/></div>'
         +'</div></div>';
     }).join('');
   }).catch(function(){ body.innerHTML='<div class="empty">Lỗi tải dữ liệu.</div>'; });
@@ -1045,7 +1048,7 @@ function renderKws(){
   var gf=(document.getElementById('kw-gf')||{value:''}).value||'';
   var groups=window._groups||[];
   var svcIds=null;
-  if(kwSvcFltr!=='all'){var parts=kwSvcFltr.split('-');var svcType=parts[0];var scope=parts[1];svcIds=new Set(groups.filter(function(g){if(g.type!=='service')return false;if(g.serviceType!==svcType)return false;if(scope==='vn')return g.region==='Viet Nam';if(scope==='intl')return g.region!=='Viet Nam';return true;}).map(function(g){return g.id;}));}
+  if(kwSvcFltr!=='all'){var parts=kwSvcFltr.split('-');var svcType=parts[0];var scope=parts[1];svcIds=new Set(groups.filter(function(g){if(g.type!=='service')return false;if(g.serviceType!==svcType)return false;var nr=normRegion(g.region||'');if(scope==='vn')return nr==='Việt Nam';if(scope==='intl')return nr!=='Việt Nam'&&nr!=='';return true;}).map(function(g){return g.id;}));}
   var kws=(window._kws||[]).filter(function(k){
     if(kwFltr==='top3'&&(k.position||99)>3)return false;
     if(kwFltr==='top10'&&((k.position||99)<4||(k.position||99)>10))return false;
