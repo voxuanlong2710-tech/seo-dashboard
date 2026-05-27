@@ -1078,7 +1078,9 @@ function listenKeywords(){
     window._kws=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderKeywords();renderQuickWins();
     const openId=document.getElementById('rank-kw-id').value;
-    if(openId&&document.getElementById('rank-modal').style.display!=='none'){const kw=window._kws.find(k=>k.id===openId);if(kw)renderRankHistory(kw.rankHistory||[]);}
+    if(openId&&document.getElementById('rank-modal').style.display!=='none'){
+      const kw=window._kws.find(k=>k.id===openId);if(kw)renderRankHistory(kw.rankHistory||[]);
+    }
   });
 }
 function filterKw(f,el){kwFilter=f;document.querySelectorAll('#kw-flt .fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderKeywords();}
@@ -1103,8 +1105,17 @@ function renderKeywords(){
     let issues=[];try{issues=JSON.parse(k.issues||'[]');}catch(e){}
     const ch=k.change||0;const histLen=(k.rankHistory||[]).length;
     const grpLabel=loc?`${loc.name} / ${SVC_NAMES[grp.serviceType]||grp.name}`:grp?grp.name:'—';
-    const kid=k.id.replace(/'/g,"\\'");
-    return`<tr><td style="font-size:10px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${grpLabel}</td><td><span class="kw-link" data-kwid="${k.id}" title="📈 Xem lịch sử rank">📈 ${k.keyword}</span>${histLen?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--blue-bg);color:var(--blue-text);margin-left:4px">${histLen}w</span>`:''}</td><td><span class="rank">${k.position||'—'}</span></td><td style="color:${ch>0?'var(--green)':ch<0?'var(--red)':'var(--text2)'}">${ch>0?'↑'+ch:ch<0?'↓'+Math.abs(ch):'—'}</td><td>${k.intent?`<span class="pill ${intentPill[k.intent]||''}">${intentLabel[k.intent]||k.intent}</span>`:'—'}</td><td style="font-size:10px;max-width:180px;word-break:break-all">${k.url?`<a href="${k.url}" target="_blank" style="color:var(--blue);text-decoration:none">${k.url}</a>`:'—'}</td><td style="max-width:160px">${issues.map(i=>`<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber-text);display:inline-block;margin:1px">${i}</span>`).join('')||'—'}</td><td><span class="pill ${stPill[k.status]||'pill-g'}">${stLabel[k.status]||'—'}</span></td><td style="white-space:nowrap"><button class="btn btn-xs" onclick="editKw('${kid}')" style="margin-right:2px">✏️</button><button class="btn btn-xs" onclick="deleteDoc('keywords','${kid}')">🗑</button></td></tr>`;
+    return `<tr>
+      <td style="font-size:10px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${grpLabel}</td>
+      <td><span class="kw-link" onclick="openRankHistory('${k.id}')">${k.keyword}</span>${histLen?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--blue-bg);color:var(--blue-text);margin-left:4px">${histLen}w</span>`:''}</td>
+      <td><span class="rank">${k.position||'—'}</span></td>
+      <td style="color:${ch>0?'var(--green)':ch<0?'var(--red)':'var(--text2)'}">${ch>0?'↑'+ch:ch<0?'↓'+Math.abs(ch):'—'}</td>
+      <td>${k.intent?`<span class="pill ${intentPill[k.intent]||''}">${intentLabel[k.intent]||k.intent}</span>`:'—'}</td>
+      <td style="font-size:10px;max-width:180px;word-break:break-all">${k.url?`<a href="${k.url}" target="_blank" style="color:var(--blue);text-decoration:none">${k.url}</a>`:'—'}</td>
+      <td style="max-width:160px">${issues.map(i=>`<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber-text);display:inline-block;margin:1px">${i}</span>`).join('')||'—'}</td>
+      <td><span class="pill ${stPill[k.status]||'pill-g'}">${stLabel[k.status]||'—'}</span></td>
+      <td style="white-space:nowrap"><button class="btn btn-xs" onclick="editKw('${k.id}')" style="margin-right:2px">✏️</button><button class="btn btn-xs" onclick="deleteDoc('keywords','${k.id}')">🗑</button></td>
+    </tr>`;
   }).join('');
   // Event delegation: click on .kw-link → open rank history
   const tbody=document.getElementById('kw-tbody');
@@ -1141,36 +1152,20 @@ function saveKw(){
 
 // ══ RANK HISTORY ══
 function openRankHistory(kwId){
-  const kw=(window._kws||[]).find(k=>k.id===kwId);
-  if(!kw){toast('Không tìm thấy từ khóa');return;}
-  // Destroy old chart first
-  if(window._rankChart){try{window._rankChart.destroy();}catch(e){}window._rankChart=null;}
-  // Set modal content
-  const titleEl=document.getElementById('rank-modal-kw');
-  if(titleEl)titleEl.textContent=kw.keyword;
-  const kwIdEl=document.getElementById('rank-kw-id');
-  if(kwIdEl)kwIdEl.value=kwId;
-  const dateEl=document.getElementById('rank-date');
-  if(dateEl)dateEl.value=new Date().toISOString().split('T')[0];
-  const posEl=document.getElementById('rank-pos');
-  if(posEl)posEl.value='';
-  // Open modal first so canvas has dimensions, then render chart
-  const modal=document.getElementById('rank-modal');
-  if(!modal){toast('Lỗi: không tìm thấy modal');return;}
-  modal.style.display='flex';
-  // Render after modal visible so Chart.js can measure canvas
-  setTimeout(()=>renderRankHistory(kw.rankHistory||[]),50);
+  const kw=(window._kws||[]).find(k=>k.id===kwId);if(!kw)return;
+  document.getElementById('rank-kw-id').value=kwId;
+  document.getElementById('rank-modal-kw').textContent=kw.keyword;
+  document.getElementById('rank-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('rank-pos').value='';
+  renderRankHistory(kw.rankHistory||[]);showModal('rank-modal');
 }
 function renderRankHistory(history){
   const sorted=[...history].sort((a,b)=>a.date.localeCompare(b.date));
-  if(window._rankChart){try{window._rankChart.destroy();}catch(e){} window._rankChart=null;}
-  const canvas=document.getElementById('rank-chart');
-  if(canvas&&sorted.length){
-    try{
-      const dk=matchMedia('(prefers-color-scheme:dark)').matches,tc=dk?'#9c9a92':'#5f5e5a',gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
-      window._rankChart=new Chart(canvas,{type:'line',data:{labels:sorted.map(h=>h.date.slice(5)),datasets:[{label:'Vị trí',data:sorted.map(h=>h.pos),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Vị trí: #'+ctx.raw}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{reverse:true,min:1,grid:{color:gc},ticks:{color:tc,font:{size:10},stepSize:1,callback:v=>'#'+v}}}}});
-    }catch(e){console.error('Chart error:',e);}
-  }
+  if(_rankChart){_rankChart.destroy();_rankChart=null;}
+  const canvas=document.getElementById('rank-chart');if(!canvas)return;
+  const dk=matchMedia('(prefers-color-scheme:dark)').matches;
+  const tc=dk?'#9c9a92':'#5f5e5a';const gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  _rankChart=new Chart(canvas,{type:'line',data:{labels:sorted.map(h=>h.date.slice(5)),datasets:[{label:'Vị trí',data:sorted.map(h=>h.pos),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Vị trí: #'+ctx.raw}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{reverse:true,min:1,grid:{color:gc},ticks:{color:tc,font:{size:10},stepSize:1,callback:v=>'#'+v}}}}});
   if(!sorted.length){document.getElementById('rank-history-list').innerHTML='<div class="empty">Chưa có dữ liệu. Thêm rank bên dưới.</div>';return;}
   document.getElementById('rank-history-list').innerHTML=`<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Ngày</th><th style="text-align:center;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Vị trí</th><th style="text-align:center;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">±</th><th style="border-bottom:1px solid var(--border)"></th></tr></thead><tbody>${[...sorted].reverse().map((h,ri)=>{const prev=sorted[sorted.length-ri-2];const delta=prev?h.pos-prev.pos:null;const ds=delta===null?'—':delta<0?`<span style="color:var(--green)">↑${Math.abs(delta)}</span>`:delta>0?`<span style="color:var(--red)">↓${delta}</span>`:'—';return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 8px">${h.date}</td><td style="padding:6px 8px;text-align:center;font-weight:600">#${h.pos}</td><td style="padding:6px 8px;text-align:center">${ds}</td><td style="padding:6px 8px;text-align:right"><button class="btn btn-xs" onclick="deleteRankEntry('${h.date}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`;
 }
