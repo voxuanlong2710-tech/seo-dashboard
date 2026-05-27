@@ -230,7 +230,17 @@ var db=firebase.firestore();
       <button class="fb" onclick="filterSvc('combo',this)">Combo</button>
     </div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>Nhom</th><th>Từ khóa</th><th>Vị trí</th><th>+/-</th><th>Intent</th><th>URL</th><th>Vấn đề</th><th>Trạng thái</th><th></th></tr></thead>
+      <thead><tr>
+  <th>Nhóm</th>
+  <th>Từ khóa</th>
+  <th style="cursor:pointer;white-space:nowrap;user-select:none" onclick="sortKw('position')">
+    <span id="sort-pos" style="display:flex;align-items:center;gap:3px">Vị trí <span style="font-size:10px;opacity:.5">↕</span></span>
+  </th>
+  <th style="cursor:pointer;white-space:nowrap;user-select:none" onclick="sortKw('change')">
+    <span id="sort-chg" style="display:flex;align-items:center;gap:3px">+/- <span style="font-size:10px;opacity:.5">↕</span></span>
+  </th>
+  <th>Intent</th><th>URL</th><th>Vấn đề</th><th>Trạng thái</th><th></th>
+</tr></thead>
       <tbody id="kw-tbody"><tr><td colspan="9"><div class="loading">...</div></td></tr></tbody>
     </table></div></div>
   </div>
@@ -550,6 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // == STATE ==
 var kwFltr = 'all', kwSvcFltr = 'all', taskFltr = 'all', artFltr = 'all', blFltr = 'all';
+var kwSortField = '', kwSortDir = 1; // 1=asc, -1=desc
 var taskView = 'list', artView = 'table', kwTab = 'list';
 var calY = new Date().getFullYear(), calM = new Date().getMonth();
 var tcalY = new Date().getFullYear(), tcalM = new Date().getMonth();
@@ -1044,6 +1055,22 @@ function listenKws(){
     renderKws();
   });
 }
+
+function sortKw(field) {
+  if(kwSortField === field) {
+    kwSortDir = -kwSortDir; // toggle direction
+  } else {
+    kwSortField = field;
+    kwSortDir = field === 'position' ? 1 : -1; // position: asc by default, change: desc
+  }
+  // Update header arrows
+  ['pos','chg'].forEach(function(f) {
+    var btn = document.getElementById('sort-'+f);
+    if(btn) btn.textContent = (f==='pos'?'Vị trí':'±') + (kwSortField===(f==='pos'?'position':'change') ? (kwSortDir===1?' ↑':' ↓') : '');
+  });
+  renderKws();
+}
+
 function filterKw(f,btn){kwFltr=f;document.querySelectorAll('#kw-flt .fb').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderKws();}
 function filterSvc(f,btn){kwSvcFltr=f;document.querySelectorAll('#svc-flt .fb').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderKws();}
 function renderKws(){
@@ -1063,6 +1090,14 @@ function renderKws(){
   var stLb={stable:'Ổn định',good:'Tot',new:'Mởi',watch:'Theo dõi',drop:'Tụt hạng',top1:'Top 1'};
   var intPill={info:'pill-b',trans:'pill-g',nav:'pill-p',comm:'pill-y'};
   var intLb={info:'Info',trans:'Trans',nav:'Nav',comm:'Comm'};
+  // Apply sort
+  if(kwSortField) {
+    kws = kws.slice().sort(function(a,b) {
+      var va = kwSortField==='position' ? (a.position||999) : (a.change||0);
+      var vb = kwSortField==='position' ? (b.position||999) : (b.change||0);
+      return (va-vb)*kwSortDir;
+    });
+  }
   var tbody=document.getElementById('kw-tbody');
   if(!kws.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chưa có từ khóa.</div></td></tr>';return;}
   tbody.innerHTML=kws.map(function(k){
