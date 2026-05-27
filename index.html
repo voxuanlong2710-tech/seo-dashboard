@@ -838,43 +838,62 @@ function renderClusters() {
   var gridEl=document.getElementById('clusters-grid');if(!gridEl)return;
   var locs=groups.filter(function(g){return g.type==='location'||!g.type;});
   var svcs=groups.filter(function(g){return g.type==='service';});
-  if(!locs.length){gridEl.innerHTML='<div style="text-align:center;padding:30px"><div style="color:var(--text3);margin-bottom:12px">Chưa có nhóm nào.</div><button class="btn btn-p btn-sm" onclick="seedGeo()">Tạo nhóm địa lý (84 địa điểm x 5 dịch vụ)</button></div>';return;}
-  var allSvcT=Array.from(new Set(svcs.map(function(s){return s.serviceType;}).filter(Boolean)));
-  var ordSvc=SVCO.filter(function(t){return allSvcT.includes(t);}).concat(allSvcT.filter(function(t){return !SVCO.includes(t);}));
+  if(!locs.length){gridEl.innerHTML='<div style="text-align:center;padding:40px"><div style="color:var(--text3);margin-bottom:14px">Chưa có nhóm nào.</div><button class="btn btn-p btn-sm" onclick="seedGeo()">Tạo nhóm địa lý (84 địa điểm × 5 dịch vụ)</button></div>';return;}
   var byR={};locs.forEach(function(g){var r=normRegion(g.region||'Khác');if(!byR[r])byR[r]=[];byR[r].push(g);});
-  function kwC(id){return (window._kws||[]).filter(function(k){return k.groupId===id;}).length;}
-  var out='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px"><div style="font-size:11px;color:var(--text2)">'+locs.length+' địa điểm x '+ordSvc.length+' dịch vụ - Kéo thả để sắp xếp</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-xs" onclick="openSvcMgr()">Quản lý dịch vụ</button><button class="btn btn-xs" onclick="openGrpModal()">+ Địa điểm</button><button class="btn btn-xs" onclick="seedGeo()">Tạo lại tất cả</button></div></div>';
-  // REGION_DISPLAY merged into REGION_NORM
-Object.keys(byR).forEach(function(region){
+  function kwC(id){return(window._kws||[]).filter(function(k){return k.groupId===id;}).length;}
+  var REGION_ORDER=['Việt Nam','Đông Nam Á','Đông Bắc Á','Trung Đông & Nam Á','Châu Âu','Châu Mỹ','Châu Úc & TBD','Châu Phi'];
+  var svcColors={flight:'#185FA5',travel:'#1D9E75',hotel:'#7F77DD',visa:'#BA7517',combo:'#D85A30'};
+  function svcBg(t){var c=svcColors[t];if(!c)c='#888780';return c+'22';}
+
+  var out='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
+    +'<div style="font-size:11px;color:var(--text2)">'+locs.length+' địa điểm — Kéo thả để sắp xếp trong khu vực</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<button class="btn btn-xs" onclick="openSvcMgr()">⚙ Quản lý dịch vụ</button>'
+    +'<button class="btn btn-xs" onclick="openGrpModal()">+ Thêm địa điểm</button>'
+    +'<button class="btn btn-xs" onclick="seedGeo()">Tạo lại tất cả</button>'
+    +'</div></div>';
+
+  var regions=REGION_ORDER.concat(Object.keys(byR).filter(function(r){return REGION_ORDER.indexOf(r)===-1;}));
+  regions.forEach(function(region){
     if(!byR[region]||!byR[region].length)return;
-    out+='<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:500;color:var(--text2);padding:5px 8px;background:var(--bg2);border-radius:var(--r);margin-bottom:6px">'+region+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px">';
+    out+='<div style="margin-bottom:20px">'
+      +'<div style="font-size:11px;font-weight:600;color:var(--text2);padding:6px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:8px;letter-spacing:.3px">'+region+'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px">';
     byR[region].forEach(function(loc){
-      var ls=svcs.filter(function(s){return s.parentId===loc.id;});
+      var ls=svcs.filter(function(s){return s.parentId===loc.id;}).sort(function(a,b){var oa=SVCO.indexOf(a.serviceType),ob=SVCO.indexOf(b.serviceType);if(oa===-1)oa=99;if(ob===-1)ob=99;return oa-ob;});
       var totalKw=ls.reduce(function(s,sv){return s+kwC(sv.id);},0);
-      out+='<div draggable="true" ondragstart="window._dLoc=\''+loc.id+'\'" ondragover="event.preventDefault();this.style.outline=\'2px dashed var(--green)\'" ondragleave="this.style.outline=\'\'" ondrop="dropLoc(event,\''+loc.id+'\');this.style.outline=\'\'" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
-        +'<div style="padding:7px 10px;font-size:12px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="drillGrp(\''+loc.id+'\')">'
-        +'<span>'+loc.name+'</span>'
-        +'<div style="display:flex;align-items:center;gap:3px">'
-        +'<span style="font-size:10px;background:var(--bg2);padding:1px 5px;border-radius:4px;color:var(--text2)">'+totalKw+' KW</span>'
-        +'<button class="btn btn-xs" title="Quản lý dịch vụ địa điểm này" onclick="event.stopPropagation();openLocSvcMgr(\''+loc.id+'\',\''+loc.name+'\')" style="padding:0 5px;font-size:11px">⚙</button>'
-        +'<button class="btn btn-xs" onclick="event.stopPropagation();delLoc(\''+loc.id+'\')" style="padding:0 4px">✕</button>'
+      var color=loc.color||'#534AB7';
+      out+='<div draggable="true" ondragstart="window._dLoc=\''+loc.id+'\'" ondragover="event.preventDefault();this.style.outline=\'2px dashed var(--green)\'" ondragleave="this.style.outline=\'\'" ondrop="dropLoc(event,\''+loc.id+'\');this.style.outline=\'\'"'
+        +' style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:10px 12px;cursor:grab;transition:box-shadow .15s" onmouseover="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,.08)\'" onmouseout="this.style.boxShadow=\'\'">'
+        // Header
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">'
+        +'<div onclick="drillGrp(\''+loc.id+'\')" style="cursor:pointer;flex:1;min-width:0">'
+        +'<div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:4px">'+loc.name+'</div>'
+        +'<div style="font-size:10px;color:var(--text2);margin-top:2px">'+totalKw+' từ khóa</div>'
         +'</div>'
-        +'</div>'
-        +(function(){
-          var locSvcs=ls.slice().sort(function(a,b){var oa=SVCO.indexOf(a.serviceType),ob=SVCO.indexOf(b.serviceType);if(oa===-1)oa=99;if(ob===-1)ob=99;return oa-ob;});
-          if(!locSvcs.length)return '<div style="font-size:10px;color:var(--text3);text-align:center;padding:8px">Chưa có dịch vụ</div>';
-          return '<div style="display:grid;grid-template-columns:repeat('+locSvcs.length+',1fr)">'
-            +locSvcs.map(function(sg){var cnt=kwC(sg.id);return '<div onclick="drillGrp(\''+sg.id+'\')" style="padding:5px 2px;text-align:center;cursor:pointer;border-right:0.5px solid var(--border);font-size:9px;transition:background .12s" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'\'">'+'<div style="color:var(--text2);margin-bottom:1px;font-size:8px">'+(SVCN[sg.serviceType]||sg.name)+'</div><div style="font-weight:500">'+cnt+'</div></div>';}).join('')
-            +'</div></div>';
-        })()
-        +'</div></div>';
+        +'<div style="display:flex;gap:3px;flex-shrink:0">'
+        +'<button title="Quản lý dịch vụ" onclick="event.stopPropagation();openLocSvcMgr(\''+loc.id+'\',\''+loc.name+'\')" style="width:20px;height:20px;border:none;background:var(--bg2);border-radius:4px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--text2)">⚙</button>'
+        +'<button onclick="event.stopPropagation();delLoc(\''+loc.id+'\')" style="width:20px;height:20px;border:none;background:var(--bg2);border-radius:4px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--text3)">✕</button>'
+        +'</div></div>'
+        // Service pills
+        +(ls.length
+          ? '<div style="display:flex;flex-wrap:wrap;gap:4px">'
+            +ls.map(function(sg){
+              var cnt=kwC(sg.id);
+              var c=svcColors[sg.serviceType]||'#888780';
+              return '<div onclick="drillGrp(\''+sg.id+'\')" style="display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:10px;background:'+c+'18;cursor:pointer;border:1px solid '+c+'33;transition:background .12s" onmouseover="this.style.background=\''+c+'30\'" onmouseout="this.style.background=\''+c+'18\'">'
+                +'<span style="font-size:10px;color:'+c+';font-weight:500">'+(SVCN[sg.serviceType]||sg.name)+'</span>'
+                +(cnt?'<span style="font-size:9px;background:'+c+';color:#fff;padding:0 4px;border-radius:6px">'+cnt+'</span>':'')
+                +'</div>';
+            }).join('')
+            +'</div>'
+          : '<div style="font-size:10px;color:var(--text3);text-align:center;padding:6px 0">Chưa có dịch vụ <span onclick="openLocSvcMgr(\''+loc.id+'\',\''+loc.name+'\')" style="color:var(--blue);cursor:pointer">+ Thêm</span></div>')
+        +'</div>';
     });
     out+='</div></div>';
   });
   gridEl.innerHTML=out;
 }
-function dropLoc(e,targetId){var srcId=window._dLoc;if(!srcId||srcId===targetId)return;var gs=window._groups||[];var src=gs.find(function(g){return g.id===srcId;});var tgt=gs.find(function(g){return g.id===targetId;});if(!src||!tgt||src.region!==tgt.region)return;var b=db.batch();b.update(db.collection('kwgroups').doc(srcId),{order:tgt.order||0});b.update(db.collection('kwgroups').doc(targetId),{order:src.order||0});b.commit().then(function(){toast('Đã đổi vị trí');});}
-function delLoc(locId){if(!confirm('Xóa dia diem nay va tat ca nhóm dịch vụ?'))return;var gs=window._groups||[];var b=db.batch();b.delete(db.collection('kwgroups').doc(locId));gs.filter(function(g){return g.parentId===locId;}).forEach(function(c){b.delete(db.collection('kwgroups').doc(c.id));});b.commit().then(function(){toast('Đã xóa');});}
 
 function openLocSvcMgr(locId, locName) {
   var gs = window._groups||[];
