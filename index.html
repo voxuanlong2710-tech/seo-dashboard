@@ -134,7 +134,8 @@ tr:hover td{background:var(--bg2)}
 .cal-event{font-size:9px;padding:1px 4px;border-radius:3px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .issue-chip{font-size:10px;padding:2px 7px;border-radius:12px;background:var(--amber-bg);color:var(--amber-text);display:inline-flex;align-items:center;gap:4px;margin:1px}
-.kw-link{cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:2px}
+.kw-link{cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:2px;display:inline-flex;align-items:center;gap:3px;padding:1px 4px;border-radius:4px;transition:background .15s}
+.kw-link:hover{background:var(--blue-bg)}
 .kw-issue-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber-text);display:inline-block;margin:1px}
 .color-opt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s}
 .color-opt.selected{border-color:var(--text);transform:scale(1.15)}
@@ -321,7 +322,7 @@ const db=firebase.firestore();
       <span style="font-size:12px;color:var(--text2)">Tự tạo nhóm để phân loại từ khóa linh hoạt</span>
       <button class="btn btn-p btn-sm" onclick="openGroupModal()">+ Tạo nhóm mới</button>
     </div>
-    <div id="clusters-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px"></div>
+    <div id="clusters-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:start"></div>
   </div>
 </div>
 
@@ -417,7 +418,7 @@ const db=firebase.firestore();
     <span style="font-size:13px;font-weight:500">Team SEO VietnamBooking</span>
     <button class="btn btn-p btn-sm" onclick="openMemberModal()">+ Thêm thành viên</button>
   </div>
-  <div id="members-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px">
+  <div id="members-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px">
     <div class="loading">Đang tải...</div>
   </div>
   <div id="member-detail"></div>
@@ -531,23 +532,25 @@ const db=firebase.firestore();
   <div class="mf"><button class="btn" onclick="closeModal('group-modal')">Hủy</button><button class="btn btn-p" onclick="saveGroup()">Lưu</button></div>
 </div></div>
 
-<div id="rank-modal" style="display:none" class="modal-ov" onclick="closeModal('rank-modal')"><div class="modal" style="max-width:500px" onclick="event.stopPropagation()">
+<div id="rank-modal" style="display:none" class="modal-ov" onclick="closeModal('rank-modal')"><div class="modal" style="max-width:560px" onclick="event.stopPropagation()">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-    <h3 id="rank-modal-kw" style="font-size:14px;word-break:break-word;max-width:400px"></h3>
+    <div>
+      <h3 id="rank-modal-kw" style="font-size:14px;word-break:break-word;max-width:440px"></h3>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">📈 Lịch sử vị trí · cập nhật mỗi tuần</div>
+    </div>
     <button class="btn btn-xs" onclick="closeModal('rank-modal')">✕</button>
   </div>
-  <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Lịch sử vị trí · cập nhật mỗi tuần</div>
-  <div style="position:relative;height:180px;margin-bottom:14px"><canvas id="rank-chart"></canvas></div>
+  <div style="position:relative;height:200px;margin:12px 0;background:var(--bg2);border-radius:var(--r);padding:8px"><canvas id="rank-chart"></canvas></div>
   <div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:14px">
-    <div style="font-size:10px;font-weight:500;margin-bottom:8px;color:var(--text2)">CẬP NHẬT RANK TUẦN NÀY</div>
+    <div style="font-size:10px;font-weight:500;margin-bottom:8px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Cập nhật rank tuần này</div>
     <div style="display:flex;gap:8px;align-items:center">
       <input type="date" id="rank-date" style="flex:1;padding:6px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/>
       <input type="number" id="rank-pos" placeholder="Vị trí..." min="1" style="width:110px;padding:6px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/>
       <button class="btn btn-p btn-sm" onclick="addRankEntry()">+ Thêm</button>
     </div>
   </div>
-  <div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:6px">LỊCH SỬ</div>
-  <div id="rank-history-list" style="max-height:200px;overflow-y:auto"></div>
+  <div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Lịch sử</div>
+  <div id="rank-history-list" style="max-height:220px;overflow-y:auto"></div>
   <input type="hidden" id="rank-kw-id"/>
 </div></div>
 
@@ -971,7 +974,7 @@ function renderClusters(){
   let _dragLoc=null;
   [...REGION_ORDER,...Object.keys(byR).filter(r=>!REGION_ORDER.includes(r))].forEach(region=>{
     if(!byR[region]||!byR[region].length)return;
-    out+=`<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:500;color:var(--text2);padding:5px 8px;background:var(--bg2);border-radius:var(--r);margin-bottom:6px">${region}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px">`;
+    out+=`<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:500;color:var(--text2);padding:5px 8px;background:var(--bg2);border-radius:var(--r);margin-bottom:6px">${region}</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;align-items:start">`;
     byR[region].forEach(loc=>{
       const ls=svcs.filter(s=>s.parentId===loc.id);
       const totalKw=ls.reduce((s,sv)=>s+kwC(sv.id),0);
@@ -1100,7 +1103,7 @@ function renderKeywords(){
     let issues=[];try{issues=JSON.parse(k.issues||'[]');}catch(e){}
     const ch=k.change||0;const histLen=(k.rankHistory||[]).length;
     const grpLabel=loc?`${loc.name} / ${SVC_NAMES[grp.serviceType]||grp.name}`:grp?grp.name:'—';
-    return`<tr><td style="font-size:10px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${grpLabel}</td><td><span class="kw-link" onclick="openRankHistory('${k.id}')">${k.keyword}</span>${histLen?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--blue-bg);color:var(--blue-text);margin-left:4px">${histLen}w</span>`:''}</td><td><span class="rank">${k.position||'—'}</span></td><td style="color:${ch>0?'var(--green)':ch<0?'var(--red)':'var(--text2)'}">${ch>0?'↑'+ch:ch<0?'↓'+Math.abs(ch):'—'}</td><td>${k.intent?`<span class="pill ${intentPill[k.intent]||''}">${intentLabel[k.intent]||k.intent}</span>`:'—'}</td><td style="font-size:10px;max-width:180px;word-break:break-all">${k.url?`<a href="${k.url}" target="_blank" style="color:var(--blue);text-decoration:none">${k.url}</a>`:'—'}</td><td style="max-width:160px">${issues.map(i=>`<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber-text);display:inline-block;margin:1px">${i}</span>`).join('')||'—'}</td><td><span class="pill ${stPill[k.status]||'pill-g'}">${stLabel[k.status]||'—'}</span></td><td style="white-space:nowrap"><button class="btn btn-xs" onclick="editKw('${k.id}')" style="margin-right:2px">✏️</button><button class="btn btn-xs" onclick="deleteDoc('keywords','${k.id}')">🗑</button></td></tr>`;
+    return`<tr><td style="font-size:10px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${grpLabel}</td><td><span class="kw-link" onclick="openRankHistory('${k.id}')" title="Xem lịch sử rank"><span>📈</span>${k.keyword}</span>${histLen?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--blue-bg);color:var(--blue-text);margin-left:4px">${histLen}w</span>`:''}</td><td><span class="rank">${k.position||'—'}</span></td><td style="color:${ch>0?'var(--green)':ch<0?'var(--red)':'var(--text2)'}">${ch>0?'↑'+ch:ch<0?'↓'+Math.abs(ch):'—'}</td><td>${k.intent?`<span class="pill ${intentPill[k.intent]||''}">${intentLabel[k.intent]||k.intent}</span>`:'—'}</td><td style="font-size:10px;max-width:180px;word-break:break-all">${k.url?`<a href="${k.url}" target="_blank" style="color:var(--blue);text-decoration:none">${k.url}</a>`:'—'}</td><td style="max-width:160px">${issues.map(i=>`<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--amber-bg);color:var(--amber-text);display:inline-block;margin:1px">${i}</span>`).join('')||'—'}</td><td><span class="pill ${stPill[k.status]||'pill-g'}">${stLabel[k.status]||'—'}</span></td><td style="white-space:nowrap"><button class="btn btn-xs" onclick="editKw('${k.id}')" style="margin-right:2px">✏️</button><button class="btn btn-xs" onclick="deleteDoc('keywords','${k.id}')">🗑</button></td></tr>`;
   }).join('');
 }
 function renderQuickWins(){
