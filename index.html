@@ -749,8 +749,10 @@ function switchKwTab(tab,el){
 function initCharts(){
   if(chartsInited)return;chartsInited=true;
   const dk=matchMedia('(prefers-color-scheme:dark)').matches,tc=dk?'#9c9a92':'#5f5e5a',gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
-  _trafficChart=new Chart(document.getElementById('trafficChart'),{type:'line',data:{labels:['T12','T1','T2','T3','T4','T5'],datasets:[{label:'Organic',data:[0,0,0,0,0,0],borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v>=1000?Math.round(v/1000)+'k':v}}}}});
-  _posChart=new Chart(document.getElementById('posChart'),{type:'doughnut',data:{labels:['Top 1–3','Top 4–10','Top 11–20','Ngoài 20'],datasets:[{data:[0,0,0,0],backgroundColor:['#1D9E75','#378ADD','#BA7517','#B4B2A9'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:10},boxWidth:9,padding:6}}}}});
+  const tc1=document.getElementById('trafficChart');
+  const pc1=document.getElementById('posChart');
+  if(tc1)_trafficChart=new Chart(tc1,{type:'line',data:{labels:['T12','T1','T2','T3','T4','T5'],datasets:[{label:'Organic',data:[0,0,0,0,0,0],borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v>=1000?Math.round(v/1000)+'k':v}}}}});
+  if(pc1)_posChart=new Chart(pc1,{type:'doughnut',data:{labels:['Top 1–3','Top 4–10','Top 11–20','Ngoài 20'],datasets:[{data:[0,0,0,0],backgroundColor:['#1D9E75','#378ADD','#BA7517','#B4B2A9'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:10},boxWidth:9,padding:6}}}}});
 }
 function updateCharts(d){
   if(!chartsInited)return;
@@ -1129,20 +1131,28 @@ function saveKw(){
 
 // ══ RANK HISTORY ══
 function openRankHistory(kwId){
-  const kw=(window._kws||[]).find(k=>k.id===kwId);if(!kw)return;
-  document.getElementById('rank-kw-id').value=kwId;
-  document.getElementById('rank-modal-kw').textContent=kw.keyword;
-  document.getElementById('rank-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('rank-pos').value='';
-  renderRankHistory(kw.rankHistory||[]);showModal('rank-modal');
+  try{
+    const kw=(window._kws||[]).find(k=>k.id===kwId);
+    if(!kw){toast('Không tìm thấy từ khóa');return;}
+    document.getElementById('rank-kw-id').value=kwId;
+    document.getElementById('rank-modal-kw').textContent=kw.keyword;
+    document.getElementById('rank-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('rank-pos').value='';
+    renderRankHistory(kw.rankHistory||[]);
+    showModal('rank-modal');
+  }catch(e){console.error('openRankHistory error:',e);toast('Lỗi mở lịch sử rank');}
 }
 function renderRankHistory(history){
   const sorted=[...history].sort((a,b)=>a.date.localeCompare(b.date));
-  if(_rankChart){_rankChart.destroy();_rankChart=null;}
-  const canvas=document.getElementById('rank-chart');if(!canvas)return;
-  const dk=matchMedia('(prefers-color-scheme:dark)').matches,tc=dk?'#9c9a92':'#5f5e5a',gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
-  _rankChart=new Chart(canvas,{type:'line',data:{labels:sorted.map(h=>h.date.slice(5)),datasets:[{label:'Vị trí',data:sorted.map(h=>h.pos),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Vị trí: #'+ctx.raw}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{reverse:true,min:1,grid:{color:gc},ticks:{color:tc,font:{size:10},stepSize:1,callback:v=>'#'+v}}}}});
-  if(!sorted.length){document.getElementById('rank-history-list').innerHTML='<div class="empty">Chưa có dữ liệu.</div>';return;}
+  if(_rankChart){try{_rankChart.destroy();}catch(e){} _rankChart=null;}
+  const canvas=document.getElementById('rank-chart');
+  if(canvas){
+    try{
+      const dk=matchMedia('(prefers-color-scheme:dark)').matches,tc=dk?'#9c9a92':'#5f5e5a',gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+      _rankChart=new Chart(canvas,{type:'line',data:{labels:sorted.map(h=>h.date.slice(5)),datasets:[{label:'Vị trí',data:sorted.map(h=>h.pos),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Vị trí: #'+ctx.raw}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{reverse:true,min:1,grid:{color:gc},ticks:{color:tc,font:{size:10},stepSize:1,callback:v=>'#'+v}}}}});
+    }catch(e){console.error('Chart error:',e);}
+  }
+  if(!sorted.length){document.getElementById('rank-history-list').innerHTML='<div class="empty">Chưa có dữ liệu. Thêm rank bên dưới.</div>';return;}
   document.getElementById('rank-history-list').innerHTML=`<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Ngày</th><th style="text-align:center;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Vị trí</th><th style="text-align:center;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">±</th><th style="border-bottom:1px solid var(--border)"></th></tr></thead><tbody>${[...sorted].reverse().map((h,ri)=>{const prev=sorted[sorted.length-ri-2];const delta=prev?h.pos-prev.pos:null;const ds=delta===null?'—':delta<0?`<span style="color:var(--green)">↑${Math.abs(delta)}</span>`:delta>0?`<span style="color:var(--red)">↓${delta}</span>`:'—';return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 8px">${h.date}</td><td style="padding:6px 8px;text-align:center;font-weight:600">#${h.pos}</td><td style="padding:6px 8px;text-align:center">${ds}</td><td style="padding:6px 8px;text-align:right"><button class="btn btn-xs" onclick="deleteRankEntry('${h.date}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function addRankEntry(){
