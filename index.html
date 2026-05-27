@@ -175,7 +175,7 @@ var db=firebase.firestore();
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
         <select id="ov-fpri" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả ưu tiên</option><option value="high">Cao</option><option value="mid">Vừa</option><option value="low">Thấp</option></select>
         <select id="ov-fown" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả TV</option></select>
-        <select id="ov-fst" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả TT</option><option value="todo">Chưa lam</option><option value="inprogress">Đang làm</option><option value="done">Xong</option><option value="late">Quá hạn</option></select>
+        <select id="ov-fst" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả TT</option><option value="todo">Chưa làm</option><option value="inprogress">Đang làm</option><option value="done">Xong</option><option value="late">Quá hạn</option></select>
       </div>
       <div class="tw"><table>
         <thead><tr><th style="width:14px"></th><th>Công việc</th><th style="width:65px">Mức độ</th><th style="width:110px">Người phụ trách</th><th style="width:80px">Danh mục</th><th style="width:75px">Hạn chót</th><th style="width:85px">Trạng thái</th></tr></thead>
@@ -1140,7 +1140,7 @@ function renderTasks(){
     return '<div class="task-item">'
       +'<div class="task-cb '+(isDone?'dn':'')+'" onclick="toggleTask(\''+t.id+'\','+!!isDone+')">'+(isDone?'v':'')+'</div>'
       +'<div class="task-body" onclick="editTask(\''+t.id+'\')">'
-      +'<div class="task-title" style="font-size:12px;'+(isDone?'color:var(--text3)':'')+'">'+t.title+'</div>'
+      +'<div class="task-title" style="font-size:12px;'+(isDone?'opacity:.55':'')+'">'+t.title+'</div>'
       +(t.note?'<div style="font-size:11px;color:var(--text2);margin-top:1px">'+t.note+'</div>':'')
       +'<div class="task-meta">'
       +'<span style="color:'+(priC[t.priority]||'var(--text2)')+'">'+(priLb[t.priority]||'-')+'</span>'
@@ -1355,7 +1355,7 @@ function renderMemDetail(id){
     +'<div style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Task tuần này ('+mt.length+')</div>'
     +(mt.length?mt.map(function(t){var isDone=t.done||t.status==='done';var isLate=!isDone&&t.deadline&&new Date(t.deadline)<today;var isDoing=t.status==='inprogress';var dot=isDone?'var(--green)':isLate?'var(--red)':isDoing?'var(--amber)':'var(--text3)';return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;cursor:pointer" onclick="editTask(\''+t.id+'\')">'
       +'<div style="width:7px;height:7px;border-radius:50%;background:'+dot+';flex-shrink:0"></div>'
-      +'<span style="flex:1;'+(isDone?'text-decoration:line-through;color:var(--text2)':'')+'">'+t.title+'</span>'
+      +'<span style="flex:1;'+(isDone?'opacity:.5':'')+'">'+t.title+'</span>'
       +'<span style="font-size:10px;color:var(--text2)">'+(isDone?'Xong':isLate?'Trễ':isDoing?'Đang làm':'Chưa')+'</span></div>';}).join(''):'<div class="empty">Không có task nào tuần này</div>')
     +'</div>';
 }
