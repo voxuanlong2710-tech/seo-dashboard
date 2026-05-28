@@ -418,11 +418,11 @@ var db=firebase.firestore();
   <div class="mf"><button class="btn" onclick="closeModal('grp-modal')">Hủy</button><button class="btn btn-p" onclick="saveGroup()">Lưu</button></div>
 </div></div><div id="task-modal" style="display:none" class="modal-ov" onclick="closeModal('task-modal')"><div class="modal" onclick="event.stopPropagation()">
   <h3 id="task-modal-title">Thêm task</h3>
-  <div class="fg"><label>Ten task *</label><input id="f-task"/></div>
+  <div class="fg"><label>Tên task *</label><input id="f-task"/></div>
   <div class="fg"><label>Ghi chú</label><input id="f-task-note"/></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <div class="fg"><label>Danh mục</label><select id="f-task-cat"><option value="technical">Technical SEO</option><option value="content">Content</option><option value="link">Link building</option><option value="other">Khac</option></select></div>
-    <div class="fg"><label>Uu tien</label><select id="f-task-pri"><option value="high">Cao</option><option value="mid">Vừa</option><option value="low">Thấp</option></select></div>
+    <div class="fg"><label>Ưu tiên</label><select id="f-task-pri"><option value="high">Cao</option><option value="mid">Vừa</option><option value="low">Thấp</option></select></div>
     <div class="fg"><label>Trạng thái</label><select id="f-task-status"><option value="todo">Cần làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option></select></div>
     <div class="fg"><label>Ngày bắt đầu</label><input type="date" id="f-task-start"/></div>
     <div class="fg"><label>Hạn chót</label><input type="date" id="f-task-due"/></div>
@@ -1132,9 +1132,15 @@ function toggleTask(id,cur){var d=!cur;db.collection('tasks').doc(id).update({do
 
 function populateOwnerSelect(selectedVal){
   var sel=document.getElementById('f-task-owner');if(!sel)return;
-  var mems=window._members||[];var tasks=window._tasks||[];
-  var names=mems.length?mems.map(function(m){return m.name;}):Array.from(new Set(tasks.map(function(t){return t.owner;}).filter(Boolean))).sort();
-  sel.innerHTML='<option value="">-- Chọn thành viên --</option>'+names.map(function(n){return '<option value="'+n+'"'+(n===selectedVal?' selected':'')+'>'+n+'</option>';}).join('');
+  var mems=window._members||[];
+  if(mems.length){
+    sel.innerHTML='<option value="">-- Chọn thành viên --</option>'+mems.map(function(m){return '<option value="'+m.name+'"'+(m.name===selectedVal?' selected':'')+'>'+m.name+'</option>';}).join('');
+  } else {
+    db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
+      window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+      sel.innerHTML='<option value="">-- Chọn thành viên --</option>'+window._members.map(function(m){return '<option value="'+m.name+'"'+(m.name===selectedVal?' selected':'')+'>'+m.name+'</option>';}).join('');
+    });
+  }
 }
 
 function openTaskModal(){
@@ -1215,10 +1221,15 @@ function hideTip(e){var tt=document.getElementById('tip');if(e&&tt&&e.relatedTar
 function populateArtAuthor(selEl,cur){
   if(!selEl)return;
   var mems=window._members||[];
-  // Fallback: collect unique authors from existing articles + members
-  var names=mems.length ? mems.map(function(m){return m.name;})
-    : Array.from(new Set((window._arts||[]).map(function(a){return a.author||a.writer||'';}).filter(Boolean))).sort();
-  selEl.innerHTML='<option value="">-- Người viết --</option>'+names.map(function(n){return '<option value="'+n+'"'+(n===cur?' selected':'')+'>'+n+'</option>';}).join('');
+  if(mems.length){
+    selEl.innerHTML='<option value="">-- Người viết --</option>'+mems.map(function(m){return '<option value="'+m.name+'"'+(m.name===cur?' selected':'')+'>'+m.name+'</option>';}).join('');
+  } else {
+    // Members not yet loaded - fetch from Firestore
+    db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
+      window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+      selEl.innerHTML='<option value="">-- Người viết --</option>'+window._members.map(function(m){return '<option value="'+m.name+'"'+(m.name===cur?' selected':'')+'>'+m.name+'</option>';}).join('');
+    });
+  }
 }
 function openArtModal(id){
   document.getElementById('art-modal-title').textContent=id?'Sửa bài viết':'Thêm bài viết';
