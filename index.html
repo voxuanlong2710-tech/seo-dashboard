@@ -144,7 +144,7 @@ var db=firebase.firestore();
   <div style="display:grid;grid-template-columns:240px 1fr;gap:14px;align-items:start;margin-bottom:14px">
     <div>
       <div class="card" style="margin-bottom:12px">
-        <div class="card-hdr"><span class="card-title">Khối lượng TV</span><span id="ov-range" style="font-size:10px;color:var(--text2)"></span></div>
+        <div class="card-hdr"><span class="card-title">Thành viên</span><span id="ov-range" style="font-size:10px;color:var(--text2)"></span></div>
         <div id="ov-members"><div class="loading">...</div></div>
       </div>
       <div class="card">
@@ -174,8 +174,8 @@ var db=firebase.firestore();
       </div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
         <select id="ov-fpri" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả ưu tiên</option><option value="high">Cao</option><option value="mid">Vừa</option><option value="low">Thấp</option></select>
-        <select id="ov-fown" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả TV</option></select>
-        <select id="ov-fst" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả TT</option><option value="todo">Chưa làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option><option value="late">Quá hạn</option></select>
+        <select id="ov-fown" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả thành viên</option></select>
+        <select id="ov-fst" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả trạng thái</option><option value="todo">Chưa làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option><option value="late">Quá hạn</option></select>
       </div>
       <div class="tw"><table>
         <thead><tr><th style="width:14px"></th><th>Công việc</th><th style="width:65px">Mức độ</th><th style="width:110px">Người phụ trách</th><th style="width:80px">Danh mục</th><th style="width:75px">Hạn chót</th><th style="width:85px">Trạng thái</th></tr></thead>
@@ -504,7 +504,6 @@ var db=firebase.firestore();
   </div><input type="hidden" id="f-mem-color" value="#534AB7"/></div>
   <input type="hidden" id="f-mem-id"/>
   <div class="mf"><button class="btn" onclick="closeModal('mem-modal')">Hủy</button><button class="btn btn-p" onclick="saveMember()">Lưu</button></div>
-</div></div>
 <script>
 
 // == AUTH ==
@@ -801,7 +800,26 @@ var REGION_NORM={'Việt Nam':'Việt Nam','Đông Nam Á':'Đông Nam Á','Đô
 function normRegion(r){return REGION_NORM[r]||r;}
 
 
-function drillGrp(gid){kwTab='list';var kl=document.getElementById('kw-list-view');var kg=document.getElementById('kw-groups-view');var tl=document.getElementById('kw-tab-list');var tg=document.getElementById('kw-tab-groups');if(kl)kl.style.display='block';if(kg)kg.style.display='none';if(tl)tl.classList.add('active');if(tg)tg.classList.remove('active');var sel=document.getElementById('kw-gf');if(sel)sel.value=gid;kwSvcFltr='all';document.querySelectorAll('#svc-flt .fb').forEach(function(b,i){b.classList.toggle('active',i===0);});renderKws();}
+function drillGrp(gid){
+  // Switch to Từ khóa tab first
+  document.querySelectorAll('.tabs .tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  var kwTab2=document.querySelector('.tabs .tab:nth-child(2)');
+  var kwPanel=document.getElementById('panel-keywords');
+  if(kwTab2)kwTab2.classList.add('active');
+  if(kwPanel)kwPanel.classList.add('active');
+  // Switch to list view
+  kwTab='list';
+  var kl=document.getElementById('kw-list-view');var kg=document.getElementById('kw-groups-view');
+  var tl=document.getElementById('kw-tab-list');var tg=document.getElementById('kw-tab-groups');
+  if(kl)kl.style.display='block';if(kg)kg.style.display='none';
+  if(tl)tl.classList.add('active');if(tg)tg.classList.remove('active');
+  // Apply group filter
+  var sel=document.getElementById('kw-gf');if(sel)sel.value=gid;
+  kwSvcFltr='all';
+  document.querySelectorAll('#svc-flt .fb').forEach(function(b,i){b.classList.toggle('active',i===0);});
+  renderKws();
+}
 function listenGroups() {
   db.collection('kwgroups').onSnapshot(function(snap){
     window._groups=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).sort(function(a,b){return (a.order||0)-(b.order||0);});
@@ -1197,7 +1215,10 @@ function hideTip(e){var tt=document.getElementById('tip');if(e&&tt&&e.relatedTar
 function populateArtAuthor(selEl,cur){
   if(!selEl)return;
   var mems=window._members||[];
-  selEl.innerHTML='<option value="">-- Người viết --</option>'+mems.map(function(m){return '<option value="'+m.name+'"'+(m.name===cur?' selected':'')+'>'+m.name+'</option>';}).join('');
+  // Fallback: collect unique authors from existing articles + members
+  var names=mems.length ? mems.map(function(m){return m.name;})
+    : Array.from(new Set((window._arts||[]).map(function(a){return a.author||a.writer||'';}).filter(Boolean))).sort();
+  selEl.innerHTML='<option value="">-- Người viết --</option>'+names.map(function(n){return '<option value="'+n+'"'+(n===cur?' selected':'')+'>'+n+'</option>';}).join('');
 }
 function openArtModal(id){
   document.getElementById('art-modal-title').textContent=id?'Sửa bài viết':'Thêm bài viết';
@@ -1399,6 +1420,8 @@ function openLocSvcMgr(locId,locName){
 function delLocSvc(svcId){if(!confirm('Xóa dịch vụ này?'))return;db.collection('kwgroups').doc(svcId).delete().then(function(){if(document.getElementById('loc-svc-mgr'))document.getElementById('loc-svc-mgr').remove();toast('Đã xóa dịch vụ');});}
 function addLocSvc(locId,locName){var key=(document.getElementById('loc-svc-add-sel').value||'').trim();if(!key){alert('Chọn dịch vụ');return;}var gs=window._groups||[];var loc=gs.find(function(g){return g.id===locId;});var name=SVCN[key]||key;db.collection('kwgroups').add({name:name,location:locName,region:loc?normRegion(loc.region||''):'',color:loc?loc.color:'#1D9E75',type:'service',serviceType:key,parentId:locId,order:Date.now(),createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){if(document.getElementById('loc-svc-mgr'))document.getElementById('loc-svc-mgr').remove();toast('Đã thêm "'+name+'"');});}
 function addLocSvcNew(locId,locName){var name=(document.getElementById('loc-svc-new-n').value||'').trim();var key=(document.getElementById('loc-svc-new-k').value||'').trim().toLowerCase().replace(/ /g,'_');if(!name||!key){alert('Nhập tên và key');return;}var gs=window._groups||[];if(gs.some(function(g){return g.parentId===locId&&g.serviceType===key;})){alert('Key đã tồn tại');return;}var loc=gs.find(function(g){return g.id===locId;});db.collection('kwgroups').add({name:name,location:locName,region:loc?normRegion(loc.region||''):'',color:loc?loc.color:'#1D9E75',type:'service',serviceType:key,parentId:locId,order:Date.now(),createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){if(document.getElementById('loc-svc-mgr'))document.getElementById('loc-svc-mgr').remove();toast('Đã thêm "'+name+'" cho '+locName);});}
+
+</script>Name);});}
 
 </script>
 </body>
