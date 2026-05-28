@@ -751,8 +751,8 @@ function renderPlan() {
         +'<div style="padding:6px 12px">'
         +items.map(function(item,ii){
           return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)">'
-            +'<div onclick="togglePlan(\''+wKey+'\',\''+name+'\','+ii+')" style="width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;'+(item.done?'background:var(--green);border-color:var(--green);color:#fff':'')+'">'+(item.done?'v':'')+'</div>'
-            +'<span style="flex:1;font-size:12px;'+(item.done?'opacity:.4':'')+'">'+(item.text||'')+'</span>'
+            +'<div onclick="togglePlan(\''+wKey+'\',\''+name+'\','+ii+')" style="width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;'+(item.done?'background:var(--green);border-color:var(--green);color:#fff':'')+'">'+(item.done?'✓':'')+'</div>'
+            +'<span style="flex:1;font-size:12px;'+(item.done?'color:var(--green-text)':'')+'">'+(item.text||'')+'</span>'
             +'<button onclick="delPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:11px">x</button>'
             +'</div>';
         }).join('')
@@ -799,6 +799,8 @@ var LOCS=[['Hà Nội','Việt Nam','#1D9E75'],['Hải Phòng','Việt Nam','#1D
 var REGION_NORM={'Việt Nam':'Việt Nam','Đông Nam Á':'Đông Nam Á','Đông Bắc Á':'Đông Bắc Á','Trung Đóng':'Trung Đông & Nam Á','Châu Âu':'Châu Âu','Châu Mỹ':'Châu Mỹ','Chau Uc':'Châu Úc & TBD','Châu Phi':'Châu Phi','Chau Uc & TBD':'Châu Úc & TBD','Đóng Nam A':'Đông Nam Á','Đóng Bac A':'Đông Bắc Á'};
 function normRegion(r){return REGION_NORM[r]||r;}
 
+
+function drillGrp(gid){kwTab='list';var kl=document.getElementById('kw-list-view');var kg=document.getElementById('kw-groups-view');var tl=document.getElementById('kw-tab-list');var tg=document.getElementById('kw-tab-groups');if(kl)kl.style.display='block';if(kg)kg.style.display='none';if(tl)tl.classList.add('active');if(tg)tg.classList.remove('active');var sel=document.getElementById('kw-gf');if(sel)sel.value=gid;kwSvcFltr='all';document.querySelectorAll('#svc-flt .fb').forEach(function(b,i){b.classList.toggle('active',i===0);});renderKws();}
 function listenGroups() {
   db.collection('kwgroups').onSnapshot(function(snap){
     window._groups=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).sort(function(a,b){return (a.order||0)-(b.order||0);});
@@ -1213,16 +1215,33 @@ function saveArt(){
   ref.set(data,{merge:true}).then(function(){closeModal('art-modal');toast('Đã lưu bài viết ✓');});
 }
 function showArtTip(e,artId){
-  clearTimeout(_tipT);var a=(window._arts||[]).find(function(x){return x.id===artId;});if(!a)return;
+  clearTimeout(_tipT);
+  var a=(window._arts||[]).find(function(x){return x.id===artId;});if(!a)return;
   var tt=document.getElementById('tip');if(!tt)return;
-  var stC={'published':'var(--green-text)','writing':'var(--amber-text)','update':'var(--red-text)','planned':'var(--blue-text)'};
   var stBg={'published':'var(--green-bg)','writing':'var(--amber-bg)','update':'var(--red-bg)','planned':'var(--blue-bg)'};
+  var stTc={'published':'var(--green-text)','writing':'var(--amber-text)','update':'var(--red-text)','planned':'var(--blue-text)'};
   var stL={'published':'Đã đăng','writing':'Đang viết','update':'Cần cập nhật','planned':'Kế hoạch'};
-  document.getElementById('tip-d').textContent=a.title;
-  document.getElementById('tip-i').innerHTML='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">'+(a.author?'<span style="font-size:11px;color:var(--text2)">✍ '+a.author+'</span>':'')+(a.keyword?'<span style="font-size:11px;color:var(--blue)">🔑 '+a.keyword+'</span>':'')+(a.status?'<span style="font-size:10px;padding:2px 6px;border-radius:7px;background:'+(stBg[a.status]||'var(--bg2)')+';color:'+(stC[a.status]||'var(--text2)')+'">'+( stL[a.status]||a.status)+'</span>':'')+(a.wordCount?'<span style="font-size:11px;color:var(--text2)">📄 '+a.wordCount.toLocaleString('vi')+' từ</span>':'')+(a.traffic?'<span style="font-size:11px;color:var(--green)">📈 '+a.traffic.toLocaleString('vi')+'</span>':'')+(a.publishDate?'<span style="font-size:11px;color:var(--text2)">📅 '+a.publishDate+'</span>':'')+'</div>';
-  tt.style.display='block';var rect=e.target.getBoundingClientRect();var tw=tt.offsetWidth||240;var vw=window.innerWidth;var left=rect.right+6;if(left+tw>vw-8)left=rect.left-tw-6;if(left<8)left=8;tt.style.left=left+'px';tt.style.top=Math.min(rect.top,window.innerHeight-150)+'px';
+  document.getElementById('tip-d').innerHTML='<strong style="font-size:12px">'+a.title+'</strong>';
+  document.getElementById('tip-i').innerHTML=
+    (a.author||a.writer?'<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;padding:5px 8px;background:var(--bg2);border-radius:var(--r)"><span style="font-size:16px">&#9998;</span><div><div style="font-size:11px;color:var(--text2)">Nguoi viet</div><div style="font-size:12px;font-weight:600">'+(a.author||a.writer)+'</div></div></div>':'')
+    +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px">'
+    +(a.status?'<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:'+(stBg[a.status]||'var(--bg2)')+';color:'+(stTc[a.status]||'var(--text2)')+'">'+stL[a.status]+'</span>':'')
+    +(a.keyword?'<span style="font-size:10px;color:var(--blue)">&#128273; '+a.keyword+'</span>':'')
+    +(a.wordCount?'<span style="font-size:10px;color:var(--text2)">'+a.wordCount.toLocaleString('vi')+' tu</span>':'')
+    +(a.traffic?'<span style="font-size:10px;color:var(--green)">'+a.traffic.toLocaleString('vi')+' traffic</span>':'')
+    +(a.publishDate?'<span style="font-size:10px;color:var(--text2)">&#128197; '+a.publishDate+'</span>':'')
+    +(a.url?'<a href="'+a.url+'" target="_blank" style="font-size:10px;color:var(--blue)">Xem bai</a>':'')
+    +'</div>';
+  tt.style.display='block';
+  var rect=e.target.getBoundingClientRect();
+  var tw=tt.offsetWidth||260;var th=tt.offsetHeight||120;
+  var vw=window.innerWidth;var vh=window.innerHeight;
+  var left=rect.right+8;var top=rect.top;
+  if(left+tw>vw-8)left=rect.left-tw-8;
+  if(top+th>vh-8)top=vh-th-8;
+  if(left<8)left=8;
+  tt.style.left=left+'px';tt.style.top=top+'px';
 }
-
 function listenArts(){db.collection('articles').orderBy('createdAt','desc').onSnapshot(function(snap){window._arts=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});renderArts();renderCalendar();});}
 function filterArt(f,btn){artFltr=f;document.querySelectorAll('#art-flt .fb').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderArts();}
 function setArtView(v){artView=v;document.getElementById('art-tv').style.display=v==='table'?'block':'none';document.getElementById('art-cv').style.display=v==='calendar'?'block':'none';document.getElementById('vtbl-btn').style.cssText=v==='table'?'border-color:var(--green);color:var(--green)':'';document.getElementById('vcal-btn').style.cssText=v==='calendar'?'border-color:var(--green);color:var(--green)':'';if(v==='calendar')renderCalendar();}
@@ -1330,7 +1349,7 @@ function renderMemDetail(id){
     +'<div style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Task tuần này ('+mt.length+')</div>'
     +(mt.length?mt.map(function(t){var isDone=t.done||t.status==='done';var isLate=!isDone&&t.deadline&&new Date(t.deadline)<today;var isDoing=t.status==='inprogress';var dot=isDone?'var(--green)':isLate?'var(--red)':isDoing?'var(--amber)':'var(--text3)';return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;cursor:pointer" onclick="editTask(\''+t.id+'\')">'
       +'<div style="width:7px;height:7px;border-radius:50%;background:'+dot+';flex-shrink:0"></div>'
-      +'<span style="flex:1;'+(isDone?'opacity:.45':'')+'">'+t.title+'</span>'
+      +'<span style="flex:1;'+(isDone?'color:var(--text2)':'')+'">'+t.title+'</span>'
       +'<span style="font-size:10px;color:var(--text2)">'+(isDone?'Hoàn thành':isLate?'Tre':isDoing?'Đang làm':'Chua')+'</span></div>';}).join(''):'<div class="empty">Khong co task nao tuan nay</div>')
     +'</div>';
 }
