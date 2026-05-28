@@ -187,7 +187,7 @@ var db=firebase.firestore();
   <!-- Kế hoạch tuan -->
   <div class="card">
     <div class="card-hdr">
-      <div><span class="card-title">Kế hoạch công việc tuần</span><span style="font-size:10px;color:var(--text2);margin-left:8px">Ghi chú rieng - luu theo tung tuan</span></div>
+      <div><span class="card-title">Kế hoạch công việc tuần</span></div>
       <div style="display:flex;gap:5px;align-items:center">
         <button class="btn btn-sm" onclick="planPrev()">Trước</button>
         <span id="plan-label" style="font-size:12px;font-weight:500;min-width:120px;text-align:center"></span>
@@ -426,7 +426,7 @@ var db=firebase.firestore();
     <div class="fg"><label>Trạng thái</label><select id="f-task-status"><option value="todo">Cần làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option></select></div>
     <div class="fg"><label>Ngày bắt đầu</label><input type="date" id="f-task-start"/></div>
     <div class="fg"><label>Hạn chót</label><input type="date" id="f-task-due"/></div>
-    <div class="fg"><label>Người phụ trách</label><input id="f-task-owner"/></div>
+    <div class="fg"><label>Người phụ trách</label><select id="f-task-owner" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"><option value="">-- Chọn thành viên --</option></select></div>
   </div>
   <div style="border-top:1px solid var(--border);margin:10px 0;padding-top:10px">
     <div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Chi tiết bài viết</div>
@@ -436,8 +436,8 @@ var db=firebase.firestore();
         <a id="f-task-url-a" href="#" target="_blank" style="display:none;color:var(--blue);font-size:11px;white-space:nowrap">Mo</a>
       </div>
     </div>
-    <div class="fg"><label>Từ khóa chinh</label><input id="f-task-kwm" placeholder="từ khóa chính..."/></div>
-    <div class="fg"><label>Từ khóa phu</label><input id="f-task-kws" placeholder="từ khóa phụ..."/></div>
+    <div class="fg"><label>Từ khóa chính</label><input id="f-task-kwm" placeholder="từ khóa chính..."/></div>
+    <div class="fg"><label>Từ khóa phụ</label><input id="f-task-kws" placeholder="từ khóa phụ..."/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div class="fg"><label>Google Doc</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -458,7 +458,8 @@ var db=firebase.firestore();
 </div></div><div id="art-modal" style="display:none" class="modal-ov" onclick="closeModal('art-modal')"><div class="modal" onclick="event.stopPropagation()">
   <h3 id="art-modal-title">Thêm bài viết</h3>
   <div class="fg"><label>Tiêu đề *</label><input id="f-art-title"/></div>
-  <div class="fg"><label>Từ khóa chinh</label><input id="f-art-kw"/></div>
+  <div class="fg"><label>Từ khóa chính</label><input id="f-art-kw"/></div>
+  <div class="fg"><label>Người viết</label><select id="f-art-author" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"><option value="">-- Chọn người viết --</option></select></div>
   <div class="fg"><label>URL</label><input id="f-art-url" placeholder="https://..."/></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <div class="fg"><label>Số từ</label><input type="number" id="f-art-words"/></div>
