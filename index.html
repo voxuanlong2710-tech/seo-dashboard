@@ -96,10 +96,10 @@ tr:hover td{background:var(--bg2)}
   <div class="lc">
     <div style="width:44px;height:44px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px">🔒</div>
     <div style="font-size:16px;font-weight:600;margin-bottom:4px">Dashboard SEO VietnamBooking</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:18px">Nhap thong tin de truy cap</div>
-    <input class="li" id="lu" type="text" placeholder="Ten dang nhap..." autocomplete="username"/>
-    <input class="li" id="lp" type="password" placeholder="Mat khau..." autocomplete="current-password"/>
-    <button class="lb" id="login-btn">Dang nhap</button>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:18px">Nhập thong tin de truy cap</div>
+    <input class="li" id="lu" type="text" placeholder="Tên đăng nhập..." autocomplete="username"/>
+    <input class="li" id="lp" type="password" placeholder="Mật khẩu..." autocomplete="current-password"/>
+    <button class="lb" id="login-btn">Đăng nhập</button>
     <div id="le" style="font-size:11px;color:var(--red);margin-top:8px;min-height:16px"></div>
   </div>
 </div>
@@ -124,31 +124,31 @@ var db=firebase.firestore();
 </div>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('overview',this)">Tong quan</button>
-  <button class="tab" onclick="switchTab('keywords',this)">Tu khoa</button>
-  <button class="tab" onclick="switchTab('tasks',this)">Cong viec</button>
-  <button class="tab" onclick="switchTab('content',this)">Bai viet</button>
+  <button class="tab active" onclick="switchTab('overview',this)">Tổng quan</button>
+  <button class="tab" onclick="switchTab('keywords',this)">Từ khóa</button>
+  <button class="tab" onclick="switchTab('tasks',this)">Công việc</button>
+  <button class="tab" onclick="switchTab('content',this)">Bài viết</button>
   <button class="tab" onclick="switchTab('backlinks',this)">Backlinks</button>
-  <button class="tab" onclick="switchTab('members',this)">Thanh vien</button>
-  <button class="tab" onclick="switchTab('report',this)">Bao cao</button>
+  <button class="tab" onclick="switchTab('members',this)">Thành viên</button>
+  <button class="tab" onclick="switchTab('report',this)">Báo cáo</button>
 </div>
 
 <!-- OVERVIEW -->
 <div id="panel-overview" class="panel active">
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Task tuan nay</div><div style="font-size:22px;font-weight:600" id="ov-total">0</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-sub">0 hoan thanh</div></div>
-    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Uu tien cao</div><div style="font-size:22px;font-weight:600;color:var(--red)" id="ov-high">0</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-high-sub">chua bat dau</div></div>
-    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Dang thuc hien</div><div style="font-size:22px;font-weight:600;color:var(--amber)" id="ov-doing">0</div></div>
-    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Qua han</div><div style="font-size:22px;font-weight:600;color:var(--red)" id="ov-late">0</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Task tuần này</div><div style="font-size:22px;font-weight:600" id="ov-total">0</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-sub">0 hoàn thành</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Ưu tiên cao</div><div style="font-size:22px;font-weight:600;color:var(--red)" id="ov-high">0</div><div style="font-size:11px;color:var(--text2);margin-top:2px" id="ov-high-sub">chưa bắt đầu</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Đang thực hiện</div><div style="font-size:22px;font-weight:600;color:var(--amber)" id="ov-doing">0</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Quá hạn</div><div style="font-size:22px;font-weight:600;color:var(--red)" id="ov-late">0</div></div>
   </div>
   <div style="display:grid;grid-template-columns:240px 1fr;gap:14px;align-items:start;margin-bottom:14px">
     <div>
       <div class="card" style="margin-bottom:12px">
-        <div class="card-hdr"><span class="card-title">Khoi luong TV</span><span id="ov-range" style="font-size:10px;color:var(--text2)"></span></div>
+        <div class="card-hdr"><span class="card-title">Khối lượng TV</span><span id="ov-range" style="font-size:10px;color:var(--text2)"></span></div>
         <div id="ov-members"><div class="loading">...</div></div>
       </div>
       <div class="card">
-        <div class="card-hdr"><span class="card-title">Phan bo uu tien</span></div>
+        <div class="card-hdr"><span class="card-title">Phân bổ ưu tiên</span></div>
         <div id="ov-pri"></div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:8px">
@@ -162,37 +162,37 @@ var db=firebase.firestore();
     <div class="card">
       <div class="card-hdr">
         <div style="display:flex;align-items:center;gap:8px">
-          <span class="card-title">Bang cong viec tuan</span>
-          <span id="ov-badge" style="font-size:9px;padding:1px 6px;border-radius:4px;background:var(--green-bg);color:var(--green-text)">Tuan hien tai</span>
+          <span class="card-title">Bảng công việc tuần</span>
+          <span id="ov-badge" style="font-size:9px;padding:1px 6px;border-radius:4px;background:var(--green-bg);color:var(--green-text)">Tuần hiện tại</span>
         </div>
         <div style="display:flex;gap:5px;align-items:center">
-          <button class="btn btn-sm" onclick="ovPrev()">Truoc</button>
+          <button class="btn btn-sm" onclick="ovPrev()">Trước</button>
           <span id="ov-wlabel" style="font-size:12px;font-weight:500;min-width:120px;text-align:center"></span>
-          <button class="btn btn-sm" onclick="ovNext()">Tiep</button>
-          <button class="btn btn-sm" onclick="ovToday()">Hom nay</button>
+          <button class="btn btn-sm" onclick="ovNext()">Tiếp</button>
+          <button class="btn btn-sm" onclick="ovToday()">Hôm nay</button>
         </div>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-        <select id="ov-fpri" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tat ca uu tien</option><option value="high">Cao</option><option value="mid">Vua</option><option value="low">Thap</option></select>
-        <select id="ov-fown" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tat ca TV</option></select>
-        <select id="ov-fst" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tat ca TT</option><option value="todo">Chua lam</option><option value="inprogress">Dang lam</option><option value="done">Xong</option><option value="late">Qua han</option></select>
+        <select id="ov-fpri" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả ưu tiên</option><option value="high">Cao</option><option value="mid">Vừa</option><option value="low">Thấp</option></select>
+        <select id="ov-fown" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả TV</option></select>
+        <select id="ov-fst" onchange="renderOvTable()" style="padding:4px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:11px;font-family:var(--font)"><option value="">Tất cả TT</option><option value="todo">Chưa làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option><option value="late">Quá hạn</option></select>
       </div>
       <div class="tw"><table>
-        <thead><tr><th style="width:14px"></th><th>Cong viec</th><th style="width:65px">Muc do</th><th style="width:110px">Nguoi phu trach</th><th style="width:80px">Danh muc</th><th style="width:75px">Han chot</th><th style="width:85px">Trang thai</th></tr></thead>
+        <thead><tr><th style="width:14px"></th><th>Công việc</th><th style="width:65px">Mức độ</th><th style="width:110px">Người phụ trách</th><th style="width:80px">Danh mục</th><th style="width:75px">Hạn chót</th><th style="width:85px">Trạng thái</th></tr></thead>
         <tbody id="ov-tbody"><tr><td colspan="7"><div class="loading">...</div></td></tr></tbody>
       </table></div>
-      <div id="ov-empty" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:12px">Khong co task nao trong tuan nay</div>
+      <div id="ov-empty" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:12px">Không có task nào trong tuần này</div>
     </div>
   </div>
-  <!-- Ke hoach tuan -->
+  <!-- Kế hoạch tuan -->
   <div class="card">
     <div class="card-hdr">
-      <div><span class="card-title">Ke hoach cong viec tuan</span><span style="font-size:10px;color:var(--text2);margin-left:8px">Ghi chu rieng - luu theo tung tuan</span></div>
+      <div><span class="card-title">Kế hoạch công việc tuần</span><span style="font-size:10px;color:var(--text2);margin-left:8px">Ghi chú rieng - luu theo tung tuan</span></div>
       <div style="display:flex;gap:5px;align-items:center">
-        <button class="btn btn-sm" onclick="planPrev()">Truoc</button>
+        <button class="btn btn-sm" onclick="planPrev()">Trước</button>
         <span id="plan-label" style="font-size:12px;font-weight:500;min-width:120px;text-align:center"></span>
-        <button class="btn btn-sm" onclick="planNext()">Tiep</button>
-        <button class="btn btn-sm" onclick="planToday()">Hom nay</button>
+        <button class="btn btn-sm" onclick="planNext()">Tiếp</button>
+        <button class="btn btn-sm" onclick="planToday()">Hôm nay</button>
       </div>
     </div>
     <div id="plan-body"><div class="loading">...</div></div>
@@ -202,35 +202,35 @@ var db=firebase.firestore();
 <!-- KEYWORDS -->
 <div id="panel-keywords" class="panel">
   <div style="display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:14px">
-    <button class="tab active" id="kw-tab-list" onclick="switchKwTab('list',this)">Danh sach</button>
-    <button class="tab" id="kw-tab-groups" onclick="switchKwTab('groups',this)">Theo nhom</button>
+    <button class="tab active" id="kw-tab-list" onclick="switchKwTab('list',this)">Danh sách</button>
+    <button class="tab" id="kw-tab-groups" onclick="switchKwTab('groups',this)">Theo nhóm</button>
   </div>
   <div id="kw-list-view">
     <div class="sec-hdr">
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         <div class="fr" id="kw-flt" style="margin-bottom:0">
-          <button class="fb active" onclick="filterKw('all',this)">Tat ca</button>
+          <button class="fb active" onclick="filterKw('all',this)">Tất cả</button>
           <button class="fb" onclick="filterKw('top3',this)">Top 1-3</button>
           <button class="fb" onclick="filterKw('top10',this)">Top 4-10</button>
-          <button class="fb" onclick="filterKw('drop',this)">Tut hang</button>
+          <button class="fb" onclick="filterKw('drop',this)">Tụt hạng</button>
         </div>
-        <select id="kw-gf" onchange="kwSvcFilter='all';renderKws()" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-family:var(--font);max-width:200px"><option value="">Tat ca nhom</option></select>
+        <select id="kw-gf" onchange="kwSvcFilter='all';renderKws()" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-family:var(--font);max-width:200px"><option value="">Tất cả nhóm</option></select>
       </div>
-      <button class="btn btn-p btn-sm" onclick="openKwModal()">+ Tu khoa</button>
+      <button class="btn btn-p btn-sm" onclick="openKwModal()">+ Từ khóa</button>
     </div>
     <div class="fr" id="svc-flt" style="margin-bottom:8px">
-      <button class="fb active" onclick="filterSvc('all',this)">Tat ca dich vu</button>
-      <button class="fb" onclick="filterSvc('flight-vn',this)">MB Noi dia</button>
-      <button class="fb" onclick="filterSvc('flight-intl',this)">MB Quoc te</button>
-      <button class="fb" onclick="filterSvc('travel-vn',this)">Du lich trong nuoc</button>
-      <button class="fb" onclick="filterSvc('travel-intl',this)">Du lich ngoai nuoc</button>
-      <button class="fb" onclick="filterSvc('hotel-vn',this)">KS trong nuoc</button>
-      <button class="fb" onclick="filterSvc('hotel-intl',this)">KS ngoai nuoc</button>
+      <button class="fb active" onclick="filterSvc('all',this)">Tất cả dịch vụ</button>
+      <button class="fb" onclick="filterSvc('flight-vn',this)">MB Nội địa</button>
+      <button class="fb" onclick="filterSvc('flight-intl',this)">MB Quốc tế</button>
+      <button class="fb" onclick="filterSvc('travel-vn',this)">Du lịch trong nước</button>
+      <button class="fb" onclick="filterSvc('travel-intl',this)">Du lịch ngoài nước</button>
+      <button class="fb" onclick="filterSvc('hotel-vn',this)">KS trong nước</button>
+      <button class="fb" onclick="filterSvc('hotel-intl',this)">KS ngoài nước</button>
       <button class="fb" onclick="filterSvc('visa',this)">Visa</button>
       <button class="fb" onclick="filterSvc('combo',this)">Combo</button>
     </div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>Nhom</th><th>Tu khoa</th><th>Vi tri</th><th>+/-</th><th>Intent</th><th>URL</th><th>Van de</th><th>Trang thai</th><th></th></tr></thead>
+      <thead><tr><th>Nhóm</th><th>Từ khóa</th><th>Vị trí</th><th>+/-</th><th>Intent</th><th>URL</th><th>Vấn đề</th><th>Trạng thái</th><th></th></tr></thead>
       <tbody id="kw-tbody"><tr><td colspan="9"><div class="loading">...</div></td></tr></tbody>
     </table></div></div>
   </div>
@@ -241,15 +241,15 @@ var db=firebase.firestore();
 <div id="panel-tasks" class="panel">
   <div class="sec-hdr">
     <div class="fr" id="task-flt" style="margin-bottom:0">
-      <button class="fb active" onclick="filterTask('all',this)">Tat ca</button>
-      <button class="fb" onclick="filterTask('calendar',this)">Lich</button>
+      <button class="fb active" onclick="filterTask('all',this)">Tất cả</button>
+      <button class="fb" onclick="filterTask('calendar',this)">Lịch</button>
       <button class="fb" onclick="filterTask('technical',this)">Technical</button>
       <button class="fb" onclick="filterTask('content',this)">Content</button>
       <button class="fb" onclick="filterTask('link',this)">Link building</button>
     </div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <input id="tsearch" type="text" placeholder="Tim task..." oninput="renderTasks();renderKanban()" style="padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);width:120px"/>
-      <select id="town" onchange="renderTasks();renderKanban()" style="padding:5px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"><option value="">Tat ca</option></select>
+      <input id="tsearch" type="text" placeholder="Tìm task..." oninput="renderTasks();renderKanban()" style="padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);width:120px"/>
+      <select id="town" onchange="renderTasks();renderKanban()" style="padding:5px 8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"><option value="">Tất cả</option></select>
       <button class="btn btn-sm" id="vlist-btn" onclick="setTaskView('list')" style="border-color:var(--green);color:var(--green)">List</button>
       <button class="btn btn-sm" id="vkanban-btn" onclick="setTaskView('kanban')">Kanban</button>
       <button class="btn btn-p btn-sm" onclick="openTaskModal()">+ Task</button>
@@ -263,27 +263,27 @@ var db=firebase.firestore();
 <div id="panel-content" class="panel">
   <div class="sec-hdr">
     <div class="fr" id="art-flt" style="margin-bottom:0">
-      <button class="fb active" onclick="filterArt('all',this)">Tat ca</button>
-      <button class="fb" onclick="filterArt('published',this)">Da dang</button>
-      <button class="fb" onclick="filterArt('writing',this)">Dang viet</button>
-      <button class="fb" onclick="filterArt('update',this)">Can cap nhat</button>
+      <button class="fb active" onclick="filterArt('all',this)">Tất cả</button>
+      <button class="fb" onclick="filterArt('published',this)">Đã đăng</button>
+      <button class="fb" onclick="filterArt('writing',this)">Đang viết</button>
+      <button class="fb" onclick="filterArt('update',this)">Cần cập nhật</button>
     </div>
     <div style="display:flex;gap:6px">
-      <button class="btn btn-sm" id="vtbl-btn" onclick="setArtView('table')" style="border-color:var(--green);color:var(--green)">Danh sach</button>
-      <button class="btn btn-sm" id="vcal-btn" onclick="setArtView('calendar')">Lich</button>
-      <button class="btn btn-p btn-sm" onclick="openArtModal()">+ Bai viet</button>
+      <button class="btn btn-sm" id="vtbl-btn" onclick="setArtView('table')" style="border-color:var(--green);color:var(--green)">Danh sách</button>
+      <button class="btn btn-sm" id="vcal-btn" onclick="setArtView('calendar')">Lịch</button>
+      <button class="btn btn-p btn-sm" onclick="openArtModal()">+ Bài viết</button>
     </div>
   </div>
   <div id="art-tv"><div class="card"><div class="tw"><table>
-    <thead><tr><th>Tieu de</th><th>Tu khoa</th><th>So tu</th><th>TT</th><th>Traffic</th><th>Vi tri</th><th>Ngay</th><th>URL</th><th></th></tr></thead>
+    <thead><tr><th>Tiêu đề</th><th>Từ khóa</th><th>Số từ</th><th>TT</th><th>Traffic</th><th>Vị trí</th><th>Ngày</th><th>URL</th><th></th></tr></thead>
     <tbody id="art-tbody"><tr><td colspan="9"><div class="loading">...</div></td></tr></tbody>
   </table></div></div></div>
   <div id="art-cv" style="display:none">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <button class="btn btn-sm" onclick="calPrev()">Truoc</button>
+        <button class="btn btn-sm" onclick="calPrev()">Trước</button>
         <span id="cal-title" style="font-size:13px;font-weight:500"></span>
-        <button class="btn btn-sm" onclick="calNext()">Tiep</button>
+        <button class="btn btn-sm" onclick="calNext()">Tiếp</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
         <div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">T2</div><div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">T3</div><div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">T4</div><div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">T5</div><div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">T6</div><div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">T7</div><div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">CN</div>
@@ -296,22 +296,22 @@ var db=firebase.firestore();
 <!-- BACKLINKS -->
 <div id="panel-backlinks" class="panel">
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
-    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Tong backlinks</div><div style="font-size:22px;font-weight:600" id="bl-total">0</div></div>
-    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Moi thang nay</div><div style="font-size:22px;font-weight:600;color:var(--green)" id="bl-new">0</div></div>
-    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Da mat</div><div style="font-size:22px;font-weight:600;color:var(--red)" id="bl-lost">0</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Tổng backlinks</div><div style="font-size:22px;font-weight:600" id="bl-total">0</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Mới tháng này</div><div style="font-size:22px;font-weight:600;color:var(--green)" id="bl-new">0</div></div>
+    <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Đã mất</div><div style="font-size:22px;font-weight:600;color:var(--red)" id="bl-lost">0</div></div>
     <div style="background:var(--bg2);border-radius:var(--r);padding:12px 14px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">Domains</div><div style="font-size:22px;font-weight:600" id="bl-dom">0</div></div>
   </div>
   <div class="sec-hdr">
     <div class="fr" id="bl-flt" style="margin-bottom:0">
-      <button class="fb active" onclick="filterBl('all',this)">Tat ca</button>
+      <button class="fb active" onclick="filterBl('all',this)">Tất cả</button>
       <button class="fb" onclick="filterBl('new',this)">Moi</button>
       <button class="fb" onclick="filterBl('active',this)">Active</button>
-      <button class="fb" onclick="filterBl('lost',this)">Da mat</button>
+      <button class="fb" onclick="filterBl('lost',this)">Đã mất</button>
     </div>
     <button class="btn btn-p btn-sm" onclick="openBlModal()">+ Backlink</button>
   </div>
   <div class="card"><div class="tw"><table>
-    <thead><tr><th>Domain</th><th>DR</th><th>Anchor</th><th>Trang dich</th><th>TT</th><th>Ngay</th><th></th></tr></thead>
+    <thead><tr><th>Domain</th><th>DR</th><th>Anchor</th><th>Trang đích</th><th>TT</th><th>Ngày</th><th></th></tr></thead>
     <tbody id="bl-tbody"><tr><td colspan="7"><div class="loading">...</div></td></tr></tbody>
   </table></div></div>
 </div>
@@ -320,7 +320,7 @@ var db=firebase.firestore();
 <div id="panel-members" class="panel">
   <div class="sec-hdr">
     <span style="font-size:13px;font-weight:500">Team SEO VietnamBooking</span>
-    <button class="btn btn-p btn-sm" onclick="openMemberModal()">+ Thanh vien</button>
+    <button class="btn btn-p btn-sm" onclick="openMemberModal()">+ Thành viên</button>
   </div>
   <div id="members-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px"><div class="loading">...</div></div>
   <div id="member-detail"></div>
@@ -332,11 +332,11 @@ var db=firebase.firestore();
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <input type="text" id="r-agency" placeholder="Ten agency..." style="padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;width:160px"/>
       <input type="text" id="r-client" placeholder="Ten client..." style="padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;width:160px"/>
-      <button class="btn btn-p btn-sm" onclick="buildReport()">Tao bao cao</button>
+      <button class="btn btn-p btn-sm" onclick="buildReport()">Tạo báo cáo</button>
     </div>
     <button class="btn btn-sm" onclick="window.print()">In / PDF</button>
   </div>
-  <div class="card" id="report-content" style="max-width:720px;margin:0 auto"><div style="text-align:center;color:var(--text3);padding:40px">Nhap ten roi nhan "Tao bao cao"</div></div>
+  <div class="card" id="report-content" style="max-width:720px;margin:0 auto"><div style="text-align:center;color:var(--text3);padding:40px">Nhập ten roi nhan "Tạo báo cáo"</div></div>
 </div>
 
 </div><!-- /app -->
@@ -349,32 +349,32 @@ var db=firebase.firestore();
 
 <!-- MODALS -->
 <div id="kpi-modal" style="display:none" class="modal-ov" onclick="closeModal('kpi-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3>Cap nhat KPI</h3>
+  <h3>Cập nhật KPI</h3>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <div class="fg"><label>Organic traffic</label><input type="number" id="f-tr"/></div>
     <div class="fg"><label>Traffic thang truoc</label><input type="number" id="f-tr-p"/></div>
-    <div class="fg"><label>Top 3 tu khoa</label><input type="number" id="f-t3"/></div>
+    <div class="fg"><label>Top 3 từ khóa</label><input type="number" id="f-t3"/></div>
     <div class="fg"><label>Backlinks</label><input type="number" id="f-bl"/></div>
   </div>
-  <div class="mf"><button class="btn" onclick="closeModal('kpi-modal')">Huy</button><button class="btn btn-p" onclick="saveKpi()">Luu</button></div>
+  <div class="mf"><button class="btn" onclick="closeModal('kpi-modal')">Hủy</button><button class="btn btn-p" onclick="saveKpi()">Lưu</button></div>
 </div></div><div id="kw-modal" style="display:none" class="modal-ov" onclick="closeModal('kw-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3 id="kw-modal-title">Them tu khoa</h3>
-  <div class="fg"><label>Tu khoa *</label><input id="f-kw"/></div>
-  <div class="fg"><label>Nhom</label><select id="f-kw-grp"><option value="">Chua phan nhom</option></select></div>
+  <h3 id="kw-modal-title">Thêm từ khóa</h3>
+  <div class="fg"><label>Từ khóa *</label><input id="f-kw"/></div>
+  <div class="fg"><label>Nhom</label><select id="f-kw-grp"><option value="">Chưa phân nhóm</option></select></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <div class="fg"><label>Vi tri</label><input type="number" id="f-pos"/></div>
+    <div class="fg"><label>Vị trí</label><input type="number" id="f-pos"/></div>
     <div class="fg"><label>Thay doi</label><input type="number" id="f-chg"/></div>
   </div>
   <div class="fg"><label>Intent</label><select id="f-intent"><option value="">--</option><option value="info">Informational</option><option value="trans">Transactional</option><option value="nav">Navigational</option><option value="comm">Commercial</option></select></div>
   <div class="fg"><label>URL muc tieu</label><input id="f-kw-url"/></div>
-  <div class="fg"><label>Trang thai</label><select id="f-kw-st"><option value="stable">On dinh</option><option value="good">Tot</option><option value="new">Moi</option><option value="watch">Theo doi</option><option value="drop">Tut hang</option><option value="top1">Top 1</option></select></div>
-  <div class="fg"><label>Van de (Enter de them)</label>
+  <div class="fg"><label>Trạng thái</label><select id="f-kw-st"><option value="stable">Ổn định</option><option value="good">Tốt</option><option value="new">Mới</option><option value="watch">Theo dõi</option><option value="drop">Tụt hạng</option><option value="top1">Top 1 🔥</option></select></div>
+  <div class="fg"><label>Vấn đề (Enter de them)</label>
     <input id="f-issue-in" placeholder="VD: CTR thap..." onkeydown="addIssue(event)"/>
     <div id="f-issue-tags" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px"></div>
     <input type="hidden" id="f-issues" value="[]"/>
   </div>
   <input type="hidden" id="f-kw-id"/>
-  <div class="mf"><button class="btn" onclick="closeModal('kw-modal')">Huy</button><button class="btn btn-p" onclick="saveKw()">Luu</button></div>
+  <div class="mf"><button class="btn" onclick="closeModal('kw-modal')">Hủy</button><button class="btn btn-p" onclick="saveKw()">Lưu</button></div>
 </div></div><div id="rank-modal" style="display:none" class="modal-ov" onclick="closeModal('rank-modal')"><div class="modal" style="max-width:500px" onclick="event.stopPropagation()">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
     <h3 id="rank-kw-name" style="font-size:14px;word-break:break-word;max-width:400px"></h3>
@@ -385,22 +385,22 @@ var db=firebase.firestore();
     <div style="font-size:10px;font-weight:500;margin-bottom:8px;color:var(--text2)">THEM DU LIEU RANK</div>
     <div style="display:flex;gap:8px;align-items:center">
       <input type="date" id="rank-date" style="flex:1;padding:6px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/>
-      <input type="number" id="rank-pos" placeholder="Vi tri..." style="width:90px;padding:6px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/>
+      <input type="number" id="rank-pos" placeholder="Vị trí..." style="width:90px;padding:6px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/>
       <button class="btn btn-p btn-sm" onclick="addRankEntry()">Them</button>
     </div>
   </div>
   <div id="rank-hist-list" style="max-height:200px;overflow-y:auto"></div>
   <input type="hidden" id="rank-kw-id"/>
 </div></div><div id="grp-modal" style="display:none" class="modal-ov" onclick="closeModal('grp-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3 id="grp-modal-title">Them dia diem</h3>
-  <div class="fg"><label>Ten dia diem *</label><input id="f-grp-name" placeholder="VD: Ha Noi"/></div>
-  <div class="fg"><label>Khu vuc</label><select id="f-grp-region">
-    <option value="Viet Nam">Viet Nam</option><option value="Dong Nam A">Dong Nam A</option>
-    <option value="Dong Bac A">Dong Bac A</option><option value="Trung Dong">Trung Dong &amp; Nam A</option>
-    <option value="Chau Au">Chau Au</option><option value="Chau My">Chau My</option>
-    <option value="Chau Uc">Chau Uc &amp; TBD</option><option value="Chau Phi">Chau Phi</option>
+  <h3 id="grp-modal-title">Thêm địa điểm</h3>
+  <div class="fg"><label>Tên địa điểm *</label><input id="f-grp-name" placeholder="VD: Ha Noi"/></div>
+  <div class="fg"><label>Khu vực</label><select id="f-grp-region">
+    <option value="Việt Nam">Việt Nam</option><option value="Đông Nam Á">Đông Nam Á</option>
+    <option value="Đông Bắc Á">Đông Bắc Á</option><option value="Trung Đóng">Trung Đông &amp; Nam Á</option>
+    <option value="Châu Âu">Châu Âu</option><option value="Châu Mỹ">Châu Mỹ</option>
+    <option value="Chau Uc">Châu Úc &amp; TBD</option><option value="Châu Phi">Châu Phi</option>
   </select></div>
-  <div class="fg"><label>Mau</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="grp-colors">
+  <div class="fg"><label>Màu</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="grp-colors">
     <div class="color-opt sel" data-c="#1D9E75" onclick="pickGrpColor(this)" style="background:#1D9E75"></div>
     <div class="color-opt" data-c="#534AB7" onclick="pickGrpColor(this)" style="background:#534AB7"></div>
     <div class="color-opt" data-c="#185FA5" onclick="pickGrpColor(this)" style="background:#185FA5"></div>
@@ -411,29 +411,29 @@ var db=firebase.firestore();
     <div class="color-opt" data-c="#888780" onclick="pickGrpColor(this)" style="background:#888780"></div>
   </div><input type="hidden" id="f-grp-color" value="#1D9E75"/></div>
   <input type="hidden" id="f-grp-id"/>
-  <div class="mf"><button class="btn" onclick="closeModal('grp-modal')">Huy</button><button class="btn btn-p" onclick="saveGroup()">Luu</button></div>
+  <div class="mf"><button class="btn" onclick="closeModal('grp-modal')">Hủy</button><button class="btn btn-p" onclick="saveGroup()">Lưu</button></div>
 </div></div><div id="task-modal" style="display:none" class="modal-ov" onclick="closeModal('task-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3 id="task-modal-title">Them task</h3>
+  <h3 id="task-modal-title">Thêm task</h3>
   <div class="fg"><label>Ten task *</label><input id="f-task"/></div>
-  <div class="fg"><label>Ghi chu</label><input id="f-task-note"/></div>
+  <div class="fg"><label>Ghi chú</label><input id="f-task-note"/></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <div class="fg"><label>Danh muc</label><select id="f-task-cat"><option value="technical">Technical SEO</option><option value="content">Content</option><option value="link">Link building</option><option value="other">Khac</option></select></div>
-    <div class="fg"><label>Uu tien</label><select id="f-task-pri"><option value="high">Cao</option><option value="mid">Vua</option><option value="low">Thap</option></select></div>
-    <div class="fg"><label>Trang thai</label><select id="f-task-status"><option value="todo">Can lam</option><option value="inprogress">Dang lam</option><option value="done">Hoan thanh</option></select></div>
-    <div class="fg"><label>Ngay bat dau</label><input type="date" id="f-task-start"/></div>
-    <div class="fg"><label>Han chot</label><input type="date" id="f-task-due"/></div>
-    <div class="fg"><label>Nguoi phu trach</label><input id="f-task-owner"/></div>
+    <div class="fg"><label>Danh mục</label><select id="f-task-cat"><option value="technical">Technical SEO</option><option value="content">Content</option><option value="link">Link building</option><option value="other">Khac</option></select></div>
+    <div class="fg"><label>Uu tien</label><select id="f-task-pri"><option value="high">Cao</option><option value="mid">Vừa</option><option value="low">Thấp</option></select></div>
+    <div class="fg"><label>Trạng thái</label><select id="f-task-status"><option value="todo">Cần làm</option><option value="inprogress">Đang làm</option><option value="done">Hoàn thành</option></select></div>
+    <div class="fg"><label>Ngày bắt đầu</label><input type="date" id="f-task-start"/></div>
+    <div class="fg"><label>Hạn chót</label><input type="date" id="f-task-due"/></div>
+    <div class="fg"><label>Người phụ trách</label><input id="f-task-owner"/></div>
   </div>
   <div style="border-top:1px solid var(--border);margin:10px 0;padding-top:10px">
-    <div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Chi tiet bai viet</div>
-    <div class="fg"><label>URL trang dich</label>
+    <div style="font-size:10px;font-weight:500;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Chi tiết bài viết</div>
+    <div class="fg"><label>URL trang đích</label>
       <div style="display:flex;gap:6px;align-items:center">
         <input id="f-task-url" placeholder="https://..." style="flex:1" oninput="updLink('f-task-url','f-task-url-a')"/>
         <a id="f-task-url-a" href="#" target="_blank" style="display:none;color:var(--blue);font-size:11px;white-space:nowrap">Mo</a>
       </div>
     </div>
-    <div class="fg"><label>Tu khoa chinh</label><input id="f-task-kwm" placeholder="tu khoa chinh..."/></div>
-    <div class="fg"><label>Tu khoa phu</label><input id="f-task-kws" placeholder="tu khoa phu..."/></div>
+    <div class="fg"><label>Từ khóa chinh</label><input id="f-task-kwm" placeholder="từ khóa chính..."/></div>
+    <div class="fg"><label>Từ khóa phu</label><input id="f-task-kws" placeholder="từ khóa phụ..."/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div class="fg"><label>Google Doc</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -450,44 +450,44 @@ var db=firebase.firestore();
     </div>
   </div>
   <input type="hidden" id="f-task-id"/>
-  <div class="mf"><button class="btn" onclick="closeModal('task-modal')">Huy</button><button class="btn btn-p" onclick="saveTask()">Luu</button></div>
+  <div class="mf"><button class="btn" onclick="closeModal('task-modal')">Hủy</button><button class="btn btn-p" onclick="saveTask()">Lưu</button></div>
 </div></div><div id="art-modal" style="display:none" class="modal-ov" onclick="closeModal('art-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3 id="art-modal-title">Them bai viet</h3>
-  <div class="fg"><label>Tieu de *</label><input id="f-art-title"/></div>
-  <div class="fg"><label>Tu khoa chinh</label><input id="f-art-kw"/></div>
+  <h3 id="art-modal-title">Thêm bài viết</h3>
+  <div class="fg"><label>Tiêu đề *</label><input id="f-art-title"/></div>
+  <div class="fg"><label>Từ khóa chinh</label><input id="f-art-kw"/></div>
   <div class="fg"><label>URL</label><input id="f-art-url" placeholder="https://..."/></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <div class="fg"><label>So tu</label><input type="number" id="f-art-words"/></div>
+    <div class="fg"><label>Số từ</label><input type="number" id="f-art-words"/></div>
     <div class="fg"><label>Traffic/thang</label><input type="number" id="f-art-traffic"/></div>
-    <div class="fg"><label>Vi tri</label><input type="number" id="f-art-pos"/></div>
-    <div class="fg"><label>Trang thai</label><select id="f-art-status"><option value="published">Da dang</option><option value="writing">Dang viet</option><option value="update">Can cap nhat</option><option value="planned">Ke hoach</option></select></div>
+    <div class="fg"><label>Vị trí</label><input type="number" id="f-art-pos"/></div>
+    <div class="fg"><label>Trạng thái</label><select id="f-art-status"><option value="published">Đã đăng</option><option value="writing">Đang viết</option><option value="update">Cần cập nhật</option><option value="planned">Kế hoạch</option></select></div>
   </div>
-  <div class="fg"><label>Ngay dang</label><input type="date" id="f-art-date"/></div>
+  <div class="fg"><label>Ngày đăng</label><input type="date" id="f-art-date"/></div>
   <input type="hidden" id="f-art-id"/>
-  <div class="mf"><button class="btn" onclick="closeModal('art-modal')">Huy</button><button class="btn btn-p" onclick="saveArt()">Luu</button></div>
+  <div class="mf"><button class="btn" onclick="closeModal('art-modal')">Hủy</button><button class="btn btn-p" onclick="saveArt()">Lưu</button></div>
 </div></div><div id="bl-modal" style="display:none" class="modal-ov" onclick="closeModal('bl-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3 id="bl-modal-title">Them backlink</h3>
+  <h3 id="bl-modal-title">Thêm backlink</h3>
   <div class="fg"><label>Domain *</label><input id="f-bl-dom" placeholder="example.com"/></div>
   <div class="fg"><label>Anchor text</label><input id="f-bl-anchor"/></div>
-  <div class="fg"><label>Trang dich</label><input id="f-bl-target"/></div>
+  <div class="fg"><label>Trang đích</label><input id="f-bl-target"/></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <div class="fg"><label>DR</label><input type="number" id="f-bl-dr"/></div>
-    <div class="fg"><label>Trang thai</label><select id="f-bl-st"><option value="active">Active</option><option value="new">Moi</option><option value="lost">Da mat</option></select></div>
+    <div class="fg"><label>Trạng thái</label><select id="f-bl-st"><option value="active">Active</option><option value="new">Mới</option><option value="lost">Đã mất</option></select></div>
   </div>
-  <div class="fg"><label>Ngay</label><input type="date" id="f-bl-date"/></div>
+  <div class="fg"><label>Ngày</label><input type="date" id="f-bl-date"/></div>
   <input type="hidden" id="f-bl-id"/>
-  <div class="mf"><button class="btn" onclick="closeModal('bl-modal')">Huy</button><button class="btn btn-p" onclick="saveBl()">Luu</button></div>
+  <div class="mf"><button class="btn" onclick="closeModal('bl-modal')">Hủy</button><button class="btn btn-p" onclick="saveBl()">Lưu</button></div>
 </div></div><div id="mem-modal" style="display:none" class="modal-ov" onclick="closeModal('mem-modal')"><div class="modal" onclick="event.stopPropagation()">
-  <h3 id="mem-modal-title">Them thanh vien</h3>
+  <h3 id="mem-modal-title">Thêm thành viên</h3>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <div class="fg" style="grid-column:1/-1"><label>Ho va ten *</label><input id="f-mem-name"/></div>
-    <div class="fg"><label>Vai tro</label><input id="f-mem-role" placeholder="Content SEO..."/></div>
+    <div class="fg" style="grid-column:1/-1"><label>Họ và tên *</label><input id="f-mem-name"/></div>
+    <div class="fg"><label>Vai trò</label><input id="f-mem-role" placeholder="Content SEO..."/></div>
     <div class="fg"><label>Email</label><input id="f-mem-email"/></div>
-    <div class="fg"><label>Dien thoai</label><input id="f-mem-phone"/></div>
-    <div class="fg"><label>Ngay tham gia</label><input type="date" id="f-mem-joined"/></div>
+    <div class="fg"><label>Điện thoại</label><input id="f-mem-phone"/></div>
+    <div class="fg"><label>Ngày tham gia</label><input type="date" id="f-mem-joined"/></div>
   </div>
-  <div class="fg"><label>Ghi chu</label><input id="f-mem-note"/></div>
-  <div class="fg"><label>Mau</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="mem-colors">
+  <div class="fg"><label>Ghi chú</label><input id="f-mem-note"/></div>
+  <div class="fg"><label>Màu</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="mem-colors">
     <div class="color-opt sel" data-c="#534AB7" onclick="pickMemColor(this)" style="background:#534AB7"></div>
     <div class="color-opt" data-c="#1D9E75" onclick="pickMemColor(this)" style="background:#1D9E75"></div>
     <div class="color-opt" data-c="#D85A30" onclick="pickMemColor(this)" style="background:#D85A30"></div>
@@ -498,7 +498,7 @@ var db=firebase.firestore();
     <div class="color-opt" data-c="#888780" onclick="pickMemColor(this)" style="background:#888780"></div>
   </div><input type="hidden" id="f-mem-color" value="#534AB7"/></div>
   <input type="hidden" id="f-mem-id"/>
-  <div class="mf"><button class="btn" onclick="closeModal('mem-modal')">Huy</button><button class="btn btn-p" onclick="saveMember()">Luu</button></div>
+  <div class="mf"><button class="btn" onclick="closeModal('mem-modal')">Hủy</button><button class="btn btn-p" onclick="saveMember()">Lưu</button></div>
 </div></div>
 <script>
 
@@ -509,7 +509,7 @@ function login() {
   var u = document.getElementById('lu').value.trim();
   var p = document.getElementById('lp').value.trim();
   var e = document.getElementById('le');
-  if (!u || !p) { e.textContent = 'Vui long nhap day du thong tin'; return; }
+  if (!u || !p) { e.textContent = 'Vui lòng nhập đầy đủ thông tin'; return; }
   var cfg = PW[u];
   if (cfg && cfg.p === p) {
     sessionStorage.setItem('_u', u);
@@ -519,7 +519,7 @@ function login() {
     e.textContent = '';
     startApp();
   } else {
-    e.textContent = 'Ten dang nhap hoac mat khau khong dung';
+    e.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng';
     document.getElementById('lp').value = '';
     document.getElementById('lp').focus();
   }
@@ -566,8 +566,8 @@ function toast(msg) {
 function showModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function delDoc(col, id) {
-  if (!confirm('Xoa muc nay?')) return;
-  db.collection(col).doc(id).delete().then(function(){ toast('Da xoa'); });
+  if (!confirm('Xóa mục này?')) return;
+  db.collection(col).doc(id).delete().then(function(){ toast('Đã xóa'); });
 }
 function updLink(inpId, linkId) {
   var v = document.getElementById(inpId).value;
@@ -624,7 +624,7 @@ function openKpiModal() {
 }
 function saveKpi() {
   var data = {traffic:+document.getElementById('f-tr').value||0, trafficPrev:+document.getElementById('f-tr-p').value||0, top3:+document.getElementById('f-t3').value||0, backlinks:+document.getElementById('f-bl').value||0, updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-  db.collection('kpi').doc('current').set(data,{merge:true}).then(function(){closeModal('kpi-modal');toast('Da luu KPI');});
+  db.collection('kpi').doc('current').set(data,{merge:true}).then(function(){closeModal('kpi-modal');toast('Đã lưu KPI');});
 }
 
 // == OVERVIEW ==
@@ -642,22 +642,22 @@ function renderOverview() {
   if(rng) rng.textContent = fmtD(r.start)+' - '+fmtD(r.end);
   var isNow = ovOff===0;
   var badge = document.getElementById('ov-badge');
-  if(badge){badge.textContent=isNow?'Tuan hien tai':ovOff<0?'Tuan cu':'Tuan toi';badge.style.background=isNow?'var(--green-bg)':'var(--bg2)';badge.style.color=isNow?'var(--green-text)':'var(--text2)';}
+  if(badge){badge.textContent=isNow?'Tuần hiện tại':ovOff<0?'Tuần cũ':'Tuần tới';badge.style.background=isNow?'var(--green-bg)':'var(--bg2)';badge.style.color=isNow?'var(--green-text)':'var(--text2)';}
   var done = wt.filter(function(t){return t.done||t.status==='done';}).length;
   var hiT = wt.filter(function(t){return t.priority==='high';});
   var doing = wt.filter(function(t){return t.status==='inprogress'&&!t.done;}).length;
   var late = wt.filter(function(t){return !t.done&&t.status!=='done'&&t.deadline&&new Date(t.deadline)<today;}).length;
   el('ov-total').textContent = wt.length;
-  el('ov-sub').textContent = done+' hoan thanh - '+(wt.length-done)+' con lai';
+  el('ov-sub').textContent = done+' hoàn thành - '+(wt.length-done)+' còn lại';
   el('ov-high').textContent = hiT.length;
-  el('ov-high-sub').textContent = hiT.filter(function(t){return !t.done&&t.status!=='done'&&t.status!=='inprogress';}).length+' chua bat dau';
+  el('ov-high-sub').textContent = hiT.filter(function(t){return !t.done&&t.status!=='done'&&t.status!=='inprogress';}).length+' chưa bắt đầu';
   el('ov-doing').textContent = doing;
   el('ov-late').textContent = late;
   var pct = wt.length?Math.round(done/wt.length*100):0;
   el('ov-pfill').style.width = pct+'%';
   el('ov-ppct').textContent = pct+'%';
-  el('ov-plabel').textContent = done+'/'+wt.length+' task hoan thanh';
-  var priData = [{key:'high',label:'Uu tien cao',color:'var(--red)'},{key:'mid',label:'Uu tien vua',color:'var(--amber)'},{key:'low',label:'Uu tien thap',color:'var(--green)'}];
+  el('ov-plabel').textContent = done+'/'+wt.length+' task hoàn thành';
+  var priData = [{key:'high',label:'Ưu tiên cao',color:'var(--red)'},{key:'mid',label:'Ưu tiên vừa',color:'var(--amber)'},{key:'low',label:'Ưu tiên thấp',color:'var(--green)'}];
   el('ov-pri').innerHTML = priData.map(function(p){
     var cnt = wt.filter(function(t){return t.priority===p.key;}).length;
     var pc = wt.length?Math.round(cnt/wt.length*100):0;
@@ -672,10 +672,10 @@ function renderOverview() {
     var init = owner.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
     var p2 = ot.length?Math.round(od/ot.length*100):0;
     return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:28px;height:28px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0">'+init+'</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+owner+'</span><span style="font-size:10px;color:var(--text2);flex-shrink:0">'+od+'/'+ot.length+'</span></div><div style="height:4px;background:var(--bg2);border-radius:2px"><div style="height:100%;border-radius:2px;background:'+color+';width:'+p2+'%"></div></div></div></div>';
-  }).join('') + '<div style="font-size:10px;color:var(--text3);margin-top:4px">'+owners.length+' thanh vien active</div>'
+  }).join('') + '<div style="font-size:10px;color:var(--text3);margin-top:4px">'+owners.length+' thành viên active</div>'
   : '<div style="font-size:11px;color:var(--text3);text-align:center;padding:12px">Chua co task nao duoc phan cong</div>';
   var oSel = el('ov-fown');
-  if(oSel){var cur=oSel.value;oSel.innerHTML='<option value="">Tat ca TV</option>'+owners.map(function(o){return '<option value="'+o+'">'+o+'</option>';}).join('');oSel.value=cur;}
+  if(oSel){var cur=oSel.value;oSel.innerHTML='<option value="">Tất cả TV</option>'+owners.map(function(o){return '<option value="'+o+'">'+o+'</option>';}).join('');oSel.value=cur;}
   renderOvTable();
 }
 function el(id){return document.getElementById(id)||{textContent:'',innerHTML:'',style:{}};}
@@ -699,7 +699,7 @@ function renderOvTable() {
   if(empty)empty.style.display='none';
   var priBg={high:'var(--red-bg)',mid:'var(--amber-bg)',low:'var(--green-bg)'};
   var priTc={high:'var(--red-text)',mid:'var(--amber-text)',low:'var(--green-text)'};
-  var priLb={high:'Cao',mid:'Vua',low:'Thap'};
+  var priLb={high:'Cao',mid:'Vừa',low:'Thấp'};
   var catLb={technical:'Technical',content:'Content',link:'Link building',other:'Khac'};
   var avC=['#534AB7','#1D9E75','#D85A30','#D4537E','#185FA5'];
   var owners=Array.from(new Set((window._tasks||[]).map(function(t){return t.owner;}).filter(Boolean))).sort();
@@ -708,7 +708,7 @@ function renderOvTable() {
     var isLate=!isDone&&t.deadline&&new Date(t.deadline)<today;
     var isDoing=t.status==='inprogress';
     var dot=isDone?'var(--green)':isLate?'var(--red)':isDoing?'var(--amber)':'var(--text3)';
-    var stLb=isDone?'Xong':isLate?'Qua han':isDoing?'Dang lam':'Chua';
+    var stLb=isDone?'Hoàn thành':isLate?'Quá hạn':isDoing?'Đang làm':'Chua';
     var stP=isDone?'pill-g':isLate?'pill-r':isDoing?'pill-y':'';
     var oi=owners.indexOf(t.owner),oc=avC[oi>=0?oi%avC.length:0];
     var pri=t.priority||'mid';
@@ -723,7 +723,7 @@ function planToday(){ planOff=0; renderPlan(); }
 function renderPlan() {
   var r = getWeekRange(planOff);
   var lb = document.getElementById('plan-label');
-  if(lb) lb.textContent = fmtD(r.start)+' - '+fmtD(r.end)+(planOff===0?' (Tuan nay)':'');
+  if(lb) lb.textContent = fmtD(r.start)+' - '+fmtD(r.end)+(planOff===0?' (Tuần này)':'');
   var wKey = getWeekKey(planOff);
   var body = document.getElementById('plan-body'); if(!body)return;
   body.innerHTML = '<div class="loading">...</div>';
@@ -731,7 +731,7 @@ function renderPlan() {
     var data = snap.exists ? snap.data() : {};
     var mems = window._members||[];
     var names = mems.length ? mems.map(function(m){return m.name;}) : Array.from(new Set((window._tasks||[]).map(function(t){return t.owner;}).filter(Boolean)));
-    if(!names.length){body.innerHTML='<div class="empty">Chua co thanh vien. Vao tab Thanh vien de them.</div>';return;}
+    if(!names.length){body.innerHTML='<div class="empty">Chưa có thành viên. Vao tab Thành viên de them.</div>';return;}
     body.innerHTML = names.map(function(name){
       var items = data[name]||[];
       var mem = mems.find(function(m){return m.name===name;});
@@ -752,10 +752,10 @@ function renderPlan() {
             +'<button onclick="delPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:11px">x</button>'
             +'</div>';
         }).join('')
-        +'<div style="padding-top:4px"><input placeholder="Nhap cong viec roi Enter..." data-wkey="'+wKey+'" data-name="'+name+'" onkeydown="addPlan(event,this)" style="width:100%;padding:5px 8px;border:0.5px dashed var(--border2);border-radius:5px;background:none;font-size:11px;color:var(--text);font-family:var(--font)"/></div>'
+        +'<div style="padding-top:4px"><input placeholder="Nhập công việc rồi Enter..." data-wkey="'+wKey+'" data-name="'+name+'" onkeydown="addPlan(event,this)" style="width:100%;padding:5px 8px;border:0.5px dashed var(--border2);border-radius:5px;background:none;font-size:11px;color:var(--text);font-family:var(--font)"/></div>'
         +'</div></div>';
     }).join('');
-  }).catch(function(){ body.innerHTML='<div class="empty">Loi tai du lieu.</div>'; });
+  }).catch(function(){ body.innerHTML='<div class="empty">Lỗi tải dữ liệu.</div>'; });
 }
 function addPlan(e, inp) {
   if(e.key!=='Enter')return;
@@ -789,10 +789,10 @@ function delPlan(wKey,name,idx) {
 // == GROUPS ==
 var SVCN={flight:'Vé máy bay',travel:'Du lịch',hotel:'Khách sạn',visa:'Visa',combo:'Combo'};
 var SVCO=['flight','travel','hotel','visa','combo'];
-var LOCS=[['Hà Nội','Việt Nam','#1D9E75'],['Hải Phòng','Việt Nam','#1D9E75'],['Quảng Ninh','Việt Nam','#1D9E75'],['Điện Biên','Việt Nam','#1D9E75'],['Đồng Hới','Việt Nam','#1D9E75'],['Huế','Việt Nam','#1D9E75'],['Đà Nẵng','Việt Nam','#1D9E75'],['Quy Nhơn','Việt Nam','#1D9E75'],['Tuy Hòa','Việt Nam','#1D9E75'],['Nha Trang','Việt Nam','#1D9E75'],['Đà Lạt','Việt Nam','#1D9E75'],['Buôn Ma Thuột','Việt Nam','#1D9E75'],['Pleiku','Việt Nam','#1D9E75'],['TP. Hồ Chí Minh','Việt Nam','#1D9E75'],['Vũng Tàu','Việt Nam','#1D9E75'],['Cần Thơ','Việt Nam','#1D9E75'],['Phú Quốc','Việt Nam','#1D9E75'],['Rạch Giá','Việt Nam','#1D9E75'],['Cà Mau','Việt Nam','#1D9E75'],['Côn Đảo','Việt Nam','#1D9E75'],['Thái Lan','Đông Nam Á','#534AB7'],['Singapore','Đông Nam Á','#534AB7'],['Malaysia','Đông Nam Á','#534AB7'],['Indonesia','Đông Nam Á','#534AB7'],['Philippines','Đông Nam Á','#534AB7'],['Campuchia','Đông Nam Á','#534AB7'],['Lào','Đông Nam Á','#534AB7'],['Myanmar','Đông Nam Á','#534AB7'],['Brunei','Đông Nam Á','#534AB7'],['Đông Timor','Đông Nam Á','#534AB7'],['Nhật Bản','Đông Bắc Á','#7F77DD'],['Hàn Quốc','Đông Bắc Á','#7F77DD'],['Trung Quốc','Đông Bắc Á','#7F77DD'],['Đài Loan','Đông Bắc Á','#7F77DD'],['Hồng Kông','Đông Bắc Á','#7F77DD'],['Ma Cao','Đông Bắc Á','#7F77DD'],['UAE','Trung Đông & Nam Á','#BA7517'],['Qatar','Trung Đông & Nam Á','#BA7517'],['Ả Rập Saudi','Trung Đông & Nam Á','#BA7517'],['Thổ Nhĩ Kỳ','Trung Đông & Nam Á','#BA7517'],['Israel','Trung Đông & Nam Á','#BA7517'],['Kuwait','Trung Đông & Nam Á','#BA7517'],['Oman','Trung Đông & Nam Á','#BA7517'],['Bahrain','Trung Đông & Nam Á','#BA7517'],['Ấn Độ','Trung Đông & Nam Á','#BA7517'],['Sri Lanka','Trung Đông & Nam Á','#BA7517'],['Nepal','Trung Đông & Nam Á','#BA7517'],['Pakistan','Trung Đông & Nam Á','#BA7517'],['Pháp','Châu Âu','#3C3489'],['Anh','Châu Âu','#3C3489'],['Đức','Châu Âu','#3C3489'],['Y','Châu Âu','#3C3489'],['Tây Ban Nha','Châu Âu','#3C3489'],['Hà Lan','Châu Âu','#3C3489'],['Bồ Đào Nha','Châu Âu','#3C3489'],['Thụy Sĩ','Châu Âu','#3C3489'],['Bỉ','Châu Âu','#3C3489'],['Nga','Châu Âu','#3C3489'],['Áo','Châu Âu','#3C3489'],['Ba Lan','Châu Âu','#3C3489'],['Hy Lạp','Châu Âu','#3C3489'],['Séc','Châu Âu','#3C3489'],['Hungary','Châu Âu','#3C3489'],['Thụy Điển','Châu Âu','#3C3489'],['Na Uy','Châu Âu','#3C3489'],['Đan Mạch','Châu Âu','#3C3489'],['Phần Lan','Châu Âu','#3C3489'],['Ireland','Châu Âu','#3C3489'],['Mỹ','Châu Mỹ','#185FA5'],['Canada','Châu Mỹ','#185FA5'],['Mexico','Châu Mỹ','#185FA5'],['Brazil','Châu Mỹ','#185FA5'],['Argentina','Châu Mỹ','#185FA5'],['Peru','Châu Mỹ','#185FA5'],['Chile','Châu Mỹ','#185FA5'],['Colombia','Châu Mỹ','#185FA5'],['Úc','Châu Úc & TBD','#639922'],['New Zealand','Châu Úc & TBD','#639922'],['Nam Phi','Châu Phi','#888780'],['Ai Cập','Châu Phi','#888780'],['Morocco','Châu Phi','#888780'],['Kenya','Châu Phi','#888780'],['Tanzania','Châu Phi','#888780'],['Ethiopia','Châu Phi','#888780']];
+var LOCS=[['Hà Nội','Việt Nam','#1D9E75'],['Hải Phòng','Việt Nam','#1D9E75'],['Quảng Ninh','Việt Nam','#1D9E75'],['Điện Biên','Việt Nam','#1D9E75'],['Đồng Hới','Việt Nam','#1D9E75'],['Huế','Việt Nam','#1D9E75'],['Đà Nẵng','Việt Nam','#1D9E75'],['Quy Nhơn','Việt Nam','#1D9E75'],['Tuy Hòa','Việt Nam','#1D9E75'],['Nha Trang','Việt Nam','#1D9E75'],['Đà Lạt','Việt Nam','#1D9E75'],['Buôn Ma Thuột','Việt Nam','#1D9E75'],['Pleiku','Việt Nam','#1D9E75'],['TP. Hồ Chí Minh','Việt Nam','#1D9E75'],['Vũng Tàu','Việt Nam','#1D9E75'],['Cần Thơ','Việt Nam','#1D9E75'],['Phú Quốc','Việt Nam','#1D9E75'],['Rạch Giá','Việt Nam','#1D9E75'],['Cà Màu','Việt Nam','#1D9E75'],['Côn Đảo','Việt Nam','#1D9E75'],['Thái Lan','Đông Nam Á','#534AB7'],['Singapore','Đông Nam Á','#534AB7'],['Malaysia','Đông Nam Á','#534AB7'],['Indonesia','Đông Nam Á','#534AB7'],['Philippines','Đông Nam Á','#534AB7'],['Campuchia','Đông Nam Á','#534AB7'],['Lào','Đông Nam Á','#534AB7'],['Myanmar','Đông Nam Á','#534AB7'],['Brunei','Đông Nam Á','#534AB7'],['Đông Timor','Đông Nam Á','#534AB7'],['Nhật Bản','Đông Bắc Á','#7F77DD'],['Hàn Quốc','Đông Bắc Á','#7F77DD'],['Trung Quốc','Đông Bắc Á','#7F77DD'],['Đài Loan','Đông Bắc Á','#7F77DD'],['Hồng Kông','Đông Bắc Á','#7F77DD'],['Ma Cao','Đông Bắc Á','#7F77DD'],['UAE','Trung Đông & Nam Á','#BA7517'],['Qatar','Trung Đông & Nam Á','#BA7517'],['Ả Rập Saudi','Trung Đông & Nam Á','#BA7517'],['Thổ Nhĩ Kỳ','Trung Đông & Nam Á','#BA7517'],['Israel','Trung Đông & Nam Á','#BA7517'],['Kuwait','Trung Đông & Nam Á','#BA7517'],['Oman','Trung Đông & Nam Á','#BA7517'],['Bahrain','Trung Đông & Nam Á','#BA7517'],['Ấn Độ','Trung Đông & Nam Á','#BA7517'],['Sri Lanka','Trung Đông & Nam Á','#BA7517'],['Nepal','Trung Đông & Nam Á','#BA7517'],['Pakistan','Trung Đông & Nam Á','#BA7517'],['Pháp','Châu Âu','#3C3489'],['Anh','Châu Âu','#3C3489'],['Đức','Châu Âu','#3C3489'],['Y','Châu Âu','#3C3489'],['Tây Ban Nha','Châu Âu','#3C3489'],['Hà Lan','Châu Âu','#3C3489'],['Bồ Đào Nha','Châu Âu','#3C3489'],['Thụy Sĩ','Châu Âu','#3C3489'],['Bỉ','Châu Âu','#3C3489'],['Nga','Châu Âu','#3C3489'],['Áo','Châu Âu','#3C3489'],['Ba Lan','Châu Âu','#3C3489'],['Hy Lạp','Châu Âu','#3C3489'],['Séc','Châu Âu','#3C3489'],['Hungary','Châu Âu','#3C3489'],['Thụy Điển','Châu Âu','#3C3489'],['Na Uy','Châu Âu','#3C3489'],['Đan Mạch','Châu Âu','#3C3489'],['Phần Lan','Châu Âu','#3C3489'],['Ireland','Châu Âu','#3C3489'],['Mỹ','Châu Mỹ','#185FA5'],['Canada','Châu Mỹ','#185FA5'],['Mexico','Châu Mỹ','#185FA5'],['Brazil','Châu Mỹ','#185FA5'],['Argentina','Châu Mỹ','#185FA5'],['Peru','Châu Mỹ','#185FA5'],['Chile','Châu Mỹ','#185FA5'],['Colombia','Châu Mỹ','#185FA5'],['Úc','Châu Úc & TBD','#639922'],['New Zealand','Châu Úc & TBD','#639922'],['Nam Phi','Châu Phi','#888780'],['Ai Cập','Châu Phi','#888780'],['Morocco','Châu Phi','#888780'],['Kenya','Châu Phi','#888780'],['Tanzania','Châu Phi','#888780'],['Ethiopia','Châu Phi','#888780']];
 
 
-var REGION_NORM={'Viet Nam':'Việt Nam','Dong Nam A':'Đông Nam Á','Dong Bac A':'Đông Bắc Á','Trung Dong':'Trung Đông & Nam Á','Chau Au':'Châu Âu','Chau My':'Châu Mỹ','Chau Uc':'Châu Úc & TBD','Chau Phi':'Châu Phi','Chau Uc & TBD':'Châu Úc & TBD','Đóng Nam A':'Đông Nam Á','Đóng Bac A':'Đông Bắc Á'};
+var REGION_NORM={'Việt Nam':'Việt Nam','Đông Nam Á':'Đông Nam Á','Đông Bắc Á':'Đông Bắc Á','Trung Đóng':'Trung Đông & Nam Á','Châu Âu':'Châu Âu','Châu Mỹ':'Châu Mỹ','Chau Uc':'Châu Úc & TBD','Châu Phi':'Châu Phi','Chau Uc & TBD':'Châu Úc & TBD','Đóng Nam A':'Đông Nam Á','Đóng Bac A':'Đông Bắc Á'};
 function normRegion(r){return REGION_NORM[r]||r;}
 
 function listenGroups() {
@@ -820,20 +820,20 @@ function updateGrpSelects() {
     });
     return h;
   }
-  var sel=document.getElementById('kw-gf');if(sel){var v=sel.value;sel.innerHTML=makeOpts('Tat ca nhom');sel.value=v;}
-  var ms=document.getElementById('f-kw-grp');if(ms){var v2=ms.value;ms.innerHTML=makeOpts('Chua phan nhom');ms.value=v2;}
+  var sel=document.getElementById('kw-gf');if(sel){var v=sel.value;sel.innerHTML=makeOpts('Tất cả nhóm');sel.value=v;}
+  var ms=document.getElementById('f-kw-grp');if(ms){var v2=ms.value;ms.innerHTML=makeOpts('Chưa phân nhóm');ms.value=v2;}
 }
 function renderClusters() {
   var groups=window._groups||[];
   var gridEl=document.getElementById('clusters-grid');if(!gridEl)return;
   var locs=groups.filter(function(g){return g.type==='location'||!g.type;});
   var svcs=groups.filter(function(g){return g.type==='service';});
-  if(!locs.length){gridEl.innerHTML='<div style="text-align:center;padding:30px"><div style="color:var(--text3);margin-bottom:12px">Chua co nhom nao.</div><button class="btn btn-p btn-sm" onclick="seedGeo()">Tao nhom dia ly (84 dia diem x 5 dich vu)</button></div>';return;}
+  if(!locs.length){gridEl.innerHTML='<div style="text-align:center;padding:30px"><div style="color:var(--text3);margin-bottom:12px">Chưa có nhóm nào.</div><button class="btn btn-p btn-sm" onclick="seedGeo()">Tạo nhóm địa lý (84 dia diem x 5 dịch vụ)</button></div>';return;}
   var allSvcT=Array.from(new Set(svcs.map(function(s){return s.serviceType;}).filter(Boolean)));
   var ordSvc=SVCO.filter(function(t){return allSvcT.includes(t);}).concat(allSvcT.filter(function(t){return !SVCO.includes(t);}));
   var byR={};locs.forEach(function(g){var r=normRegion(g.region||'Khác');if(!byR[r])byR[r]=[];byR[r].push(g);});
   function kwC(id){return (window._kws||[]).filter(function(k){return k.groupId===id;}).length;}
-  var out='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px"><div style="font-size:11px;color:var(--text2)">'+locs.length+' dia diem x '+ordSvc.length+' dich vu - Keo tha de sap xep</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-xs" onclick="openSvcMgr()">Quan ly dich vu</button><button class="btn btn-xs" onclick="openGrpModal()">+ Dia diem</button><button class="btn btn-xs" onclick="seedGeo()">Tao lai tat ca</button></div></div>';
+  var out='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px"><div style="font-size:11px;color:var(--text2)">'+locs.length+' dia diem x '+ordSvc.length+' dịch vụ - Kéo thả để sắp xếp</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-xs" onclick="openSvcMgr()">Quản lý dịch vụ</button><button class="btn btn-xs" onclick="openGrpModal()">+ Địa điểm</button><button class="btn btn-xs" onclick="seedGeo()">Tạo lại tất cả</button></div></div>';
   Object.keys(byR).forEach(function(region){
     if(!byR[region]||!byR[region].length)return;
     out+='<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:500;color:var(--text2);padding:5px 8px;background:var(--bg2);border-radius:var(--r);margin-bottom:6px">'+region+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px">';
@@ -854,9 +854,9 @@ function renderClusters() {
   gridEl.innerHTML=out;
 }
 function dropLoc(e,targetId){var srcId=window._dLoc;if(!srcId||srcId===targetId)return;var gs=window._groups||[];var src=gs.find(function(g){return g.id===srcId;});var tgt=gs.find(function(g){return g.id===targetId;});if(!src||!tgt||src.region!==tgt.region)return;var b=db.batch();b.update(db.collection('kwgroups').doc(srcId),{order:tgt.order||0});b.update(db.collection('kwgroups').doc(targetId),{order:src.order||0});b.commit().then(function(){toast('Da doi vi tri');});}
-function delLoc(locId){if(!confirm('Xoa dia diem nay va tat ca nhom dich vu?'))return;var gs=window._groups||[];var b=db.batch();b.delete(db.collection('kwgroups').doc(locId));gs.filter(function(g){return g.parentId===locId;}).forEach(function(c){b.delete(db.collection('kwgroups').doc(c.id));});b.commit().then(function(){toast('Da xoa');});}
+function delLoc(locId){if(!confirm('Xoa dia diem nay va tat ca nhóm dịch vụ?'))return;var gs=window._groups||[];var b=db.batch();b.delete(db.collection('kwgroups').doc(locId));gs.filter(function(g){return g.parentId===locId;}).forEach(function(c){b.delete(db.collection('kwgroups').doc(c.id));});b.commit().then(function(){toast('Đã xóa');});}
 function openGrpModal(id){
-  document.getElementById('grp-modal-title').textContent=id?'Sua dia diem':'Them dia diem';
+  document.getElementById('grp-modal-title').textContent=id?'Sửa địa điểm':'Thêm địa điểm';
   document.getElementById('f-grp-id').value=id||'';
   if(id){var g=(window._groups||[]).find(function(x){return x.id===id;});if(g){document.getElementById('f-grp-name').value=g.name||'';document.getElementById('f-grp-region').value=g.region||'Việt Nam';document.getElementById('f-grp-color').value=g.color||'#1D9E75';document.querySelectorAll('#grp-colors .color-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.c===(g.color||'#1D9E75'));});}}
   else{document.getElementById('f-grp-name').value='';document.getElementById('f-grp-region').value='Việt Nam';document.querySelectorAll('#grp-colors .color-opt').forEach(function(o,i){o.classList.toggle('sel',i===0);});document.getElementById('f-grp-color').value='#1D9E75';}
@@ -864,17 +864,17 @@ function openGrpModal(id){
 }
 function pickGrpColor(el){document.querySelectorAll('#grp-colors .color-opt').forEach(function(o){o.classList.remove('sel');});el.classList.add('sel');document.getElementById('f-grp-color').value=el.dataset.c;}
 function saveGroup(){
-  var name=document.getElementById('f-grp-name').value.trim();if(!name){alert('Nhap ten');return;}
+  var name=document.getElementById('f-grp-name').value.trim();if(!name){alert('Nhập ten');return;}
   var id=document.getElementById('f-grp-id').value,color=document.getElementById('f-grp-color').value;
   var region=normRegion(document.getElementById('f-grp-region').value);
   var ts=firebase.firestore.FieldValue.serverTimestamp();
-  if(id){db.collection('kwgroups').doc(id).update({name:name,region:region,color:color,updatedAt:ts}).then(function(){closeModal('grp-modal');toast('Da luu');});}
+  if(id){db.collection('kwgroups').doc(id).update({name:name,region:region,color:color,updatedAt:ts}).then(function(){closeModal('grp-modal');toast('Đã lưu');});}
   else{
     var locRef=db.collection('kwgroups').doc();
     locRef.set({name:name,region:region,color:color,type:'location',parentId:'',order:Date.now(),createdAt:ts}).then(function(){
       var gs=window._groups||[];var svcTypes=Array.from(new Set(gs.filter(function(g){return g.type==='service';}).map(function(s){return s.serviceType;}).filter(Boolean)));
       var svcs=(svcTypes.length?svcTypes:['flight','travel','hotel','visa','combo']).map(function(t){return {name:SVCN[t]||t,serviceType:t};});
-      var i=1;function addNext(){if(i>svcs.length){closeModal('grp-modal');toast('Da them '+name+' voi '+svcs.length+' nhom dich vu');return;}var sv=svcs[i-1];db.collection('kwgroups').add({name:sv.name,location:name,region:region,color:color,type:'service',serviceType:sv.serviceType,parentId:locRef.id,order:Date.now()+i,createdAt:ts}).then(function(){i++;addNext();});}addNext();
+      var i=1;function addNext(){if(i>svcs.length){closeModal('grp-modal');toast('Đã thêm '+name+' voi '+svcs.length+' nhóm dịch vụ');return;}var sv=svcs[i-1];db.collection('kwgroups').add({name:sv.name,location:name,region:region,color:color,type:'service',serviceType:sv.serviceType,parentId:locRef.id,order:Date.now()+i,createdAt:ts}).then(function(){i++;addNext();});}addNext();
     });
   }
 }
@@ -884,19 +884,19 @@ function openSvcMgr(){
   var types=Array.from(new Set(svcs.map(function(s){return s.serviceType;}).filter(Boolean)));
   var locs=gs.filter(function(g){return g.type==='location'||!g.type;});
   var m=document.createElement('div');m.id='svc-mgr';m.className='modal-ov';m.style.display='flex';
-  m.innerHTML='<div class="modal" style="max-width:420px" onclick="event.stopPropagation()"><h3 style="margin-bottom:12px">Quan ly dich vu</h3><div style="font-size:11px;color:var(--text2);margin-bottom:10px">'+locs.length+' dia diem - '+types.length+' dich vu</div><div>'+types.map(function(t){return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:5px"><span>'+(SVCN[t]||t)+'</span><button class="btn btn-xs" onclick="delSvcType(\''+t+'\')" style="color:var(--red)">Xoa</button></div>';}).join('')+'</div><div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:11px;font-weight:500;margin-bottom:8px">Them dich vu moi cho tat ca dia diem:</div><div style="display:flex;gap:6px"><input id="new-svc-n" placeholder="Ten (VD: Tour)" style="flex:1;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><input id="new-svc-k" placeholder="key" style="width:70px;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><button class="btn btn-p btn-sm" onclick="addSvcType()">Them</button></div></div><div class="mf"><button class="btn" onclick="document.getElementById(\'svc-mgr\').remove()">Dong</button></div></div>';
+  m.innerHTML='<div class="modal" style="max-width:420px" onclick="event.stopPropagation()"><h3 style="margin-bottom:12px">Quản lý dịch vụ</h3><div style="font-size:11px;color:var(--text2);margin-bottom:10px">'+locs.length+' dia diem - '+types.length+' dịch vụ</div><div>'+types.map(function(t){return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:5px"><span>'+(SVCN[t]||t)+'</span><button class="btn btn-xs" onclick="delSvcType(\''+t+'\')" style="color:var(--red)">Xoa</button></div>';}).join('')+'</div><div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:11px;font-weight:500;margin-bottom:8px">Them dịch vụ moi cho tat ca dia diem:</div><div style="display:flex;gap:6px"><input id="new-svc-n" placeholder="Tên (VD: Tour)" style="flex:1;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><input id="new-svc-k" placeholder="key" style="width:70px;padding:7px 9px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font)"/><button class="btn btn-p btn-sm" onclick="addSvcType()">Them</button></div></div><div class="mf"><button class="btn" onclick="document.getElementById(\'svc-mgr\').remove()">Đóng</button></div></div>';
   m.onclick=function(){m.remove();}; document.body.appendChild(m);
 }
-function addSvcType(){var name=(document.getElementById('new-svc-n').value||'').trim();var key=(document.getElementById('new-svc-k').value||'').trim().toLowerCase().replace(/ /g,'_');if(!name||!key){alert('Nhap ten va key');return;}var gs=window._groups||[];if(gs.some(function(g){return g.serviceType===key;})){alert('Key da ton tai');return;}var locs=gs.filter(function(g){return g.type==='location'||!g.type;});if(!locs.length){alert('Chua co dia diem');return;}toast('Dang them...');var ts=firebase.firestore.FieldValue.serverTimestamp();var i=0;function addNext(){if(i>=locs.length){document.getElementById('svc-mgr').remove();toast('Da them "'+name+'" cho '+locs.length+' dia diem!');return;}var loc=locs[i];db.collection('kwgroups').add({name:name,location:loc.name,region:loc.region,color:loc.color,type:'service',serviceType:key,parentId:loc.id,order:Date.now()+i,createdAt:ts}).then(function(){i++;addNext();});}addNext();}
-function delSvcType(t){if(!confirm('Xoa tat ca nhom loai "'+t+'"?'))return;var gs=window._groups||[];var toDel=gs.filter(function(g){return g.serviceType===t;});var b=db.batch();toDel.forEach(function(g){b.delete(db.collection('kwgroups').doc(g.id));});b.commit().then(function(){if(document.getElementById('svc-mgr'))document.getElementById('svc-mgr').remove();toast('Da xoa '+toDel.length+' nhom');});}
+function addSvcType(){var name=(document.getElementById('new-svc-n').value||'').trim();var key=(document.getElementById('new-svc-k').value||'').trim().toLowerCase().replace(/ /g,'_');if(!name||!key){alert('Nhập ten va key');return;}var gs=window._groups||[];if(gs.some(function(g){return g.serviceType===key;})){alert('Key đã tồn tại');return;}var locs=gs.filter(function(g){return g.type==='location'||!g.type;});if(!locs.length){alert('Chưa có địa điểm');return;}toast('Đang thêm...');var ts=firebase.firestore.FieldValue.serverTimestamp();var i=0;function addNext(){if(i>=locs.length){document.getElementById('svc-mgr').remove();toast('Đã thêm "'+name+'" cho '+locs.length+' dia diem!');return;}var loc=locs[i];db.collection('kwgroups').add({name:name,location:loc.name,region:loc.region,color:loc.color,type:'service',serviceType:key,parentId:loc.id,order:Date.now()+i,createdAt:ts}).then(function(){i++;addNext();});}addNext();}
+function delSvcType(t){if(!confirm('Xoa tat ca nhóm loai "'+t+'"?'))return;var gs=window._groups||[];var toDel=gs.filter(function(g){return g.serviceType===t;});var b=db.batch();toDel.forEach(function(g){b.delete(db.collection('kwgroups').doc(g.id));});b.commit().then(function(){if(document.getElementById('svc-mgr'))document.getElementById('svc-mgr').remove();toast('Đã xóa '+toDel.length+' nhóm');});}
 async function seedGeo(){
-  if(!confirm('Xoa tat ca nhom cu va tao '+LOCS.length+' dia diem x 5 dich vu?'))return;
-  toast('Dang xoa nhom cu...');
+  if(!confirm('Xoa tat ca nhóm cu va tao '+LOCS.length+' dia diem x 5 dịch vụ?'))return;
+  toast('Dang xoa nhóm cu...');
   var snap=await db.collection('kwgroups').get();
   var b=db.batch();var bc=0;
   snap.docs.forEach(function(d){b.delete(d.ref);bc++;});
   if(bc>0)await b.commit();
-  toast('Dang tao nhom dia ly...');
+  toast('Dang tao nhóm dia ly...');
   var ts=firebase.firestore.FieldValue.serverTimestamp();
   var SVCS=[['Ve may bay','flight'],['Du lich','travel'],['Khach san','hotel'],['Visa','visa'],['Combo','combo']];
   var b2=db.batch();var cnt=0;var order=0;
@@ -904,10 +904,10 @@ async function seedGeo(){
     var L=LOCS[li];var locRef=db.collection('kwgroups').doc();order++;
     b2.set(locRef,{name:L[0],region:L[1],color:L[2],type:'location',parentId:'',order:order,createdAt:ts});cnt++;
     for(var si=0;si<SVCS.length;si++){var S=SVCS[si];var svcRef=db.collection('kwgroups').doc();order++;b2.set(svcRef,{name:S[0],location:L[0],region:L[1],color:L[2],type:'service',serviceType:S[1],parentId:locRef.id,order:order,createdAt:ts});cnt++;}
-    if(cnt>=480){await b2.commit();b2=db.batch();cnt=0;toast('Dang tao... '+order+' nhom');}
+    if(cnt>=480){await b2.commit();b2=db.batch();cnt=0;toast('Đang tạo... '+order+' nhóm');}
   }
   if(cnt>0)await b2.commit();
-  toast('Da tao xong '+order+' nhom!');
+  toast('Đã tạo xong '+order+' nhóm!');
 }
 
 // == KEYWORDS ==
@@ -941,11 +941,11 @@ function renderKws(){
     return true;
   });
   var stPill={stable:'pill-g',good:'pill-g',new:'pill-b',watch:'pill-y',drop:'pill-r',top1:'pill-p'};
-  var stLb={stable:'On dinh',good:'Tot',new:'Moi',watch:'Theo doi',drop:'Tut hang',top1:'Top 1'};
+  var stLb={stable:'Ổn định',good:'Tot',new:'Moi',watch:'Theo dõi',drop:'Tụt hạng',top1:'Top 1'};
   var intPill={info:'pill-b',trans:'pill-g',nav:'pill-p',comm:'pill-y'};
   var intLb={info:'Info',trans:'Trans',nav:'Nav',comm:'Comm'};
   var tbody=document.getElementById('kw-tbody');
-  if(!kws.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chua co tu khoa.</div></td></tr>';return;}
+  if(!kws.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chưa có từ khóa.</div></td></tr>';return;}
   tbody.innerHTML=kws.map(function(k){
     var grp=groups.find(function(g){return g.id===k.groupId;})||null;
     var loc=grp&&grp.type==='service'?(groups.find(function(g){return g.id===grp.parentId;})||null):null;
@@ -977,7 +977,7 @@ function filterGrpOpts(q){
 
 function openKwModal(id){
   _issues=[];
-  document.getElementById('kw-modal-title').textContent=id?'Sua tu khoa':'Them tu khoa';
+  document.getElementById('kw-modal-title').textContent=id?'Sửa từ khóa':'Thêm từ khóa';
   document.getElementById('f-kw-id').value=id||'';
   if(id){var k=(window._kws||[]).find(function(x){return x.id===id;});if(k){document.getElementById('f-kw').value=k.keyword||'';document.getElementById('f-pos').value=k.position||'';document.getElementById('f-chg').value=k.change||'';document.getElementById('f-kw-grp').value=k.groupId||'';var srch=document.getElementById('f-kw-grp-search');if(srch)srch.value='';document.getElementById('f-intent').value=k.intent||'';document.getElementById('f-kw-url').value=k.url||'';document.getElementById('f-kw-st').value=k.status||'stable';try{_issues=JSON.parse(k.issues||'[]');}catch(ex){_issues=[];}}}
   else{['f-kw','f-pos','f-chg','f-kw-url'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-kw-grp').value='';var srch2=document.getElementById('f-kw-grp-search');if(srch2){srch2.value='';filterGrpOpts('');}document.getElementById('f-intent').value='';document.getElementById('f-kw-st').value='stable';_issues=[];}
@@ -988,17 +988,17 @@ function addIssue(e){if(e.key!=='Enter')return;var val=document.getElementById('
 function removeIssue(i){_issues.splice(i,1);document.getElementById('f-issues').value=JSON.stringify(_issues);renderIssueTags();}
 function renderIssueTags(){document.getElementById('f-issue-tags').innerHTML=_issues.map(function(t,i){return '<span style="font-size:10px;padding:2px 7px;border-radius:12px;background:var(--amber-bg);color:var(--amber-text);display:inline-flex;align-items:center;gap:4px;margin:1px">'+t+'<span onclick="removeIssue('+i+')" style="opacity:.5;cursor:pointer;margin-left:3px">x</span></span>';}).join('');}
 function saveKw(){
-  var kw=document.getElementById('f-kw').value.trim();if(!kw){alert('Nhap tu khoa');return;}
+  var kw=document.getElementById('f-kw').value.trim();if(!kw){alert('Nhập từ khóa');return;}
   var id=document.getElementById('f-kw-id').value;
   var data={keyword:kw,position:+document.getElementById('f-pos').value||0,change:+document.getElementById('f-chg').value||0,groupId:document.getElementById('f-kw-grp').value||'',intent:document.getElementById('f-intent').value,url:document.getElementById('f-kw-url').value.trim(),status:document.getElementById('f-kw-st').value,issues:document.getElementById('f-issues').value||'[]',createdAt:firebase.firestore.FieldValue.serverTimestamp()};
   var ref=id?db.collection('keywords').doc(id):db.collection('keywords').doc();
-  ref.set(data,{merge:true}).then(function(){closeModal('kw-modal');toast('Da luu tu khoa');});
+  ref.set(data,{merge:true}).then(function(){closeModal('kw-modal');toast('Đã lưu từ khóa');});
 }
 
 // == RANK HISTORY ==
 function openRankHistory(kwId){
   var kw=(window._kws||[]).find(function(k){return k.id===kwId;});
-  if(!kw){toast('Khong tim thay tu khoa');return;}
+  if(!kw){toast('Khong tim thay từ khóa');return;}
   document.getElementById('rank-kw-id').value=kwId;
   document.getElementById('rank-kw-name').textContent=kw.keyword;
   document.getElementById('rank-date').value=new Date().toISOString().split('T')[0];
@@ -1014,30 +1014,30 @@ function renderRankHistory(history){
     try{
       var dk=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
       var tc=dk?'#9c9a92':'#5f5e5a';var gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
-      _rankChart=new Chart(canvas,{type:'line',data:{labels:sorted.map(function(h){return h.date.slice(5);}),datasets:[{label:'Vi tri',data:sorted.map(function(h){return h.pos;}),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return 'Vi tri: #'+ctx.raw;}}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{reverse:true,min:1,grid:{color:gc},ticks:{color:tc,font:{size:10},stepSize:1,callback:function(v){return '#'+v;}}}}}});
+      _rankChart=new Chart(canvas,{type:'line',data:{labels:sorted.map(function(h){return h.date.slice(5);}),datasets:[{label:'Vị trí',data:sorted.map(function(h){return h.pos;}),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return 'Vị trí: #'+ctx.raw;}}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{reverse:true,min:1,grid:{color:gc},ticks:{color:tc,font:{size:10},stepSize:1,callback:function(v){return '#'+v;}}}}}});
     }catch(ex){console.error('Chart err:',ex);}
   }
   var listEl=document.getElementById('rank-hist-list');
   if(!sorted.length){listEl.innerHTML='<div class="empty">Chua co du lieu. Them rank o duoi.</div>';return;}
   var rev=sorted.slice().reverse();
-  listEl.innerHTML='<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Ngay</th><th style="text-align:center;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Vi tri</th><th style="text-align:center;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">+/-</th><th style="border-bottom:1px solid var(--border)"></th></tr></thead><tbody>'+rev.map(function(h,ri){var prev=sorted[sorted.length-ri-2];var delta=prev?h.pos-prev.pos:null;var ds=delta===null?'--':delta<0?'<span style="color:var(--green)">+'+Math.abs(delta)+'</span>':delta>0?'<span style="color:var(--red)">-'+delta+'</span>':'--';return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 8px">'+h.date+'</td><td style="padding:6px 8px;text-align:center;font-weight:600">#'+h.pos+'</td><td style="padding:6px 8px;text-align:center">'+ds+'</td><td style="padding:6px 8px;text-align:right"><button class="btn btn-xs" onclick="delRankEntry(\''+h.date+'\')">Del</button></td></tr>';}).join('')+'</tbody></table>';
+  listEl.innerHTML='<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Ngày</th><th style="text-align:center;padding:5px 8px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Vị trí</th><th style="text-align:center;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">+/-</th><th style="border-bottom:1px solid var(--border)"></th></tr></thead><tbody>'+rev.map(function(h,ri){var prev=sorted[sorted.length-ri-2];var delta=prev?h.pos-prev.pos:null;var ds=delta===null?'--':delta<0?'<span style="color:var(--green)">+'+Math.abs(delta)+'</span>':delta>0?'<span style="color:var(--red)">-'+delta+'</span>':'--';return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 8px">'+h.date+'</td><td style="padding:6px 8px;text-align:center;font-weight:600">#'+h.pos+'</td><td style="padding:6px 8px;text-align:center">'+ds+'</td><td style="padding:6px 8px;text-align:right"><button class="btn btn-xs" onclick="delRankEntry(\''+h.date+'\')">Del</button></td></tr>';}).join('')+'</tbody></table>';
 }
 function addRankEntry(){
   var kwId=document.getElementById('rank-kw-id').value;
   var date=document.getElementById('rank-date').value;
   var pos=parseInt(document.getElementById('rank-pos').value);
-  if(!date||!pos||pos<1){alert('Nhap day du ngay va vi tri');return;}
+  if(!date||!pos||pos<1){alert('Nhập day du ngay va vi tri');return;}
   var kw=(window._kws||[]).find(function(k){return k.id===kwId;});if(!kw)return;
   var history=(kw.rankHistory||[]).filter(function(h){return h.date!==date;});
   history.push({date:date,pos:pos});
   var s=history.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
   var change=s[1]?s[1].pos-s[0].pos:0;
-  db.collection('keywords').doc(kwId).update({rankHistory:history,position:s[0].pos,change:change,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){document.getElementById('rank-pos').value='';toast('Da luu rank #'+pos);});
+  db.collection('keywords').doc(kwId).update({rankHistory:history,position:s[0].pos,change:change,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){document.getElementById('rank-pos').value='';toast('Đã lưu rank #'+pos);});
 }
 function delRankEntry(date){
   var kwId=document.getElementById('rank-kw-id').value;
   var kw=(window._kws||[]).find(function(k){return k.id===kwId;});if(!kw)return;
-  db.collection('keywords').doc(kwId).update({rankHistory:(kw.rankHistory||[]).filter(function(h){return h.date!==date;})}).then(function(){toast('Da xoa');});
+  db.collection('keywords').doc(kwId).update({rankHistory:(kw.rankHistory||[]).filter(function(h){return h.date!==date;})}).then(function(){toast('Đã xóa');});
 }
 
 // == TASKS ==
@@ -1048,7 +1048,7 @@ function listenTasks(){
     if(window._members)renderMembers();
   });
 }
-function updOwnFilter(){var sel=document.getElementById('town');if(!sel)return;var cur=sel.value;var owners=Array.from(new Set((window._tasks||[]).map(function(t){return t.owner;}).filter(Boolean))).sort();sel.innerHTML='<option value="">Tat ca</option>'+owners.map(function(o){return '<option value="'+o+'">'+o+'</option>';}).join('');sel.value=cur;}
+function updOwnFilter(){var sel=document.getElementById('town');if(!sel)return;var cur=sel.value;var owners=Array.from(new Set((window._tasks||[]).map(function(t){return t.owner;}).filter(Boolean))).sort();sel.innerHTML='<option value="">Tất cả</option>'+owners.map(function(o){return '<option value="'+o+'">'+o+'</option>';}).join('');sel.value=cur;}
 function filterTask(f,btn){taskFltr=f;document.querySelectorAll('#task-flt .fb').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');if(f==='calendar'){setTaskView('list');renderTasks();}else{renderTasks();renderKanban();}}
 function setTaskView(v){taskView=v;document.getElementById('task-lv').style.display=v==='list'?'block':'none';document.getElementById('task-kv').style.display=v==='kanban'?'block':'none';document.getElementById('vlist-btn').style.cssText=v==='list'?'border-color:var(--green);color:var(--green)':'';document.getElementById('vkanban-btn').style.cssText=v==='kanban'?'border-color:var(--green);color:var(--green)':'';}
 function getFilteredTasks(){
@@ -1068,7 +1068,7 @@ function renderTasks(){
   var listEl=document.getElementById('task-list');
   if(!tasks.length){listEl.innerHTML='<div class="empty">Chua co task.</div>';return;}
   var priC={high:'var(--red)',mid:'var(--amber)',low:'var(--green)'};
-  var priLb={high:'Cao',mid:'Vua',low:'Thap'};
+  var priLb={high:'Cao',mid:'Vừa',low:'Thấp'};
   var catLb={technical:'Technical SEO',content:'Content',link:'Link building',other:'Khac'};
   listEl.innerHTML=tasks.map(function(t){
     var isDone=t.done||t.status==='done';
@@ -1080,7 +1080,7 @@ function renderTasks(){
       +'<div class="task-meta">'
       +'<span style="color:'+(priC[t.priority]||'var(--text2)')+'">'+(priLb[t.priority]||'-')+'</span>'
       +(t.category?'<span>'+(catLb[t.category]||t.category)+'</span>':'')
-      +(t.startDate?'<span>Bat dau: '+t.startDate+'</span>':'')
+      +(t.startDate?'<span>Bắt đầu: '+t.startDate+'</span>':'')
       +(t.deadline?'<span>Han: '+t.deadline+'</span>':'')
       +(t.owner?'<span>'+t.owner+'</span>':'')
       +(t.kwMain?'<span style="color:var(--blue)">'+t.kwMain+'</span>':'')
@@ -1094,8 +1094,8 @@ function renderTasks(){
 }
 function renderKanban(){
   var all=getFilteredTasks();
-  var cols=[{k:'todo',l:'Can lam',items:all.filter(function(t){return !t.done&&t.status!=='inprogress'&&t.status!=='done';})},{k:'inprogress',l:'Dang lam',items:all.filter(function(t){return t.status==='inprogress'&&!t.done;})},{k:'done',l:'Hoan thanh',items:all.filter(function(t){return t.done||t.status==='done';})}];
-  document.getElementById('kanban-board').innerHTML='<div class="kanban">'+cols.map(function(col){return '<div class="kb-col"><div class="kb-col-hdr">'+col.l+'<span class="kb-cnt">'+col.items.length+'</span></div>'+col.items.map(function(t){return '<div class="kb-card"><div style="font-size:12px;margin-bottom:4px">'+t.title+'</div>'+(t.owner?'<div style="font-size:10px;color:var(--text2)">'+t.owner+'</div>':'')+(t.deadline?'<div style="font-size:10px;color:var(--text2)">Han: '+t.deadline+'</div>':'')+'<div style="margin-top:5px;display:flex;gap:3px">'+(col.k!=='done'?'<button class="btn btn-xs" onclick="db.collection(\'tasks\').doc(\''+t.id+'\').update({status:\''+(col.k==='todo'?'inprogress':'done')+'\',done:'+(col.k!=='todo')+'})">'+(col.k==='todo'?'Lam ngay':'Xong')+'</button>':'')+'<button class="btn btn-xs" onclick="delDoc(\'tasks\',\''+t.id+'\')">Del</button></div></div>';}).join('')+'</div>';}).join('')+'</div>';
+  var cols=[{k:'todo',l:'Cần làm',items:all.filter(function(t){return !t.done&&t.status!=='inprogress'&&t.status!=='done';})},{k:'inprogress',l:'Đang làm',items:all.filter(function(t){return t.status==='inprogress'&&!t.done;})},{k:'done',l:'Hoàn thành',items:all.filter(function(t){return t.done||t.status==='done';})}];
+  document.getElementById('kanban-board').innerHTML='<div class="kanban">'+cols.map(function(col){return '<div class="kb-col"><div class="kb-col-hdr">'+col.l+'<span class="kb-cnt">'+col.items.length+'</span></div>'+col.items.map(function(t){return '<div class="kb-card"><div style="font-size:12px;margin-bottom:4px">'+t.title+'</div>'+(t.owner?'<div style="font-size:10px;color:var(--text2)">'+t.owner+'</div>':'')+(t.deadline?'<div style="font-size:10px;color:var(--text2)">Han: '+t.deadline+'</div>':'')+'<div style="margin-top:5px;display:flex;gap:3px">'+(col.k!=='done'?'<button class="btn btn-xs" onclick="db.collection(\'tasks\').doc(\''+t.id+'\').update({status:\''+(col.k==='todo'?'inprogress':'done')+'\',done:'+(col.k!=='todo')+'})">'+(col.k==='todo'?'Bắt đầu':'Xong')+'</button>':'')+'<button class="btn btn-xs" onclick="delDoc(\'tasks\',\''+t.id+'\')">Del</button></div></div>';}).join('')+'</div>';}).join('')+'</div>';
 }
 function toggleTask(id,cur){var d=!cur;db.collection('tasks').doc(id).update({done:d,status:d?'done':'todo'}).then(function(){toast(d?'Xong!':'Da bo');});}
 
@@ -1111,7 +1111,7 @@ function openTaskModal(){
   populateOwnerSelect('');
   ['f-task-url-a','f-task-doc-a','f-task-canva-a'].forEach(function(i){var a=document.getElementById(i);if(a)a.style.display='none';});
   document.getElementById('f-task-id').value='';
-  document.getElementById('task-modal-title').textContent='Them task';
+  document.getElementById('task-modal-title').textContent='Thêm task';
   document.getElementById('f-task-cat').value='technical';
   document.getElementById('f-task-pri').value='high';
   document.getElementById('f-task-status').value='todo';
@@ -1130,20 +1130,20 @@ function editTask(id){
   document.getElementById('f-task-pri').value=t.priority||'high';
   document.getElementById('f-task-status').value=t.status||'todo';
   ['url','doc','canva'].forEach(function(k){var fid='f-task-'+k;var aid='f-task-'+k+'-a';var v=document.getElementById(fid).value;var a=document.getElementById(aid);if(a){if(v){a.href=v;a.style.display='inline';}else a.style.display='none';}});
-  document.getElementById('task-modal-title').textContent='Sua task';
+  document.getElementById('task-modal-title').textContent='Sửa task';
   showModal('task-modal');
 }
 function saveTask(){
-  var title=document.getElementById('f-task').value.trim();if(!title){alert('Nhap ten task');return;}
+  var title=document.getElementById('f-task').value.trim();if(!title){alert('Nhập ten task');return;}
   var tid=document.getElementById('f-task-id').value;
   var td={title:title,note:document.getElementById('f-task-note').value.trim(),category:document.getElementById('f-task-cat').value,priority:document.getElementById('f-task-pri').value,status:document.getElementById('f-task-status').value,startDate:document.getElementById('f-task-start').value,deadline:document.getElementById('f-task-due').value,owner:document.getElementById('f-task-owner').value.trim(),url:document.getElementById('f-task-url').value.trim(),kwMain:document.getElementById('f-task-kwm').value.trim(),kwSub:document.getElementById('f-task-kws').value.trim(),docLink:document.getElementById('f-task-doc').value.trim(),canvaLink:document.getElementById('f-task-canva').value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-  if(tid){db.collection('tasks').doc(tid).update(td).then(function(){closeModal('task-modal');toast('Da cap nhat');});}
-  else{db.collection('tasks').add(Object.assign({},td,{done:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()})).then(function(){closeModal('task-modal');toast('Da them task');});}
+  if(tid){db.collection('tasks').doc(tid).update(td).then(function(){closeModal('task-modal');toast('Đã cập nhật');});}
+  else{db.collection('tasks').add(Object.assign({},td,{done:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()})).then(function(){closeModal('task-modal');toast('Đã thêm task');});}
 }
 function renderTaskCal(){
   var allT=window._tasks||[];var today=new Date();today.setHours(0,0,0,0);
   var _ow=(document.getElementById('town')||{value:''}).value;var _q=(document.getElementById('tsearch')||{value:''}).value.toLowerCase();if(_ow||_q)allT=allT.filter(function(t){return(!_ow||t.owner===_ow)&&(!_q||t.title.toLowerCase().includes(_q));});
-  var months=['Thang 1','Thang 2','Thang 3','Thang 4','Thang 5','Thang 6','Thang 7','Thang 8','Thang 9','Thang 10','Thang 11','Thang 12'];
+  var months=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
   var dayN=['T2','T3','T4','T5','T6','T7','CN'];
   var first=new Date(tcalY,tcalM,1);var dow=first.getDay();dow=dow===0?6:dow-1;
   var dim=new Date(tcalY,tcalM+1,0).getDate();
@@ -1160,7 +1160,7 @@ function renderTaskCal(){
     var da=dt.length?' data-tasks="'+encodeURIComponent(JSON.stringify(dt.map(function(t){return t.id;})))+'" data-date="'+ds+'" onmouseenter="showTip(event,this)" onmouseleave="hideTip(event)"':'';
     cal+='<div style="min-height:60px;background:'+(isToday?'var(--green-bg)':'var(--bg)')+';border:0.5px solid '+(isToday?'#5DCAA5':'var(--border)')+';border-radius:5px;padding:4px"'+da+'><div style="font-size:10px;'+(isToday?'font-weight:600;color:var(--green-text)':'color:var(--text2)')+';margin-bottom:2px">'+d+'</div>'+dt.slice(0,2).map(function(t){var done=t.done||t.status==='done';var late=!done&&t.deadline&&new Date(t.deadline)<today;var doing=t.status==='inprogress';var bg=done?'var(--green-bg)':late?'var(--red-bg)':doing?'var(--amber-bg)':'var(--bg2)';var tc=done?'var(--green-text)':late?'var(--red-text)':doing?'var(--amber-text)':'var(--text2)';return '<div onclick="editTask(\''+t.id+'\')" style="font-size:9px;padding:2px 4px;border-radius:3px;background:'+bg+';color:'+tc+';margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.title+'</div>';}).join('')+(dt.length>2?'<div style="font-size:9px;color:var(--text2)">+'+( dt.length-2)+'</div>':'')+'</div>';
   }
-  document.getElementById('task-list').innerHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px"><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500">'+mT.length+'</div><div style="font-size:10px;color:var(--text2)">Task thang</div></div><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">'+mT.filter(function(t){return t.done||t.status==="done";}).length+'</div><div style="font-size:10px;color:var(--text2)">Hoan thanh</div></div><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">'+mT.filter(function(t){return t.status==="inprogress";}).length+'</div><div style="font-size:10px;color:var(--text2)">Dang lam</div></div><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--red)">'+mT.filter(function(t){return !(t.done||t.status==="done")&&t.deadline&&new Date(t.deadline)<today;}).length+'</div><div style="font-size:10px;color:var(--text2)">Qua han</div></div></div><div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><button onclick="tcalY=(tcalM===0?tcalY-1:tcalY);tcalM=(tcalM===0?11:tcalM-1);renderTaskCal()" class="btn btn-sm">Truoc</button><span style="font-size:14px;font-weight:500">'+months[tcalM]+' '+tcalY+'</span><button onclick="tcalY=(tcalM===11?tcalY+1:tcalY);tcalM=(tcalM===11?0:tcalM+1);renderTaskCal()" class="btn btn-sm">Tiep</button></div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px">'+dayN.map(function(d){return '<div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">'+d+'</div>';}).join('')+'</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">'+cal+'</div></div>';
+  document.getElementById('task-list').innerHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px"><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500">'+mT.length+'</div><div style="font-size:10px;color:var(--text2)">Task tháng</div></div><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">'+mT.filter(function(t){return t.done||t.status==="done";}).length+'</div><div style="font-size:10px;color:var(--text2)">Hoan thanh</div></div><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">'+mT.filter(function(t){return t.status==="inprogress";}).length+'</div><div style="font-size:10px;color:var(--text2)">Đang làm</div></div><div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--red)">'+mT.filter(function(t){return !(t.done||t.status==="done")&&t.deadline&&new Date(t.deadline)<today;}).length+'</div><div style="font-size:10px;color:var(--text2)">Quá hạn</div></div></div><div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><button onclick="tcalY=(tcalM===0?tcalY-1:tcalY);tcalM=(tcalM===0?11:tcalM-1);renderTaskCal()" class="btn btn-sm">Trước</button><span style="font-size:14px;font-weight:500">'+months[tcalM]+' '+tcalY+'</span><button onclick="tcalY=(tcalM===11?tcalY+1:tcalY);tcalM=(tcalM===11?0:tcalM+1);renderTaskCal()" class="btn btn-sm">Tiếp</button></div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px">'+dayN.map(function(d){return '<div style="text-align:center;font-size:10px;color:var(--text2);padding:3px 0">'+d+'</div>';}).join('')+'</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">'+cal+'</div></div>';
 }
 function showTip(e,tipEl){
   clearTimeout(_tipT);
@@ -1170,7 +1170,7 @@ function showTip(e,tipEl){
   var today=new Date();today.setHours(0,0,0,0);
   var d=new Date(tipEl.dataset.date||'');var dn=['CN','T2','T3','T4','T5','T6','T7'];
   document.getElementById('tip-d').textContent=dn[d.getDay()]+' '+d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})+' - '+tasks.length+' task';
-  document.getElementById('tip-i').innerHTML=tasks.map(function(t){var done=t.done||t.status==='done';var late=!done&&t.deadline&&new Date(t.deadline)<today;var doing=t.status==='inprogress';var dot=done?'#1D9E75':late?'#A32D2D':doing?'#BA7517':'#888780';return '<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:0.5px solid var(--border);cursor:pointer" onclick="editTask(\''+t.id+'\');hideTip()"><div style="width:7px;height:7px;border-radius:50%;background:'+dot+';flex-shrink:0"></div><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.title+'</div><span style="font-size:10px;color:var(--text2);flex-shrink:0">'+(done?'Xong':late?'Tre':doing?'Dang':'Chua')+'</span></div>';}).join('');
+  document.getElementById('tip-i').innerHTML=tasks.map(function(t){var done=t.done||t.status==='done';var late=!done&&t.deadline&&new Date(t.deadline)<today;var doing=t.status==='inprogress';var dot=done?'#1D9E75':late?'#A32D2D':doing?'#BA7517':'#888780';return '<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:0.5px solid var(--border);cursor:pointer" onclick="editTask(\''+t.id+'\');hideTip()"><div style="width:7px;height:7px;border-radius:50%;background:'+dot+';flex-shrink:0"></div><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.title+'</div><span style="font-size:10px;color:var(--text2);flex-shrink:0">'+(done?'Hoàn thành':late?'Tre':doing?'Dang':'Chua')+'</span></div>';}).join('');
   tt.style.display='block';
   var rect=tipEl.getBoundingClientRect();var tw=tt.offsetWidth||280;var th=tt.offsetHeight||150;var vw=window.innerWidth;var vh=window.innerHeight;
   var left=rect.left,top=rect.bottom+6;
@@ -1219,15 +1219,15 @@ function setArtView(v){artView=v;document.getElementById('art-tv').style.display
 function renderArts(){
   var arts=(window._arts||[]).filter(function(a){return artFltr==='all'||a.status===artFltr;});
   var stP={published:'pill-g',writing:'pill-y',update:'pill-r',planned:'pill-b'};
-  var stL={published:'Da dang',writing:'Dang viet',update:'Can cap nhat',planned:'Ke hoach'};
+  var stL={published:'Đã đăng',writing:'Đang viết',update:'Cần cập nhật',planned:'Kế hoạch'};
   var tbody=document.getElementById('art-tbody');
-  if(!arts.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chua co bai viet.</div></td></tr>';return;}
+  if(!arts.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Chưa có bài viết.</div></td></tr>';return;}
   tbody.innerHTML=arts.map(function(a){return '<tr onclick="editArt(\''+a.id+'\')" style="cursor:pointer"><td><strong style="font-size:12px">'+a.title+'</strong></td><td style="font-size:10px;color:var(--text2)">'+(a.keyword||'--')+'</td><td style="font-size:11px">'+(a.author||a.writer||'--')+'</td><td>'+(a.wordCount?a.wordCount.toLocaleString('vi'):'--')+'</td><td><span class="pill '+(stP[a.status]||'pill-b')+'">'+(stL[a.status]||a.status)+'</span></td><td>'+(a.traffic?a.traffic.toLocaleString('vi'):'--')+'</td><td>'+(a.position||'--')+'</td><td style="font-size:10px;color:var(--text2)">'+(a.publishDate||'--')+'</td><td>'+(a.url?'<a href="'+a.url+'" target="_blank" style="font-size:10px;color:var(--blue)">Link</a>':'--')+'</td><td><button class="btn btn-xs" onclick="editArt(\''+a.id+'\')" style="margin-right:2px">Edit</button><button class="btn btn-xs" onclick="delDoc(\'articles\',\''+a.id+'\')">Del</button></td></tr>';}).join('');
 }
 function calPrev(){if(calM===0){calM=11;calY--;}else calM--;renderCalendar();}
 function calNext(){if(calM===11){calM=0;calY++;}else calM++;renderCalendar();}
 function renderCalendar(){
-  var months=['Thang 1','Thang 2','Thang 3','Thang 4','Thang 5','Thang 6','Thang 7','Thang 8','Thang 9','Thang 10','Thang 11','Thang 12'];
+  var months=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
   var ct=document.getElementById('cal-title');if(ct)ct.textContent=months[calM]+' '+calY;
   var first=new Date(calY,calM,1);var dow=first.getDay();dow=dow===0?6:dow-1;
   var dim=new Date(calY,calM+1,0).getDate();var today=new Date();
@@ -1237,9 +1237,9 @@ function renderCalendar(){
   for(var d=1;d<=dim;d++){var ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');var isToday=d===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();var arts=byDate[ds]||[];h+='<div class="cal-day'+(isToday?' today':'')+'"><div style="font-size:10px;'+(isToday?'font-weight:600;color:var(--green-text)':'color:var(--text2)')+';margin-bottom:2px">'+d+'</div>'+arts.map(function(a){return '<div class="cal-ev" style="background:'+(colors[a.status]||'#888')+'22;color:'+(colors[a.status]||'#888')+';border-left:2px solid '+(colors[a.status]||'#888')+'">'+a.title+'</div>';}).join('')+'</div>';}
   var gridEl=document.getElementById('cal-grid');if(gridEl)gridEl.innerHTML=h;
 }
-function openArtModal(id){document.getElementById('art-modal-title').textContent=id?'Sua bai viet':'Them bai viet';document.getElementById('f-art-id').value=id||'';if(id){var a=(window._arts||[]).find(function(x){return x.id===id;});if(a){document.getElementById('f-art-title').value=a.title||'';document.getElementById('f-art-kw').value=a.keyword||'';document.getElementById('f-art-url').value=a.url||'';document.getElementById('f-art-words').value=a.wordCount||'';document.getElementById('f-art-traffic').value=a.traffic||'';document.getElementById('f-art-pos').value=a.position||'';document.getElementById('f-art-status').value=a.status||'writing';document.getElementById('f-art-date').value=a.publishDate||'';}}else{['f-art-title','f-art-kw','f-art-url','f-art-words','f-art-traffic','f-art-pos'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-art-status').value='writing';document.getElementById('f-art-date').value=new Date().toISOString().split('T')[0];}showModal('art-modal');}
+function openArtModal(id){document.getElementById('art-modal-title').textContent=id?'Sửa bài viết':'Thêm bài viết';document.getElementById('f-art-id').value=id||'';if(id){var a=(window._arts||[]).find(function(x){return x.id===id;});if(a){document.getElementById('f-art-title').value=a.title||'';document.getElementById('f-art-kw').value=a.keyword||'';document.getElementById('f-art-url').value=a.url||'';document.getElementById('f-art-words').value=a.wordCount||'';document.getElementById('f-art-traffic').value=a.traffic||'';document.getElementById('f-art-pos').value=a.position||'';document.getElementById('f-art-status').value=a.status||'writing';document.getElementById('f-art-date').value=a.publishDate||'';}}else{['f-art-title','f-art-kw','f-art-url','f-art-words','f-art-traffic','f-art-pos'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-art-status').value='writing';document.getElementById('f-art-date').value=new Date().toISOString().split('T')[0];}showModal('art-modal');}
 function editArt(id){openArtModal(id);}
-function saveArt(){var title=document.getElementById('f-art-title').value.trim();if(!title){alert('Nhap tieu de');return;}var id=document.getElementById('f-art-id').value;var data={title:title,keyword:document.getElementById('f-art-kw').value.trim(),url:document.getElementById('f-art-url').value.trim(),wordCount:+document.getElementById('f-art-words').value||0,traffic:+document.getElementById('f-art-traffic').value||0,position:+document.getElementById('f-art-pos').value||0,status:document.getElementById('f-art-status').value,publishDate:document.getElementById('f-art-date').value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};var ref=id?db.collection('articles').doc(id):db.collection('articles').doc();ref.set(data,{merge:true}).then(function(){closeModal('art-modal');toast('Da luu');});}
+function saveArt(){var title=document.getElementById('f-art-title').value.trim();if(!title){alert('Nhập tieu de');return;}var id=document.getElementById('f-art-id').value;var data={title:title,keyword:document.getElementById('f-art-kw').value.trim(),url:document.getElementById('f-art-url').value.trim(),wordCount:+document.getElementById('f-art-words').value||0,traffic:+document.getElementById('f-art-traffic').value||0,position:+document.getElementById('f-art-pos').value||0,status:document.getElementById('f-art-status').value,publishDate:document.getElementById('f-art-date').value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};var ref=id?db.collection('articles').doc(id):db.collection('articles').doc();ref.set(data,{merge:true}).then(function(){closeModal('art-modal');toast('Đã lưu');});}
 
 // == BACKLINKS ==
 function listenBls(){db.collection('backlinks').orderBy('createdAt','desc').onSnapshot(function(snap){window._bls=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});renderBls();});}
@@ -1253,24 +1253,24 @@ function renderBls(){
   var flt=bls.filter(function(b){return blFltr==='all'||b.status===blFltr;});
   var tbody=document.getElementById('bl-tbody');
   if(!flt.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">Chua co backlink.</div></td></tr>';return;}
-  var blP={new:'pill-b',active:'pill-g',lost:'pill-r'};var blL={new:'Moi',active:'Active',lost:'Da mat'};
+  var blP={new:'pill-b',active:'pill-g',lost:'pill-r'};var blL={new:'Moi',active:'Active',lost:'Đã mất'};
   tbody.innerHTML=flt.map(function(b){var dr=b.dr||0;var dc=dr>=70?'var(--green)':dr>=40?'var(--amber)':'var(--red)';var dbg=dr>=70?'var(--green-bg)':dr>=40?'var(--amber-bg)':'var(--red-bg)';return '<tr><td><strong>'+b.domain+'</strong></td><td><div style="width:28px;height:28px;border-radius:50%;background:'+dbg+';color:'+dc+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600">'+(b.dr||'?')+'</div></td><td style="font-size:11px">'+(b.anchorText||'--')+'</td><td style="font-size:10px;color:var(--text2)">'+(b.target||'--')+'</td><td><span class="pill '+(blP[b.status]||'pill-g')+'">'+(blL[b.status]||b.status)+'</span></td><td style="font-size:10px;color:var(--text2)">'+(b.foundDate||'--')+'</td><td><button class="btn btn-xs" onclick="editBl(\''+b.id+'\')" style="margin-right:2px">Edit</button><button class="btn btn-xs" onclick="delDoc(\'backlinks\',\''+b.id+'\')">Del</button></td></tr>';}).join('');
 }
-function openBlModal(id){document.getElementById('bl-modal-title').textContent=id?'Sua backlink':'Them backlink';document.getElementById('f-bl-id').value=id||'';if(id){var b=(window._bls||[]).find(function(x){return x.id===id;});if(b){document.getElementById('f-bl-dom').value=b.domain||'';document.getElementById('f-bl-anchor').value=b.anchorText||'';document.getElementById('f-bl-target').value=b.target||'';document.getElementById('f-bl-dr').value=b.dr||'';document.getElementById('f-bl-st').value=b.status||'active';document.getElementById('f-bl-date').value=b.foundDate||'';}}else{['f-bl-dom','f-bl-anchor','f-bl-target','f-bl-dr'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-bl-st').value='new';document.getElementById('f-bl-date').value=new Date().toISOString().split('T')[0];}showModal('bl-modal');}
+function openBlModal(id){document.getElementById('bl-modal-title').textContent=id?'Sửa backlink':'Thêm backlink';document.getElementById('f-bl-id').value=id||'';if(id){var b=(window._bls||[]).find(function(x){return x.id===id;});if(b){document.getElementById('f-bl-dom').value=b.domain||'';document.getElementById('f-bl-anchor').value=b.anchorText||'';document.getElementById('f-bl-target').value=b.target||'';document.getElementById('f-bl-dr').value=b.dr||'';document.getElementById('f-bl-st').value=b.status||'active';document.getElementById('f-bl-date').value=b.foundDate||'';}}else{['f-bl-dom','f-bl-anchor','f-bl-target','f-bl-dr'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-bl-st').value='new';document.getElementById('f-bl-date').value=new Date().toISOString().split('T')[0];}showModal('bl-modal');}
 function editBl(id){openBlModal(id);}
-function saveBl(){var domain=document.getElementById('f-bl-dom').value.trim();if(!domain){alert('Nhap domain');return;}var id=document.getElementById('f-bl-id').value;var data={domain:domain,anchorText:document.getElementById('f-bl-anchor').value.trim(),target:document.getElementById('f-bl-target').value.trim(),dr:+document.getElementById('f-bl-dr').value||0,status:document.getElementById('f-bl-st').value,foundDate:document.getElementById('f-bl-date').value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};var ref=id?db.collection('backlinks').doc(id):db.collection('backlinks').doc();ref.set(data,{merge:true}).then(function(){closeModal('bl-modal');toast('Da luu');});}
+function saveBl(){var domain=document.getElementById('f-bl-dom').value.trim();if(!domain){alert('Nhập domain');return;}var id=document.getElementById('f-bl-id').value;var data={domain:domain,anchorText:document.getElementById('f-bl-anchor').value.trim(),target:document.getElementById('f-bl-target').value.trim(),dr:+document.getElementById('f-bl-dr').value||0,status:document.getElementById('f-bl-st').value,foundDate:document.getElementById('f-bl-date').value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};var ref=id?db.collection('backlinks').doc(id):db.collection('backlinks').doc();ref.set(data,{merge:true}).then(function(){closeModal('bl-modal');toast('Đã lưu');});}
 
 // == MEMBERS ==
 function listenMembers(){
   db.collection('members').orderBy('createdAt','asc').onSnapshot(function(snap){
     window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
     renderMembers();renderPlan();
-  },function(err){window._members=[];var g=document.getElementById('members-grid');if(g)g.innerHTML='<div class="empty">Chua co thanh vien.</div>';});
+  },function(err){window._members=[];var g=document.getElementById('members-grid');if(g)g.innerHTML='<div class="empty">Chưa có thành viên.</div>';});
 }
 function renderMembers(){
   var mems=window._members||[];var tasks=window._tasks||[];
   var grid=document.getElementById('members-grid');if(!grid)return;
-  if(!mems.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">Chua co thanh vien. Nhan "+ Thanh vien".</div>';return;}
+  if(!mems.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">Chưa có thành viên. Nhan "+ Thành viên".</div>';return;}
   var now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);var sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
   function getWT(name){return tasks.filter(function(t){return t.owner===name&&((t.deadline&&new Date(t.deadline)>=mon&&new Date(t.deadline)<=sun)||(t.startDate&&new Date(t.startDate)>=mon&&new Date(t.startDate)<=sun));});}
   grid.innerHTML=mems.map(function(m){
@@ -1311,21 +1311,21 @@ function renderMemDetail(id){
     +'</div>'
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
     +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--green)">'+done+'</div><div style="font-size:10px;color:var(--text2)">Hoan thanh tuan</div></div>'
-    +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">'+doing+'</div><div style="font-size:10px;color:var(--text2)">Dang thuc hien</div></div>'
-    +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:'+(late?'var(--red)':'var(--text)')+'">'+late+'</div><div style="font-size:10px;color:var(--text2)">Qua han</div></div>'
+    +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:var(--amber)">'+doing+'</div><div style="font-size:10px;color:var(--text2)">Đang thực hiện</div></div>'
+    +'<div style="background:var(--bg2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:500;color:'+(late?'var(--red)':'var(--text)')+'">'+late+'</div><div style="font-size:10px;color:var(--text2)">Quá hạn</div></div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px">'
-    +[['Email',m.email?(m.email):'--'],['Dien thoai',m.phone||'--'],['Vai tro',m.role||'--'],['Ngay tham gia',m.joined||'--']].map(function(item,i){return '<div style="padding:9px 12px;border-bottom:'+(i<2?'1px solid var(--border)':'none')+';border-right:'+(i%2===0?'1px solid var(--border)':'none')+'"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">'+item[0]+'</div><div style="font-size:12px;font-weight:500">'+item[1]+'</div></div>';}).join('')
+    +[['Email',m.email?(m.email):'--'],['Điện thoại',m.phone||'--'],['Vai trò',m.role||'--'],['Ngày tham gia',m.joined||'--']].map(function(item,i){return '<div style="padding:9px 12px;border-bottom:'+(i<2?'1px solid var(--border)':'none')+';border-right:'+(i%2===0?'1px solid var(--border)':'none')+'"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">'+item[0]+'</div><div style="font-size:12px;font-weight:500">'+item[1]+'</div></div>';}).join('')
     +'</div>'
-    +'<div style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Task tuan nay ('+mt.length+')</div>'
+    +'<div style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Task tuần này ('+mt.length+')</div>'
     +(mt.length?mt.map(function(t){var isDone=t.done||t.status==='done';var isLate=!isDone&&t.deadline&&new Date(t.deadline)<today;var isDoing=t.status==='inprogress';var dot=isDone?'var(--green)':isLate?'var(--red)':isDoing?'var(--amber)':'var(--text3)';return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;cursor:pointer" onclick="editTask(\''+t.id+'\')">'
       +'<div style="width:7px;height:7px;border-radius:50%;background:'+dot+';flex-shrink:0"></div>'
       +'<span style="flex:1;'+(isDone?'text-decoration:line-through;color:var(--text2)':'')+'">'+t.title+'</span>'
-      +'<span style="font-size:10px;color:var(--text2)">'+(isDone?'Xong':isLate?'Tre':isDoing?'Dang lam':'Chua')+'</span></div>';}).join(''):'<div class="empty">Khong co task nao tuan nay</div>')
+      +'<span style="font-size:10px;color:var(--text2)">'+(isDone?'Hoàn thành':isLate?'Tre':isDoing?'Đang làm':'Chua')+'</span></div>';}).join(''):'<div class="empty">Khong co task nao tuan nay</div>')
     +'</div>';
 }
 function openMemberModal(id){
-  document.getElementById('mem-modal-title').textContent=id?'Sua thanh vien':'Them thanh vien';
+  document.getElementById('mem-modal-title').textContent=id?'Sửa thành viên':'Thêm thành viên';
   document.getElementById('f-mem-id').value=id||'';
   if(id){var m=(window._members||[]).find(function(x){return x.id===id;});if(m){document.getElementById('f-mem-name').value=m.name||'';document.getElementById('f-mem-role').value=m.role||'';document.getElementById('f-mem-email').value=m.email||'';document.getElementById('f-mem-phone').value=m.phone||'';document.getElementById('f-mem-joined').value=m.joined||'';document.getElementById('f-mem-note').value=m.note||'';document.getElementById('f-mem-color').value=m.color||'#534AB7';document.querySelectorAll('#mem-colors .color-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.c===(m.color||'#534AB7'));});}}
   else{['f-mem-name','f-mem-role','f-mem-email','f-mem-phone','f-mem-note'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-mem-joined').value=new Date().toISOString().split('T')[0];document.getElementById('f-mem-color').value='#534AB7';document.querySelectorAll('#mem-colors .color-opt').forEach(function(o,i){o.classList.toggle('sel',i===0);});}
@@ -1333,13 +1333,13 @@ function openMemberModal(id){
 }
 function pickMemColor(optEl){document.querySelectorAll('#mem-colors .color-opt').forEach(function(o){o.classList.remove('sel');});optEl.classList.add('sel');document.getElementById('f-mem-color').value=optEl.dataset.c;}
 function saveMember(){
-  var name=document.getElementById('f-mem-name').value.trim();if(!name){alert('Nhap ho va ten');return;}
+  var name=document.getElementById('f-mem-name').value.trim();if(!name){alert('Nhập ho va ten');return;}
   var id=document.getElementById('f-mem-id').value;
   var data={name:name,role:document.getElementById('f-mem-role').value.trim(),email:document.getElementById('f-mem-email').value.trim(),phone:document.getElementById('f-mem-phone').value.trim(),joined:document.getElementById('f-mem-joined').value,note:document.getElementById('f-mem-note').value.trim(),color:document.getElementById('f-mem-color').value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   var ref=id?db.collection('members').doc(id):db.collection('members').doc();
-  ref.set(Object.assign({},data,{createdAt:firebase.firestore.FieldValue.serverTimestamp()}),{merge:true}).then(function(){closeModal('mem-modal');toast(id?'Da cap nhat':'Da them thanh vien');});
+  ref.set(Object.assign({},data,{createdAt:firebase.firestore.FieldValue.serverTimestamp()}),{merge:true}).then(function(){closeModal('mem-modal');toast(id?'Đã cập nhật':'Đã thêm thanh vien');});
 }
-function delMember(id){if(!confirm('Xoa thanh vien nay?'))return;db.collection('members').doc(id).delete().then(function(){selMem=null;document.getElementById('member-detail').innerHTML='';toast('Da xoa');});}
+function delMember(id){if(!confirm('Xóa thành viên này?'))return;db.collection('members').doc(id).delete().then(function(){selMem=null;document.getElementById('member-detail').innerHTML='';toast('Đã xóa');});}
 
 // == REPORT ==
 function buildReport(){
@@ -1348,10 +1348,10 @@ function buildReport(){
   var kws=window._kws||[];var arts=window._arts||[];
   var top3=kws.filter(function(k){return (k.position||99)<=3;}).slice(0,5);
   var now=new Date();
-  document.getElementById('report-content').innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--green)"><div><div style="font-size:18px;font-weight:700;color:var(--green)">'+agency+'</div><div style="font-size:12px;color:var(--text2)">Bao cao SEO - '+now.toLocaleDateString('vi-VN',{month:'long',year:'numeric'})+'</div><div style="font-size:12px;color:var(--text2)">Client: <strong>'+client+'</strong></div></div><div style="font-size:11px;color:var(--text2)">'+now.toLocaleDateString('vi-VN')+'</div></div>'
-  +(top3.length?'<div style="margin-bottom:18px"><div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)">Tu khoa Top 3</div><table style="font-size:11px;width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;border-bottom:1px solid var(--border)">Tu khoa</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Vi tri</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">+/-</th></tr></thead><tbody>'+top3.map(function(k){return '<tr><td style="padding:6px 8px">'+k.keyword+'</td><td style="padding:6px 8px;text-align:center;color:var(--green);font-weight:600">#'+k.position+'</td><td style="padding:6px 8px;text-align:center;color:'+(+(k.change||0)>=0?'var(--green)':'var(--red)')+'">'+( +(k.change||0)>=0?'+':'')+( k.change||0)+'</td></tr>';}).join('')+'</tbody></table></div>':'')
-  +(arts.filter(function(a){return a.status==='published';}).length?'<div><div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)">Bai viet da dang</div><table style="font-size:11px;width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;border-bottom:1px solid var(--border)">Tieu de</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Tu khoa</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Traffic</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Vi tri</th></tr></thead><tbody>'+arts.filter(function(a){return a.status==='published';}).slice(0,8).map(function(a){return '<tr><td style="padding:6px 8px">'+a.title+'</td><td style="padding:6px 8px;color:var(--text2)">'+(a.keyword||'--')+'</td><td style="padding:6px 8px;text-align:center">'+(a.traffic||'--')+'</td><td style="padding:6px 8px;text-align:center">'+(a.position||'--')+'</td></tr>';}).join('')+'</tbody></table></div>':'');
-  toast('Bao cao da tao - nhan In/PDF de luu');
+  document.getElementById('report-content').innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--green)"><div><div style="font-size:18px;font-weight:700;color:var(--green)">'+agency+'</div><div style="font-size:12px;color:var(--text2)">Báo cáo SEO - '+now.toLocaleDateString('vi-VN',{month:'long',year:'numeric'})+'</div><div style="font-size:12px;color:var(--text2)">Client: <strong>'+client+'</strong></div></div><div style="font-size:11px;color:var(--text2)">'+now.toLocaleDateString('vi-VN')+'</div></div>'
+  +(top3.length?'<div style="margin-bottom:18px"><div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)">Từ khóa Top 3</div><table style="font-size:11px;width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;border-bottom:1px solid var(--border)">Từ khóa</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Vị trí</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">+/-</th></tr></thead><tbody>'+top3.map(function(k){return '<tr><td style="padding:6px 8px">'+k.keyword+'</td><td style="padding:6px 8px;text-align:center;color:var(--green);font-weight:600">#'+k.position+'</td><td style="padding:6px 8px;text-align:center;color:'+(+(k.change||0)>=0?'var(--green)':'var(--red)')+'">'+( +(k.change||0)>=0?'+':'')+( k.change||0)+'</td></tr>';}).join('')+'</tbody></table></div>':'')
+  +(arts.filter(function(a){return a.status==='published';}).length?'<div><div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)">Bài viết da dang</div><table style="font-size:11px;width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 8px;border-bottom:1px solid var(--border)">Tiêu đề</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Từ khóa</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Traffic</th><th style="padding:5px 8px;border-bottom:1px solid var(--border)">Vị trí</th></tr></thead><tbody>'+arts.filter(function(a){return a.status==='published';}).slice(0,8).map(function(a){return '<tr><td style="padding:6px 8px">'+a.title+'</td><td style="padding:6px 8px;color:var(--text2)">'+(a.keyword||'--')+'</td><td style="padding:6px 8px;text-align:center">'+(a.traffic||'--')+'</td><td style="padding:6px 8px;text-align:center">'+(a.position||'--')+'</td></tr>';}).join('')+'</tbody></table></div>':'');
+  toast('Báo cáo da tao - nhan In/PDF de luu');
 }
 
 
