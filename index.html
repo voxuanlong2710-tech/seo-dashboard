@@ -555,11 +555,21 @@ var _issues = [], _rankChart = null, _tipT = null;
 // == INIT ==
 function startApp() {
   document.getElementById('cur-date').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
-  var u = sessionStorage.getItem('_u');
-  var b = document.getElementById('ubadge');
-  if (b && u) b.textContent = u + (sessionStorage.getItem('_r')==='admin'?' (admin)':'');
-  listenGroups(); listenKws(); listenTasks(); listenArts(); listenBls(); listenMembers();
-  renderOverview(); renderPlan();
+  var u=sessionStorage.getItem('_u');var b=document.getElementById('ubadge');
+  if(b&&u)b.textContent=u+(sessionStorage.getItem('_r')==='admin'?' (admin)':'');
+  // Load members FIRST — ensures all dropdowns have data when listeners fire
+  db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
+    window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+    listenMembers();
+    listenGroups(); listenKws(); listenTasks(); listenArts(); listenBls();
+    renderOverview(); renderPlan();
+  }).catch(function(err){
+    console.warn('Members load error:', err);
+    window._members=[];
+    listenMembers();
+    listenGroups(); listenKws(); listenTasks(); listenArts(); listenBls();
+    renderOverview(); renderPlan();
+  });
 }
 
 // == UTILS ==
@@ -1231,14 +1241,7 @@ function populateArtAuthor(selEl,cur){
     });
   }
 }
-function openArtModal(id){
-  document.getElementById('art-modal-title').textContent=id?'Sửa bài viết':'Thêm bài viết';
-  document.getElementById('f-art-id').value=id||'';
-  var as=document.getElementById('f-art-author');
-  if(id){var a=(window._arts||[]).find(function(x){return x.id===id;});if(a){document.getElementById('f-art-title').value=a.title||'';document.getElementById('f-art-kw').value=a.keyword||'';document.getElementById('f-art-url').value=a.url||'';document.getElementById('f-art-words').value=a.wordCount||'';document.getElementById('f-art-traffic').value=a.traffic||'';document.getElementById('f-art-pos').value=a.position||'';document.getElementById('f-art-status').value=a.status||'writing';document.getElementById('f-art-date').value=a.publishDate||'';populateArtAuthor(as,a.author||a.writer||'');}}
-  else{['f-art-title','f-art-kw','f-art-url','f-art-words','f-art-traffic','f-art-pos'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-art-status').value='writing';document.getElementById('f-art-date').value=new Date().toISOString().split('T')[0];populateArtAuthor(as,'');}
-  showModal('art-modal');
-}
+
 function editArt(id){openArtModal(id);}
 function saveArt(){
   var title=document.getElementById('f-art-title').value.trim();if(!title){alert('Nhập tiêu đề');return;}
@@ -1296,10 +1299,43 @@ function renderCalendar(){
   var byDate={};var _cA=(document.getElementById('art-cal-author')||{value:''}).value,_cS=(document.getElementById('art-cal-status')||{value:''}).value;var _asE=document.getElementById('art-cal-author');if(_asE){var _cAv=_asE.value;_asE.innerHTML='<option value="">👤 Tất cả người viết</option>'+(window._members||[]).map(function(m){return '<option value="'+m.name+'"'+(m.name===_cAv?' selected':'')+'>'+m.name+'</option>';}).join('');_asE.value=_cAv;}(window._arts||[]).filter(function(a){return(!_cA||(a.author||a.writer||'')==_cA)&&(!_cS||a.status===_cS);}).forEach(function(a){if(a.publishDate)(byDate[a.publishDate]=byDate[a.publishDate]||[]).push(a);});
   var colors={published:'#1D9E75',writing:'#BA7517',update:'#A32D2D',planned:'#185FA5'};
   var h='';for(var i=0;i<dow;i++)h+='<div class="cal-day" style="opacity:.4"></div>';
-  for(var d=1;d<=dim;d++){var ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');var isToday=d===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();var arts=byDate[ds]||[];h+='<div class="cal-day'+(isToday?' today':'')+'"><div style="font-size:10px;'+(isToday?'font-weight:600;color:var(--green-text)':'color:var(--text2)')+';margin-bottom:2px">'+d+'</div>'+arts.map(function(a){return '<div class="cal-ev" style="background:'+(colors[a.status]||'#888')+'22;color:'+(colors[a.status]||'#888')+';border-left:2px solid '+(colors[a.status]||'#888')+'">'+a.title+'</div>';}).join('')+'</div>';}
-  var gridEl=document.getElementById('cal-grid');if(gridEl)gridEl.innerHTML=h;
+  for(var d=1;d<=dim;d++){var ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');var isToday=d===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();var arts=byDate[ds]||[];h+='<div class="cal-day'+(isToday?' today':'')+'"><div style="font-size:10px;'+(isToday?'font-weight:600;color:var(--green-text)':'color:var(--text2)')+';margin-bottom:2px">'+d+'</div>'+arts.map(function(a){
+          var c=colors[a.status]||'#888';
+          return '<div class="cal-ev" data-aid="'+a.id+'" style="background:'+c+'22;color:'+c+';border-left:2px solid '+c+';cursor:pointer" onmouseenter="showArtTip(event,\''+a.id+'\')" onmouseleave="hideTip(event)">'+a.title+'</div>';
+        }).join('')+'</div>';}
+  var gridEl=document.getElementById('cal-grid');
+  if(gridEl){
+    gridEl.innerHTML=h;
+    gridEl.onclick=function(e){var el=e.target.closest('[data-aid]');if(el)editArt(el.getAttribute('data-aid'));};
+    gridEl.onmouseover=function(e){var el=e.target.closest('[data-aid]');if(el)showArtTip(e,el.getAttribute('data-aid'));};
+    gridEl.onmouseout=function(e){var el=e.target.closest('[data-aid]');if(el)hideTip(e);};
+  }
 }
-function openArtModal(id){document.getElementById('art-modal-title').textContent=id?'Sửa bài viết':'Thêm bài viết';document.getElementById('f-art-id').value=id||'';if(id){var a=(window._arts||[]).find(function(x){return x.id===id;});if(a){document.getElementById('f-art-title').value=a.title||'';document.getElementById('f-art-kw').value=a.keyword||'';document.getElementById('f-art-url').value=a.url||'';document.getElementById('f-art-words').value=a.wordCount||'';document.getElementById('f-art-traffic').value=a.traffic||'';document.getElementById('f-art-pos').value=a.position||'';document.getElementById('f-art-status').value=a.status||'writing';document.getElementById('f-art-date').value=a.publishDate||'';}}else{['f-art-title','f-art-kw','f-art-url','f-art-words','f-art-traffic','f-art-pos'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('f-art-status').value='writing';document.getElementById('f-art-date').value=new Date().toISOString().split('T')[0];}showModal('art-modal');}
+function openArtModal(id){
+  document.getElementById('art-modal-title').textContent=id?'Sửa bài viết':'Thêm bài viết';
+  document.getElementById('f-art-id').value=id||'';
+  var as=document.getElementById('f-art-author');
+  if(id){
+    var a=(window._arts||[]).find(function(x){return x.id===id;});
+    if(a){
+      document.getElementById('f-art-title').value=a.title||'';
+      document.getElementById('f-art-kw').value=a.keyword||'';
+      document.getElementById('f-art-url').value=a.url||'';
+      document.getElementById('f-art-words').value=a.wordCount||'';
+      document.getElementById('f-art-traffic').value=a.traffic||'';
+      document.getElementById('f-art-pos').value=a.position||'';
+      document.getElementById('f-art-status').value=a.status||'writing';
+      document.getElementById('f-art-date').value=a.publishDate||'';
+      populateArtAuthor(as, a.author||a.writer||'');
+    }
+  } else {
+    ['f-art-title','f-art-kw','f-art-url','f-art-words','f-art-traffic','f-art-pos'].forEach(function(fid){var e=document.getElementById(fid);if(e)e.value='';});
+    document.getElementById('f-art-status').value='writing';
+    document.getElementById('f-art-date').value=new Date().toISOString().split('T')[0];
+    populateArtAuthor(as,'');
+  }
+  showModal('art-modal');
+}
 function editArt(id){openArtModal(id);}
 function saveArt(){var title=document.getElementById('f-art-title').value.trim();if(!title){alert('Nhập tieu de');return;}var id=document.getElementById('f-art-id').value;var data={title:title,keyword:document.getElementById('f-art-kw').value.trim(),url:document.getElementById('f-art-url').value.trim(),wordCount:+document.getElementById('f-art-words').value||0,traffic:+document.getElementById('f-art-traffic').value||0,position:+document.getElementById('f-art-pos').value||0,status:document.getElementById('f-art-status').value,publishDate:document.getElementById('f-art-date').value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};var ref=id?db.collection('articles').doc(id):db.collection('articles').doc();ref.set(data,{merge:true}).then(function(){closeModal('art-modal');toast('Đã lưu');});}
 
