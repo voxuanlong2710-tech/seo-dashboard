@@ -558,7 +558,7 @@ function startApp() {
   var u=sessionStorage.getItem('_u');var b=document.getElementById('ubadge');
   if(b&&u)b.textContent=u+(sessionStorage.getItem('_r')==='admin'?' (admin)':'');
   // Load members FIRST — ensures all dropdowns have data when listeners fire
-  db.collection('members').orderBy('order','asc').get().then(function(snap){
+  db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
     window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
     listenMembers();
     listenGroups(); listenKws(); listenTasks(); listenArts(); listenBls();
@@ -1164,7 +1164,7 @@ function populateOwnerSelect(selectedVal){
   if(mems.length){
     sel.innerHTML='<option value="">-- Chọn thành viên --</option>'+mems.map(function(m){return '<option value="'+m.name+'"'+(m.name===selectedVal?' selected':'')+'>'+m.name+'</option>';}).join('');
   } else {
-    db.collection('members').orderBy('order','asc').get().then(function(snap){
+    db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
       window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
       sel.innerHTML='<option value="">-- Chọn thành viên --</option>'+window._members.map(function(m){return '<option value="'+m.name+'"'+(m.name===selectedVal?' selected':'')+'>'+m.name+'</option>';}).join('');
     });
@@ -1253,7 +1253,7 @@ function populateArtAuthor(selEl,cur){
     selEl.innerHTML='<option value="">-- Người viết --</option>'+mems.map(function(m){return '<option value="'+m.name+'"'+(m.name===cur?' selected':'')+'>'+m.name+'</option>';}).join('');
   } else {
     // Members not yet loaded - fetch from Firestore
-    db.collection('members').orderBy('order','asc').get().then(function(snap){
+    db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
       window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
       selEl.innerHTML='<option value="">-- Người viết --</option>'+window._members.map(function(m){return '<option value="'+m.name+'"'+(m.name===cur?' selected':'')+'>'+m.name+'</option>';}).join('');
     });
@@ -1378,8 +1378,12 @@ function saveBl(){var domain=document.getElementById('f-bl-dom').value.trim();if
 
 // == MEMBERS ==
 function listenMembers(){
-  db.collection('members').orderBy('order','asc').onSnapshot(function(snap){
+  db.collection('members').orderBy('createdAt','asc').onSnapshot(function(snap){
     window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+    window._members.sort(function(a,b){
+      if(a.order!==undefined&&b.order!==undefined)return a.order-b.order;
+      return 0;
+    });
     renderMembers();renderPlan();
   },function(err){window._members=[];var g=document.getElementById('members-grid');if(g)g.innerHTML='<div class="empty">Chưa có thành viên.</div>';});
 }
