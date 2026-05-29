@@ -558,7 +558,7 @@ function startApp() {
   var u=sessionStorage.getItem('_u');var b=document.getElementById('ubadge');
   if(b&&u)b.textContent=u+(sessionStorage.getItem('_r')==='admin'?' (admin)':'');
   // Load members FIRST — ensures all dropdowns have data when listeners fire
-  db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
+  db.collection('members').orderBy('order','asc').get().then(function(snap){
     window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
     listenMembers();
     listenGroups(); listenKws(); listenTasks(); listenArts(); listenBls();
@@ -760,10 +760,13 @@ function renderPlan() {
         +'</div>'
         +'<div style="padding:6px 12px">'
         +items.map(function(item,ii){
-          return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)">'
-            +'<div onclick="togglePlan(\''+wKey+'\',\''+name+'\','+ii+')" style="width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;'+(item.done?'background:var(--green);border-color:var(--green);color:#fff':'')+'">'+(item.done?'✓':'')+'</div>'
-            +'<span style="flex:1;font-size:12px;'+(item.done?'color:var(--green-text)':'')+'">'+(item.text||'')+'</span>'
-            +'<button onclick="delPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:11px">x</button>'
+          var bg=item.done?'var(--green-bg)':color+'0d';
+          var bdr=item.done?'var(--green)':color;
+          return '<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;margin-bottom:3px;border-radius:var(--r);background:'+bg+';border-left:3px solid '+bdr+'">'
+            +'<div onclick="togglePlan(\''+wKey+'\',\''+name+'\','+ii+')" style="width:15px;height:15px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;'+(item.done?'background:'+bdr+';border-color:'+bdr+';color:#fff':'')+'">'+(item.done?'✓':'')+'</div>'
+            +'<span style="flex:1;font-size:12px;'+(item.done?'color:var(--green-text)':'color:var(--text)')+'">'+(item.text||'')+'</span>'
+            +'<button onclick="editPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text2);font-size:12px;padding:0 3px" title="Sửa">✏️</button>'
+            +'<button onclick="delPlan(\''+wKey+'\',\''+name+'\','+ii+')" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:12px;padding:0 3px" title="Xóa">✕</button>'
             +'</div>';
         }).join('')
         +'<div style="padding-top:4px"><input placeholder="Nhập công việc rồi Enter..." data-wkey="'+wKey+'" data-name="'+name+'" onkeydown="addPlan(event,this)" style="width:100%;padding:5px 8px;border:0.5px dashed var(--border2);border-radius:5px;background:none;font-size:11px;color:var(--text);font-family:var(--font)"/></div>'
@@ -791,6 +794,21 @@ function togglePlan(wKey,name,idx) {
     return db.collection('weekplans').doc(wKey).set(upd,{merge:true});
   }).then(function(){renderPlan();});
 }
+
+function editPlan(wKey, name, ii) {
+  var plans = window._plans || {};
+  var items = ((plans[wKey] || {})[name] || []).slice();
+  var item = items[ii];
+  if(!item) return;
+  var newText = prompt('Sửa công việc:', item.text || '');
+  if(newText === null) return;
+  newText = newText.trim();
+  if(!newText) return;
+  items[ii] = {text: newText, done: item.done || false};
+  var data = {}; data[name] = items;
+  db.collection('weekplans').doc(wKey).set(data, {merge: true});
+}
+
 function delPlan(wKey,name,idx) {
   db.collection('weekplans').doc(wKey).get().then(function(snap){
     var data=snap.exists?snap.data():{};
@@ -1146,7 +1164,7 @@ function populateOwnerSelect(selectedVal){
   if(mems.length){
     sel.innerHTML='<option value="">-- Chọn thành viên --</option>'+mems.map(function(m){return '<option value="'+m.name+'"'+(m.name===selectedVal?' selected':'')+'>'+m.name+'</option>';}).join('');
   } else {
-    db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
+    db.collection('members').orderBy('order','asc').get().then(function(snap){
       window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
       sel.innerHTML='<option value="">-- Chọn thành viên --</option>'+window._members.map(function(m){return '<option value="'+m.name+'"'+(m.name===selectedVal?' selected':'')+'>'+m.name+'</option>';}).join('');
     });
@@ -1235,7 +1253,7 @@ function populateArtAuthor(selEl,cur){
     selEl.innerHTML='<option value="">-- Người viết --</option>'+mems.map(function(m){return '<option value="'+m.name+'"'+(m.name===cur?' selected':'')+'>'+m.name+'</option>';}).join('');
   } else {
     // Members not yet loaded - fetch from Firestore
-    db.collection('members').orderBy('createdAt','asc').get().then(function(snap){
+    db.collection('members').orderBy('order','asc').get().then(function(snap){
       window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
       selEl.innerHTML='<option value="">-- Người viết --</option>'+window._members.map(function(m){return '<option value="'+m.name+'"'+(m.name===cur?' selected':'')+'>'+m.name+'</option>';}).join('');
     });
@@ -1360,7 +1378,7 @@ function saveBl(){var domain=document.getElementById('f-bl-dom').value.trim();if
 
 // == MEMBERS ==
 function listenMembers(){
-  db.collection('members').orderBy('createdAt','asc').onSnapshot(function(snap){
+  db.collection('members').orderBy('order','asc').onSnapshot(function(snap){
     window._members=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
     renderMembers();renderPlan();
   },function(err){window._members=[];var g=document.getElementById('members-grid');if(g)g.innerHTML='<div class="empty">Chưa có thành viên.</div>';});
@@ -1376,7 +1394,7 @@ function renderMembers(){
     var pct=mt.length?Math.round(done/mt.length*100):0;
     var init=m.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
     var color=m.color||'#534AB7';
-    return '<div style="background:var(--bg);border:1px solid var(--border'+(selMem===m.id?'2':'')+ ');border-radius:var(--rl);overflow:hidden;cursor:pointer;'+(selMem===m.id?'border-color:var(--blue);border-width:1.5px':'')+'" onclick="selectMem(\''+m.id+'\')">'
+    return '<div data-mid="'+m.id+'" style="background:var(--bg);border:1px solid var(--border'+(selMem===m.id?'2':'')+ ');border-radius:var(--rl);overflow:hidden;cursor:pointer;'+(selMem===m.id?'border-color:var(--blue);border-width:1.5px':'')+'" onclick="selectMem(\''+m.id+'\')">'
       +'<div style="padding:16px 14px;text-align:center;border-bottom:1px solid var(--border)">'
       +'<div style="width:52px;height:52px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;margin:0 auto 10px">'+init+'</div>'
       +'<div style="font-size:13px;font-weight:500;margin-bottom:3px">'+m.name+'</div>'
@@ -1390,6 +1408,29 @@ function renderMembers(){
       +'</div></div>';
   }).join('');
   if(selMem)renderMemDetail(selMem);
+
+  // Drag-drop for member ordering
+  (function(){
+    var mg=document.getElementById('members-grid');
+    if(!mg)return;
+    mg.querySelectorAll('.card').forEach(function(c){c.setAttribute('draggable','true');});
+    mg.ondragstart=function(e){var c=e.target.closest('[data-mid]');if(c)window._dragMid=c.getAttribute('data-mid');};
+    mg.ondragover=function(e){e.preventDefault();};
+    mg.ondrop=function(e){
+      e.preventDefault();
+      var tc=e.target.closest('[data-mid]');
+      if(!tc||!window._dragMid)return;
+      var tid=tc.getAttribute('data-mid');if(tid===window._dragMid)return;
+      var mems=window._members||[];
+      var fi=mems.findIndex(function(m){return m.id===window._dragMid;});
+      var ti=mems.findIndex(function(m){return m.id===tid;});
+      if(fi<0||ti<0)return;
+      mems.splice(ti,0,mems.splice(fi,1)[0]);
+      window._members=mems;
+      var b=db.batch();mems.forEach(function(m,i){b.update(db.collection('members').doc(m.id),{order:i});});b.commit();
+      renderMembers();
+    };
+  })();
 }
 function selectMem(id){selMem=selMem===id?null:id;renderMembers();if(!selMem){document.getElementById('member-detail').innerHTML='';return;}renderMemDetail(selMem);}
 function renderMemDetail(id){
