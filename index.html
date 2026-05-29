@@ -796,17 +796,24 @@ function togglePlan(wKey,name,idx) {
 }
 
 function editPlan(wKey, name, ii) {
-  var plans = window._plans || {};
-  var items = ((plans[wKey] || {})[name] || []).slice();
-  var item = items[ii];
-  if(!item) return;
-  var newText = prompt('Sửa công việc:', item.text || '');
-  if(newText === null) return;
-  newText = newText.trim();
-  if(!newText) return;
-  items[ii] = {text: newText, done: item.done || false};
-  var data = {}; data[name] = items;
-  db.collection('weekplans').doc(wKey).set(data, {merge: true});
+  // Fetch fresh from Firestore to avoid stale data
+  db.collection('weekplans').doc(wKey).get().then(function(doc) {
+    var data = doc.exists ? (doc.data() || {}) : {};
+    var items = (data[name] || []).slice();
+    var item = items[ii];
+    if(!item) { alert('Không tìm thấy công việc này'); return; }
+    var newText = prompt('Sửa công việc:', item.text || '');
+    if(newText === null) return;
+    newText = newText.trim();
+    if(!newText) return;
+    items[ii] = {text: newText, done: item.done || false};
+    var update = {}; update[name] = items;
+    db.collection('weekplans').doc(wKey).set(update, {merge: true}).then(function() {
+      renderPlan();
+    });
+  }).catch(function(err) {
+    alert('Lỗi: ' + err.message);
+  });
 }
 
 function delPlan(wKey,name,idx) {
